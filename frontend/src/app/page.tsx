@@ -1,17 +1,20 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+"use client"
 
-export default async function Home() {
-  const res = await fetch(`${API_URL}/api/interests`)
-  const interests: { id: number; name: string }[] = await res.json()
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+
+export default function Home() {
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!localStorage.getItem("deepscroll_interests")) {
+      router.replace("/onboarding")
+    }
+  }, [router])
 
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Deepscroll — Connection Test</h1>
-      <ul className="list-disc pl-6">
-        {interests.map((i) => (
-          <li key={i.id}>{i.name}</li>
-        ))}
-      </ul>
-    </main>
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <p className="text-zinc-500 text-sm">Feed coming soon...</p>
+    </div>
   )
 }
