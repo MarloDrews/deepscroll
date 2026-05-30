@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .database import Base, engine
 from . import models  # noqa: F401 — registers models with Base before create_all
+from .routers import feed, interests as interests_router
 
 
 @asynccontextmanager
@@ -22,6 +23,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(interests_router.router, prefix="/api")
+app.include_router(feed.router, prefix="/api")
 
 
 @app.get("/health")
