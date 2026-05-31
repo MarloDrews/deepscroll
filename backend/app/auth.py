@@ -1,11 +1,11 @@
 import os
 from datetime import datetime, timedelta, timezone
 
+import bcrypt as _bcrypt_lib
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from .database import get_db
@@ -21,16 +21,15 @@ if not JWT_SECRET:
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 
-_crypt = CryptContext(schemes=["bcrypt"], deprecated="auto")
 _bearer = HTTPBearer()
 
 
 def hash_password(plain: str) -> str:
-    return _crypt.hash(plain)
+    return _bcrypt_lib.hashpw(plain.encode("utf-8")[:72], _bcrypt_lib.gensalt()).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return _crypt.verify(plain, hashed)
+    return _bcrypt_lib.checkpw(plain.encode("utf-8")[:72], hashed.encode("utf-8"))
 
 
 def create_access_token(user_id: int) -> str:
