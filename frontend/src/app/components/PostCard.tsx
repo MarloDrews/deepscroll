@@ -357,7 +357,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
       </div>
 
       {/* Like button */}
-      <div className="absolute bottom-8 right-5 z-10">
+      <div className="absolute bottom-[88px] right-5 z-10">
         <LikeButton postId={post.id} />
       </div>
     </div>

@@ -22,6 +22,7 @@ backend/
       events.py                 POST /api/events
       auth.py                   POST /api/auth/register, POST /api/auth/login, GET /api/auth/me, PATCH /api/auth/me (update username/password), DELETE /api/auth/me (delete account)
       search.py                 GET /api/search — case-insensitive substring search across title, hook, body, author, known_for, the_question; ranked by title-match then recency; limit 50
+      comments.py               GET /api/posts/{id}/comments (public); POST /api/posts/{id}/comments (auth); DELETE /api/comments/{id} (auth, own comment only)
 
 frontend/
   .env.example                  NEXT_PUBLIC_API_URL template
@@ -85,6 +86,15 @@ frontend/
 ### post_interests
 Join table linking posts ↔ interests (many-to-many).
 
+### comments
+| column     | type      | description                              |
+|------------|-----------|------------------------------------------|
+| id         | Integer   | primary key                              |
+| post_id    | FK→posts  |                                          |
+| user_id    | FK→users  |                                          |
+| body       | Text      | plain text; max 2000 chars enforced by API |
+| created_at | DateTime  | default now                              |
+
 ### events
 | column      | type     | description                              |
 |-------------|----------|------------------------------------------|
@@ -116,7 +126,18 @@ POST /api/auth/login     body: {email, password}            → {access_token, t
 GET  /api/auth/me        Authorization: Bearer <token>      → {id, email, username, created_at}  401 if invalid/missing token
 PATCH /api/auth/me      Authorization: Bearer <token>      body: {username?, new_password?, current_password?}  → updated UserOut  400 on bad current_password or duplicate username
 DELETE /api/auth/me     Authorization: Bearer <token>      body: {current_password}  → 204  400 on bad current_password
+GET  /api/posts/{id}/comments                              → [{id, post_id, username, body, created_at}]  newest first  404 if post not found
+POST /api/posts/{id}/comments  Authorization: Bearer <token>  body: {body}  → CommentOut  201  404 if post not found  422 if body empty or >2000 chars
+DELETE /api/comments/{id}      Authorization: Bearer <token>  → 204  403 if not the comment's author  404 if not found
 ```
+
+## SECURITY
+
+Comment body is untrusted user input stored as plain text. React's default JSX text rendering
+writes to the DOM via `.textContent`, which the browser treats as literal characters — `<script>`
+becomes `&lt;script&gt;` and cannot execute. `dangerouslySetInnerHTML` bypasses this by injecting
+raw HTML directly into the DOM, enabling XSS if the string contains `<script>` tags or event
+attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 
 ## FRONTEND COMPONENTS
 

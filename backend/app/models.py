@@ -73,3 +73,15 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     created_at    = Column(DateTime, default=datetime.utcnow)
     is_active     = Column(Boolean, default=True, nullable=False)
+
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id         = Column(Integer, primary_key=True)
+    post_id    = Column(Integer, ForeignKey("posts.id"), nullable=False)
+    user_id    = Column(Integer, ForeignKey("users.id"), nullable=False)
+    body       = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")

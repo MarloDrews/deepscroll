@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .database import Base, engine
 from . import models  # noqa: F401 — registers models with Base before create_all
-from .routers import auth as auth_router, events as events_router, feed, interests as interests_router, posts as posts_router, search as search_router
+from .routers import auth as auth_router, comments as comments_router, events as events_router, feed, interests as interests_router, posts as posts_router, search as search_router
 
 
 @asynccontextmanager
@@ -26,6 +26,7 @@ app.add_middleware(
 
 
 app.include_router(auth_router.router, prefix="/api")
+app.include_router(comments_router.router, prefix="/api")
 app.include_router(interests_router.router, prefix="/api")
 app.include_router(feed.router, prefix="/api")
 app.include_router(posts_router.router, prefix="/api")
