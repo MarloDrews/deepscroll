@@ -4,6 +4,16 @@ from typing import List, Literal
 from pydantic import BaseModel, ConfigDict, computed_field, field_validator
 
 
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    email: str
+    username: str
+    created_at: datetime
+    is_verified: bool
+
+
 class EventIn(BaseModel):
     post_id: int
     event_type: str
@@ -37,6 +47,7 @@ class PostOut(BaseModel):
     interests: List[str]
     author_id: int | None = None
     author_username: str | None = None
+    author_is_verified: bool | None = None
     status: str = "published"
     created_at: datetime | None = None
 

@@ -62,6 +62,10 @@ class Post(Base):
     def author_username(self):
         return self.author.username if self.author else None
 
+    @property
+    def author_is_verified(self):
+        return self.author.is_verified if self.author else None
+
 
 class Event(Base):
     __tablename__ = "events"
@@ -83,6 +87,7 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     created_at    = Column(DateTime, default=datetime.utcnow)
     is_active     = Column(Boolean, default=True, nullable=False)
+    is_verified   = Column(Boolean, default=False, nullable=False)
 
     posts = relationship("Post", back_populates="author", foreign_keys="Post.author_id")
 

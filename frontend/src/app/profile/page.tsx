@@ -137,7 +137,15 @@ export default function ProfilePage() {
           <div className="w-20 h-20 rounded-full bg-violet-900/60 flex items-center justify-center mb-4">
             <span className="text-violet-300 text-2xl font-bold">{initial}</span>
           </div>
-          <p className="text-white text-xl font-semibold">@{user.username}</p>
+          <p className="flex items-center gap-1.5 text-white text-xl font-semibold">
+            @{user.username}
+            {user.is_verified && (
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Verified" className="flex-shrink-0">
+                <circle cx="8" cy="8" r="8" fill="#60a5fa"/>
+                <path d="M4.5 8l2.5 2.5 4.5-4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </p>
           <p className="text-zinc-500 text-sm mt-1">{user.email}</p>
           <button onClick={() => router.push("/my-posts")} className="text-zinc-400 text-sm mt-2">
             My posts →

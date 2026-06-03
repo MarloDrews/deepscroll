@@ -118,7 +118,15 @@ export default function MyPostsPage() {
                         )}
                       </div>
                       <p className="text-white font-semibold text-sm mt-0.5 line-clamp-2">{post.title}</p>
-                      <p className="text-zinc-600 text-xs mt-0.5">@{user.username}</p>
+                      <p className="flex items-center gap-1 text-zinc-600 text-xs mt-0.5">
+                        @{user.username}
+                        {user.is_verified && (
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Verified" className="flex-shrink-0">
+                            <circle cx="8" cy="8" r="8" fill="#60a5fa"/>
+                            <path d="M4.5 8l2.5 2.5 4.5-4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </p>
                       {post.created_at && (
                         <p className="text-zinc-500 text-xs mt-1">{relativeTime(post.created_at)}</p>
                       )}

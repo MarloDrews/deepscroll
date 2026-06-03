@@ -65,7 +65,7 @@ def create_post(
         image_url=data.image_url,
         details=details,
         author_id=current_user.id,
-        status="pending",
+        status="published" if current_user.is_verified else "pending",
     )
     post.interests = interest_objects
     db.add(post)

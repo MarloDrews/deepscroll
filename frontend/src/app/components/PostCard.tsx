@@ -26,6 +26,7 @@ export interface Post {
   details: Record<string, unknown> | null
   interests: string[]
   author_username?: string | null
+  author_is_verified?: boolean | null
   status?: string
   is_user_content?: boolean
 }

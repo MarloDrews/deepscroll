@@ -9,6 +9,7 @@ export interface AuthUser {
   email: string
   username: string
   created_at: string
+  is_verified: boolean
 }
 
 interface AuthContextType {

@@ -6,14 +6,14 @@
 backend/
   requirements.txt              fastapi, uvicorn, sqlalchemy, passlib[bcrypt], python-jose[cryptography], python-dotenv, email-validator
   .env.example                  JWT_SECRET template (copy to .env, never commit .env)
-  seed.py                       idempotent: get-or-create 145 interests from taxonomy; delete-and-reseed posts from seed_content.json
+  seed.py                       idempotent: get-or-create 145 interests from taxonomy; delete-and-reseed posts from seed_content.json; Phase 3 assigns all seed posts to marlo07drews@gmail.com and sets is_verified=True on that account
   deepscroll.db                 SQLite database (gitignored)
   app/
     database.py                 engine, SessionLocal, Base, get_db dependency
     main.py                     FastAPI app, CORS for localhost:3000, router registration, create_all on startup
-    models.py                   ORM models: Interest, Post (author_id FK→users nullable, status string default "published", image_path), Event (user_id nullable FK), User (posts relationship), Comment, post_interests join table
+    models.py                   ORM models: Interest, Post (author_id FK→users nullable, status string default "published", image_path; author_username and author_is_verified properties), Event (user_id nullable FK), User (posts relationship, is_verified boolean default false), Comment, post_interests join table
     auth.py                     hash_password, verify_password, create_access_token, decode_access_token, get_current_user, get_optional_user (returns User|None, used for optional auth)
-    schemas.py                  Pydantic models: InterestOut, PostOut (author_username, status, is_user_content), PostCreate, EventIn, UploadResponse, SvgUploadResponse
+    schemas.py                  Pydantic models: UserOut (id, email, username, created_at, is_verified), InterestOut, PostOut (author_username, author_is_verified, status, is_user_content), PostCreate, EventIn, UploadResponse, SvgUploadResponse
     sanitize.py                 validate_image() — chunked read, magic-byte check, animated-GIF reject, Pillow re-encode; sanitize_svg() / sanitize_svg_text() — defusedxml XXE check, lxml element+attribute whitelist, dangerous-pattern rejection
     upload_config.py            UPLOAD_DIR (absolute path at repo root/user_uploads/), size limits (5 MB images, 512 KB SVGs)
     rate_limit.py               in-memory per-user rate limiter (dict of timestamps); check_rate_limit(user_id, key, max, window_secs)
@@ -27,9 +27,13 @@ backend/
       search.py                 GET /api/search — case-insensitive substring search across title, hook, body, author, known_for, the_question; ranked by title-match then recency; limit 50
       comments.py               GET /api/posts/{id}/comments?count=true → {count} or full list; POST /api/posts/{id}/comments (auth); DELETE /api/comments/{id} (auth, own comment only)
       uploads.py                POST /api/upload/image (10/hr, validate_image, UUID filename); POST /api/upload/svg (10/hr, sanitize_svg, returns svg_content string not URL)
-      posts.py                  GET /api/posts/mine (auth, any status); POST /api/posts (auth, 20/day, status="pending"); GET /api/posts/{id} (pending visible to author only)
+      admin.py                  PATCH /api/admin/users/{user_id}/verify — sets is_verified=True; caller must be authenticated and is_verified; 403 otherwise
+      posts.py                  GET /api/posts/mine (auth, any status); POST /api/posts (auth, 20/day, status="published" if verified else "pending"); GET /api/posts/{id} (pending visible to author only)
+      stats.py                  GET /api/stats/global (no auth, all platform analytics); GET /api/stats/me (auth, personal stats — my_streak/my_milestones/my_engagement_score computed server-side)
     lib/
       savedPosts.ts             getSavedPostIds, savePost, unsavePost, isPostSaved; localStorage key "deepscroll_saved"; server-safe (typeof window check); TODO: replace with backend endpoint
+    stats/
+      page.tsx                  Global and My Stats tabs; per-category chart type selector (pill row, useState per section); WaffleChart / CalendarHeatmap / ActivityHeatmap / GaugeChart custom SVG/grid components; all other charts use Recharts; saved/liked counts on My Stats overview read from localStorage client-side; my_likes_given_by_format fetched client-side from localStorage likedPosts
 
 user_uploads/                 gitignored; absolute path outside backend/ so files are never importable as Python modules; subdirs: images/, svgs/
 
@@ -54,12 +58,12 @@ frontend/
     create/
       page.tsx                  3-step post creation wizard: format selection (6 cards), duplicate check (debounced search), structured form with image/SVG upload; submits to POST /api/posts; success screen links to /my-posts; BottomNav (create active)
     my-posts/
-      page.tsx                  lists the current user's own posts with format badge, status badge (pending/published), and relative timestamps; fetches GET /api/posts/mine; empty state links to /create; BottomNav (create active); attribution (@username) below title in post list cards
+      page.tsx                  lists the current user's own posts with format badge, status badge (pending/published), and relative timestamps; fetches GET /api/posts/mine; empty state links to /create; BottomNav (create active); attribution (@username + inline blue verified badge if is_verified) below title in post list cards
     saved-posts/
       page.tsx                  bookmarked posts: reads IDs from localStorage via getSavedPostIds, fetches each via GET /api/posts/{id} (auth optional; pending author-only posts load correctly), renders as full-screen snap-scroll PostCards; skips missing/deleted posts silently; empty state with bookmark icon; BottomNav (profile active)
     post/
       [id]/
-        page.tsx                full-screen detail page; structured layout with image, meta, key points, format-specific sections, takeaway, source link, comments section; sticky comment bar at bottom with like-only heart button on the right (no count, no share/save); floating action column removed; slide-up animation, overscroll-to-close; attribution line below format badge (Submitted by @user for user content, Deepscroll + violet verified icon for seed/official)
+        page.tsx                full-screen detail page; structured layout with image, meta, key points, format-specific sections, takeaway, source link, comments section; sticky comment bar at bottom with like-only heart button on the right (no count, no share/save); floating action column removed; slide-up animation, overscroll-to-close; attribution line below format badge (Submitted by @user + inline blue verified badge if author_is_verified; Deepscroll + violet verified icon for seed/official)
     components/
       PostCard.tsx               full-screen snap card; format-aware layout with image, stat/meta highlight, hook, inline SVG; exports Post interface and FORMAT_STYLES
       BottomNav.tsx              fixed bottom nav: Search / Stats / Feed (flame) / Create (plus-circle, center, white when logged in) / Profile; 5 buttons; active item highlighted; safe-area-inset-bottom aware
@@ -132,6 +136,7 @@ Join table linking posts ↔ interests (many-to-many).
 | password_hash | String   | bcrypt hash; plaintext never stored       |
 | created_at    | DateTime | default now                               |
 | is_active     | Boolean  | default true; false = soft-deleted        |
+| is_verified   | Boolean  | default false; true = bypasses review queue (posts go to "published"), can verify other users via admin endpoint |
 
 ## API ENDPOINTS
 
@@ -156,6 +161,9 @@ POST /api/upload/image  Authorization: Bearer <token>      multipart file field 
 POST /api/upload/svg    Authorization: Bearer <token>      multipart file field "file"  → {svg_content: "<sanitized SVG>"}  10/hr rate limit  defusedxml+lxml whitelist sanitization
 POST /api/posts         Authorization: Bearer <token>      body: PostCreate JSON        → PostOut 201  status="pending"  20/day rate limit  unknown interest slug → 400
 GET  /api/posts/mine    Authorization: Bearer <token>                                   → [PostOut]  all statuses  ordered by created_at DESC
+PATCH /api/admin/users/{user_id}/verify  Authorization: Bearer <token>                 → UserOut  sets is_verified=True  403 if caller is not verified  404 if user not found
+GET  /api/stats/global                                                                  → GlobalStats JSON (no auth)
+GET  /api/stats/me      Authorization: Bearer <token>                                   → MyStats JSON  401 if unauthenticated
 ```
 
 ## SECURITY
@@ -187,7 +195,7 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | PostCard.tsx           | full-screen card; format-aware layout; exports Post interface + FORMAT_STYLES; bottom-right button column (like/comment/save/share); all four buttons use identical div wrapper (gap-1, w-6 h-6 icon); handleLike() shared by small button and double-tap; double-tap on already-liked does nothing; save state via savedPosts.ts with heart-pop animation; share uses paper-plane icon + Web Share API with clipboard fallback + Toast |
 | BottomNav.tsx          | fixed bottom nav: Search / Stats / Feed (flame) / Create (plus-circle, white when logged in) / Profile; 5 buttons; active item highlighted; safe-area-inset-bottom aware |
 | saved-posts/page.tsx   | bookmarked posts feed: reads IDs from localStorage, fetches each via GET /api/posts/{id}, snap-scroll PostCards; skips missing posts; empty state; BottomNav (profile active) |
-| search/page.tsx        | search input + format chips + compact result cards; debounced 300ms; links to post detail; BottomNav (search active) |
+| search/page.tsx        | search input + format chips + compact result cards; debounced 300ms; links to post detail; shows inline verified badge next to author_username if author_is_verified; BottomNav (search active) |
 | LikeButton.tsx         | controlled heart toggle; liked/count/onToggle/size props; size="md" (w-6 h-6, feed) or "sm" (w-5 h-5, detail); heart-pop spring animation; no internal event queuing (parent handles queueEvent) |
 | InterestPicker.tsx     | onboarding pill grid; 10 category sections + Other; fetches own data; gates entry to feed via localStorage |
 | eventQueue.ts          | batches view/like events and POSTs them in groups rather than one-by-one    |
@@ -195,10 +203,11 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | auth.tsx               | AuthContext/Provider: JWT in localStorage, session restore via /me, login/register/logout/loading |
 | api.ts                 | apiFetch: adds Authorization header when token present                      |
 | Providers.tsx          | client boundary so layout.tsx (Server Component) can mount AuthProvider     |
-| profile/page.tsx       | account settings: avatar, identity display, change username/password, sign out, delete account; BottomNav (profile active) |
+| profile/page.tsx       | account settings: avatar, identity display (inline verified badge if is_verified), change username/password, sign out, delete account; BottomNav (profile active) |
 | CommentsSection.tsx    | read-only display component; receives comments/currentUsername/onDelete/deletingId as props; relative timestamps (UTC-aware); plain-text only (no dangerouslySetInnerHTML); exports Comment interface |
 | CommentsBottomSheet.tsx | bottom sheet modal for feed card comments; self-contained state (fetch/post/delete); drag-to-close on handle bar; sticky input; fixed overlay with max-w-[430px] sheet |
 | Toast.tsx              | fixed bottom-center pill notification; visible prop controls opacity via CSS transition; pointer-events-none |
+| stats/page.tsx         | Global and My Stats tabs; 19 global sections + 17 personal sections; per-section chart-type pill selector; WaffleChart (10×10 grid), CalendarHeatmap (12-month squares), ActivityHeatmap (7×24 grid), GaugeChart (SVG arc + needle) as custom components; recharts for all other chart types |
 
 ## CURRENT STATUS
 

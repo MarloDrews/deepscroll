@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy.orm import Session
@@ -7,6 +5,7 @@ from sqlalchemy.orm import Session
 from ..auth import create_access_token, get_current_user, hash_password, verify_password
 from ..database import get_db
 from ..models import User
+from ..schemas import UserOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -30,15 +29,6 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
-
-
-class UserOut(BaseModel):
-    id: int
-    email: str
-    username: str
-    created_at: datetime
-
-    model_config = {"from_attributes": True}
 
 
 class TokenResponse(BaseModel):

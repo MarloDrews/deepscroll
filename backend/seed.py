@@ -2,7 +2,7 @@ import json
 import os
 
 from app.database import Base, SessionLocal, engine
-from app.models import Interest, Post, post_interests
+from app.models import Interest, Post, User, post_interests
 
 Base.metadata.create_all(bind=engine)
 
@@ -99,6 +99,17 @@ for item in data["posts"]:
     post_count += 1
 
 db.commit()
+
+# Phase 3: assign seed posts to Marlo's account and set is_verified=True
+marlo = db.query(User).filter_by(email="marlo07drews@gmail.com").first()
+if marlo:
+    marlo.is_verified = True
+    db.query(Post).filter(Post.author_id == None).update({"author_id": marlo.id})
+    db.commit()
+    print(f"Assigned seed posts to user {marlo.id} (@{marlo.username}) and set is_verified=True")
+else:
+    print("marlo07drews@gmail.com not found — seed posts remain unassigned")
+
 db.close()
 
 print(f"Seeded {created_count} interests, {post_count} posts")
