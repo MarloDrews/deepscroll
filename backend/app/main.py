@@ -2,10 +2,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .database import Base, engine
 from . import models  # noqa: F401 — registers models with Base before create_all
 from .routers import auth as auth_router, comments as comments_router, events as events_router, feed, interests as interests_router, posts as posts_router, search as search_router
+from .routers import uploads as uploads_router
+from .upload_config import UPLOAD_DIR
 
 
 @asynccontextmanager
@@ -24,12 +27,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 app.include_router(auth_router.router, prefix="/api")
 app.include_router(comments_router.router, prefix="/api")
 app.include_router(interests_router.router, prefix="/api")
 app.include_router(feed.router, prefix="/api")
 app.include_router(posts_router.router, prefix="/api")
+app.include_router(uploads_router.router, prefix="/api")
 app.include_router(events_router.router, prefix="/api")
 app.include_router(search_router.router, prefix="/api")
 

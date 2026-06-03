@@ -5,3 +5,7 @@ bcrypt
 python-jose[cryptography]
 python-dotenv
 email-validator
+python-multipart
+Pillow
+lxml
+defusedxml

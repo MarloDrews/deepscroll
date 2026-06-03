@@ -139,6 +139,12 @@ export default function ProfilePage() {
           </div>
           <p className="text-white text-xl font-semibold">@{user.username}</p>
           <p className="text-zinc-500 text-sm mt-1">{user.email}</p>
+          <button onClick={() => router.push("/my-posts")} className="text-zinc-400 text-sm mt-2">
+            My posts →
+          </button>
+          <button onClick={() => router.push("/saved-posts")} className="text-zinc-400 text-sm mt-1">
+            Saved posts →
+          </button>
         </div>
 
         {/* Settings card */}

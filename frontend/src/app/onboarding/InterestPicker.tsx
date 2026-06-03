@@ -9,12 +9,12 @@ interface Interest {
   slug: string
 }
 
-interface Category {
+export interface Category {
   label: string
   slugs: string[]
 }
 
-const CATEGORIES: Category[] = [
+export const CATEGORIES: Category[] = [
   {
     label: "Science & Nature",
     slugs: [

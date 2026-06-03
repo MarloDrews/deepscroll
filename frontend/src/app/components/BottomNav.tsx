@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/app/lib/auth"
 
-type ActiveTab = "feed" | "search" | "profile"
+type ActiveTab = "feed" | "search" | "create" | "stats" | "profile"
 
 export default function BottomNav({ activeTab }: { activeTab: ActiveTab }) {
   const router = useRouter()
@@ -19,6 +19,7 @@ export default function BottomNav({ activeTab }: { activeTab: ActiveTab }) {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="h-14 flex">
+        {/* Search */}
         <button
           onClick={() => router.push("/search")}
           className={`flex-1 flex items-center justify-center h-full ${icon("search")}`}
@@ -30,6 +31,20 @@ export default function BottomNav({ activeTab }: { activeTab: ActiveTab }) {
           </svg>
         </button>
 
+        {/* Stats */}
+        <button
+          onClick={() => router.push("/stats")}
+          className={`flex-1 flex items-center justify-center h-full ${icon("stats")}`}
+          aria-label="Stats"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+            <rect x="18" y="3" width="3" height="18" />
+            <rect x="11" y="8" width="3" height="13" />
+            <rect x="4" y="13" width="3" height="8" />
+          </svg>
+        </button>
+
+        {/* Feed */}
         <button
           onClick={() => router.push("/")}
           className={`flex-1 flex items-center justify-center h-full ${icon("feed")}`}
@@ -40,6 +55,20 @@ export default function BottomNav({ activeTab }: { activeTab: ActiveTab }) {
           </svg>
         </button>
 
+        {/* Create — white when logged in, dimmed when logged out */}
+        <button
+          onClick={() => router.push("/create")}
+          className={`flex-1 flex items-center justify-center h-full ${user ? "text-white" : "text-zinc-500"}`}
+          aria-label="Create"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="8" y1="12" x2="16" y2="12" />
+          </svg>
+        </button>
+
+        {/* Profile */}
         <button
           onClick={() => router.push(user ? "/profile" : "/login")}
           className={`flex-1 flex items-center justify-center h-full ${icon("profile")}`}

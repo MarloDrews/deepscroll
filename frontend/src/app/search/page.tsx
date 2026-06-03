@@ -164,6 +164,9 @@ export default function SearchPage() {
                 >
                   <FormatBadge format={post.format} />
                   <p className="text-white font-semibold text-sm mt-0.5 line-clamp-2">{post.title}</p>
+                  <p className="text-zinc-600 text-xs mt-0.5">
+                    {post.is_user_content && post.author_username ? `@${post.author_username}` : "Deepscroll"}
+                  </p>
                   <Snippet post={post} />
                 </button>
               ))}

@@ -51,7 +51,16 @@ class Post(Base):
     related_slugs      = Column(JSON,   nullable=True)
     details            = Column(JSON,   nullable=True)
 
+    author_id  = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    status     = Column(String, nullable=False, default="published")
+    image_path = Column(String, nullable=True)
+
     interests = relationship("Interest", secondary=post_interests)
+    author    = relationship("User", back_populates="posts", foreign_keys=[author_id])
+
+    @property
+    def author_username(self):
+        return self.author.username if self.author else None
 
 
 class Event(Base):
@@ -74,6 +83,8 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     created_at    = Column(DateTime, default=datetime.utcnow)
     is_active     = Column(Boolean, default=True, nullable=False)
+
+    posts = relationship("Post", back_populates="author", foreign_keys="Post.author_id")
 
 
 class Comment(Base):

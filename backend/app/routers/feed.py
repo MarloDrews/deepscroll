@@ -20,7 +20,8 @@ def get_feed(
     db: Session = Depends(get_db),
 ):
     # Base query — format filter applies to all tiers.
-    base = db.query(Post).options(selectinload(Post.interests))
+    base = db.query(Post).options(selectinload(Post.interests), selectinload(Post.author))
+    base = base.filter(Post.status == "published")
     if format:
         base = base.filter(Post.format == format)
 

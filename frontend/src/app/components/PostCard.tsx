@@ -25,6 +25,9 @@ export interface Post {
   related_slugs: string[] | null
   details: Record<string, unknown> | null
   interests: string[]
+  author_username?: string | null
+  status?: string
+  is_user_content?: boolean
 }
 
 interface BookDetails {
@@ -480,10 +483,21 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
 
             {/* Inline SVG for concepts and facts (only if short enough for card) */}
             {cardSvg && (
-              <div
-                style={{ color: "#e4e4e7", width: "100%", maxHeight: 180, overflow: "hidden" }}
-                dangerouslySetInnerHTML={{ __html: cardSvg }}
-              />
+              post.is_user_content
+                ? (
+                  <img
+                    src={`data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(cardSvg)))}`}
+                    alt=""
+                    className="w-full"
+                    style={{ maxHeight: 180 }}
+                  />
+                ) : (
+                  /* seed/official SVG — controlled content, dangerouslySetInnerHTML intentional */
+                  <div
+                    style={{ color: "#e4e4e7", width: "100%", maxHeight: 180, overflow: "hidden" }}
+                    dangerouslySetInnerHTML={{ __html: cardSvg }}
+                  />
+                )
             )}
           </div>
         </div>

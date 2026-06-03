@@ -11,6 +11,9 @@ node_modules/
 .next/
 .env.local
 
+# User uploads (never commit user files)
+user_uploads/
+
 # OS / Editor
 .DS_Store
 .vscode/

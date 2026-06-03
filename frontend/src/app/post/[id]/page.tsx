@@ -83,9 +83,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const likeInteractedRef  = useRef(false)
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${id}`)
-      .then((r) => r.json())
-      .then((data: Post) => {
+    apiFetch(`/api/posts/${id}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: Post | null) => {
+        if (!data) return
         setPost(data)
         setSaved(isPostSaved(data.id))
       })
@@ -318,6 +319,21 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   </span>
                 </div>
 
+                {/* Attribution */}
+                <div className="flex items-center gap-1 mb-2">
+                  {post.is_user_content && post.author_username ? (
+                    <span className="text-zinc-500 text-xs">Submitted by @{post.author_username}</span>
+                  ) : !post.is_user_content ? (
+                    <>
+                      <span className="text-zinc-500 text-xs">Deepscroll</span>
+                      <svg viewBox="0 0 16 16" className="w-3 h-3 text-violet-400" fill="currentColor">
+                        <circle cx="8" cy="8" r="8" />
+                        <path d="M5 8.5l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                      </svg>
+                    </>
+                  ) : null}
+                </div>
+
                 {/* Image */}
                 {post.format === "people" && personImageUrl && (
                   <div className="flex flex-col items-center mb-6 gap-2">
@@ -420,13 +436,24 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 )}
 
                 {/* SVG visual */}
-                {(cd.visual_svg || fd.visual_svg) && (
-                  <div
-                    className="w-full max-w-[360px] mx-auto my-6"
-                    style={{ color: "#e4e4e7" }}
-                    dangerouslySetInnerHTML={{ __html: (cd.visual_svg ?? fd.visual_svg)! }}
-                  />
-                )}
+                {(cd.visual_svg || fd.visual_svg) && (() => {
+                  const svgContent = (cd.visual_svg ?? fd.visual_svg)!
+                  return post.is_user_content
+                    ? (
+                      <img
+                        src={`data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgContent)))}`}
+                        alt=""
+                        className="w-full max-w-[360px] mx-auto my-6 block"
+                      />
+                    ) : (
+                      /* seed/official SVG — controlled content, dangerouslySetInnerHTML intentional */
+                      <div
+                        className="w-full max-w-[360px] mx-auto my-6"
+                        style={{ color: "#e4e4e7" }}
+                        dangerouslySetInnerHTML={{ __html: svgContent }}
+                      />
+                    )
+                })()}
 
                 {/* Key points or body fallback */}
                 {post.key_points ? (
