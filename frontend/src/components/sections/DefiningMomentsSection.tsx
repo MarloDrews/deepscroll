@@ -9,26 +9,11 @@ interface Episode {
   location?: string
 }
 
+import SvgBlock from "../SvgBlock"
+
 interface Props {
   content: Episode[]
   isUserContent: boolean
-}
-
-function SvgBlock({ svg, isUserContent }: { svg: string; isUserContent: boolean }) {
-  if (isUserContent) {
-    return (
-      <div className="w-full max-w-[400px] mx-auto my-3">
-        <img src={`data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`} alt="" className="w-full" />
-      </div>
-    )
-  }
-  return (
-    <div
-      className="w-full max-w-[400px] mx-auto my-3"
-      style={{ color: "#e4e4e7" }}
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
-  )
 }
 
 export default function DefiningMomentsSection({ content, isUserContent }: Props) {
@@ -47,7 +32,7 @@ export default function DefiningMomentsSection({ content, isUserContent }: Props
           <p className="text-base text-zinc-300 leading-relaxed">{episode.body}</p>
 
           {episode.visual_svg && episode.visual_svg.length > 0 && (
-            <SvgBlock svg={episode.visual_svg} isUserContent={isUserContent} />
+            <SvgBlock svg={episode.visual_svg} isUserContent={isUserContent} className="w-full max-w-[400px] mx-auto my-3" />
           )}
 
           {episode.image_url && (

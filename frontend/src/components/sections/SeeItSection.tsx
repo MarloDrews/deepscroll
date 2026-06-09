@@ -1,21 +1,9 @@
 import type { SeeItContent } from "../../types/post"
+import SvgBlock from "../SvgBlock"
 
 interface Props {
   content: SeeItContent
   isUserContent: boolean
-}
-
-function SvgBlock({ svg, isUserContent }: { svg: string; isUserContent: boolean }) {
-  if (isUserContent) {
-    return <img src={`data:image/svg+xml;base64,${btoa(svg)}`} alt="" className="w-full" />
-  }
-  return (
-    <div
-      className="w-full"
-      style={{ color: "#e4e4e7" }}
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
-  )
 }
 
 export default function SeeItSection({ content, isUserContent }: Props) {

@@ -8,26 +8,11 @@ interface LifeArcContent {
   milestones: Milestone[]
 }
 
+import SvgBlock from "../SvgBlock"
+
 interface Props {
   content: LifeArcContent
   isUserContent: boolean
-}
-
-function SvgBlock({ svg, isUserContent }: { svg: string; isUserContent: boolean }) {
-  if (isUserContent) {
-    return (
-      <div className="w-full max-w-[400px] mx-auto my-2">
-        <img src={`data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`} alt="" className="w-full" />
-      </div>
-    )
-  }
-  return (
-    <div
-      className="w-full max-w-[400px] mx-auto my-2"
-      style={{ color: "#e4e4e7" }}
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
-  )
 }
 
 export default function LifeArcSection({ content, isUserContent }: Props) {
@@ -35,7 +20,7 @@ export default function LifeArcSection({ content, isUserContent }: Props) {
     <div className="px-5 py-6">
       <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Life Arc</h3>
       {content.visual_svg && (
-        <SvgBlock svg={content.visual_svg} isUserContent={isUserContent} />
+        <SvgBlock svg={content.visual_svg} isUserContent={isUserContent} className="w-full max-w-[400px] mx-auto my-2" />
       )}
       <ol className="mt-4 flex flex-col gap-2">
         {content.milestones.map((m, i) => (
