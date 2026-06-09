@@ -56,6 +56,46 @@ export interface AuthorContextContent {
   wikipedia_url?: string
 }
 
+export interface SeeItContent {
+  visual_svg?: string
+  image_url?: string
+  image_caption: string
+  image_attribution?: string
+}
+
+export interface KeyNumberItem {
+  label: string
+  value: string
+  unit?: string
+}
+
+export interface AngleItem {
+  title: string
+  body: string
+  visual_svg?: string
+  image_url?: string
+}
+
+export interface KeyFigure {
+  name: string
+  role: string
+  one_line?: string
+  lifespan?: string
+  image_url?: string
+}
+
+export interface StoryContent {
+  body: string
+  key_figures?: KeyFigure[]
+  visual_svg?: string
+  image_url?: string
+}
+
+export interface MisconceptionItem {
+  myth: string
+  reality: string
+}
+
 export type SectionType =
   | "essence"
   | "quiz_badge"
@@ -72,6 +112,16 @@ export type SectionType =
   | "author_context"
   | "critique"
   | "sources"
+  | "headline"
+  | "see_it"
+  | "key_numbers"
+  | "tangible"
+  | "how_we_know"
+  | "surprises"
+  | "angles"
+  | "story"
+  | "bigger_picture"
+  | "misconceptions"
 
 export interface Section {
   type: SectionType | string
@@ -91,11 +141,20 @@ export interface BooksFeedCard {
   genre: string
 }
 
+export interface FactsFeedCard {
+  field: string
+  headline: string
+  mini_visual_svg: string | null
+  teasers: [string, string, string]
+  post_reading_time_min: number
+  post_difficulty: 1 | 2 | 3
+}
+
 export interface Post {
   id: number
   format: string
   title: string
-  feed_card: BooksFeedCard
+  feed_card: Record<string, unknown>
   sections: Section[]
   author_id: number | null
   author_username: string | null

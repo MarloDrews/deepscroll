@@ -50,14 +50,19 @@ NAME_EXCEPTIONS = {
     "money-everyday": "Personal Finance",
 }
 
-SEED_INTEREST_SLUGS = [
-    "psychology", "behavioral-economics", "decision-making", "neuroscience",
-]
-
 SEED_EMAIL = "marlo07drews@gmail.com"
 SEED_USERNAME = "Marlo"
-SEED_POST_FORMAT = "books"
-SEED_POST_TITLE = "Thinking, Fast and Slow"
+
+# Add an entry here when a new example format is introduced.
+FORMAT_INTEREST_SLUGS = {
+    "books": ["psychology", "behavioral-economics", "decision-making", "neuroscience"],
+    "facts": ["biology", "animals", "everyday-science"],
+}
+
+
+def _post_title(feed_card: dict) -> str:
+    """Extract the display title from a feed_card regardless of format."""
+    return feed_card.get("title") or feed_card.get("headline") or ""
 
 
 def slug_to_name(slug):
@@ -121,52 +126,53 @@ print(f"Interests: {created_count} created (rest already existed)")
 # Phase 2: ensure Marlo exists and is verified
 marlo = _get_or_create_marlo(db)
 
-# Phase 3: seed the Kahneman Books post (upsert — update if already present)
+# Phase 3: seed all example posts found in docs/content-structure/examples/
+# Any file named <format>_example.json is picked up automatically.
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-example_path = os.path.join(
-    project_root, "docs", "content-structure", "examples", "books_example.json"
-)
-with open(example_path, encoding="utf-8") as f:
-    example = json.load(f)
+examples_dir = os.path.join(project_root, "docs", "content-structure", "examples")
 
-feed_card = example["feed_card"]
-sections = example["sections"]
+for filename in sorted(os.listdir(examples_dir)):
+    if not filename.endswith("_example.json"):
+        continue
 
-existing = (
-    db.query(Post)
-    .filter_by(format=SEED_POST_FORMAT, title=SEED_POST_TITLE)
-    .first()
-)
+    post_format = filename.replace("_example.json", "")
+    with open(os.path.join(examples_dir, filename), encoding="utf-8") as f:
+        example = json.load(f)
 
-if existing:
-    existing.feed_card = feed_card
-    existing.sections = sections
-    existing.title = feed_card["title"]
-    existing.status = "published"
-    db.commit()
-    print(f"Updated existing Books post: {SEED_POST_TITLE}.")
-else:
-    # Resolve interest objects; skip any slug not in DB
-    interests = []
-    for slug in SEED_INTEREST_SLUGS:
-        interest = db.query(Interest).filter_by(slug=slug).first()
-        if interest:
-            interests.append(interest)
-        else:
-            print(f"Warning: interest slug '{slug}' not found, skipping")
+    feed_card = example["feed_card"]
+    sections = example["sections"]
+    title = _post_title(feed_card)
 
-    post = Post(
-        format=SEED_POST_FORMAT,
-        title=feed_card["title"],
-        feed_card=feed_card,
-        sections=sections,
-        author_id=marlo.id,
-        status="published",
-        is_user_content=False,
-    )
-    post.interests = interests
-    db.add(post)
-    db.commit()
-    print(f"Seeded 1 Books post: {SEED_POST_TITLE}.")
+    existing = db.query(Post).filter_by(format=post_format, title=title).first()
+
+    if existing:
+        existing.feed_card = feed_card
+        existing.sections = sections
+        existing.status = "published"
+        db.commit()
+        print(f"Updated existing {post_format.title()} post: {title}.")
+    else:
+        interest_slugs = FORMAT_INTEREST_SLUGS.get(post_format, [])
+        interests = []
+        for slug in interest_slugs:
+            interest = db.query(Interest).filter_by(slug=slug).first()
+            if interest:
+                interests.append(interest)
+            else:
+                print(f"Warning: interest slug '{slug}' not found, skipping")
+
+        post = Post(
+            format=post_format,
+            title=title,
+            feed_card=feed_card,
+            sections=sections,
+            author_id=marlo.id,
+            status="published",
+            is_user_content=False,
+        )
+        post.interests = interests
+        db.add(post)
+        db.commit()
+        print(f"Seeded {post_format.title()} post: {title}.")
 
 db.close()

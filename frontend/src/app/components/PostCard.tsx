@@ -314,14 +314,14 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
               <div className="flex gap-3 items-start">
                 <div className="flex-1 min-w-0">
                   <h2 className="text-2xl font-bold tracking-tight text-white leading-snug">
-                    {fc.title}
+                    {fc.title as string}
                   </h2>
-                  <p className="text-amber-400 text-sm font-medium mt-1">{fc.author}</p>
+                  <p className="text-amber-400 text-sm font-medium mt-1">{fc.author as string}</p>
                 </div>
                 {fc.cover_url && (
                   <div className="shrink-0 rounded-lg overflow-hidden shadow-lg w-16 h-24 bg-zinc-800">
                     <img
-                      src={fc.cover_url}
+                      src={fc.cover_url as string}
                       alt=""
                       loading="lazy"
                       className="w-full h-full object-cover"
@@ -332,12 +332,12 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
               </div>
 
               {/* Essence */}
-              <p className="text-zinc-300 text-sm leading-relaxed">{fc.essence}</p>
+              <p className="text-zinc-300 text-sm leading-relaxed">{fc.essence as string}</p>
 
               {/* Teasers */}
-              {fc.teasers && fc.teasers.length > 0 && (
+              {Array.isArray(fc.teasers) && (fc.teasers as string[]).length > 0 && (
                 <div className="mt-3 mb-1 space-y-1">
-                  {fc.teasers.map((teaser, i) => (
+                  {(fc.teasers as string[]).map((teaser, i) => (
                     <div key={i} className="flex items-start gap-2">
                       <span className="text-amber-400 text-sm mt-0.5 shrink-0">→</span>
                       <span className="text-sm text-zinc-300/70 leading-snug">{teaser}</span>
@@ -348,20 +348,47 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
 
               {/* Metadata bar */}
               <div className="flex items-center gap-3 pt-1 border-t border-zinc-800">
-                <DotScale value={fc.post_difficulty} />
-                <span className="text-zinc-500 text-xs">{fc.year}</span>
+                <DotScale value={fc.post_difficulty as 1 | 2 | 3} />
+                <span className="text-zinc-500 text-xs">{fc.year as number}</span>
                 <span className="text-zinc-600 text-xs">·</span>
-                <span className="text-zinc-500 text-xs">{fc.genre}</span>
+                <span className="text-zinc-500 text-xs">{fc.genre as string}</span>
+              </div>
+            </div>
+          ) : post.format === "facts" && fc ? (
+            <div className="bg-zinc-900/50 rounded-2xl px-5 py-5 flex flex-col gap-3">
+              {fc.field && (
+                <p className="text-xs font-semibold tracking-widest text-cyan-600 uppercase">{fc.field as string}</p>
+              )}
+              <h2 className="text-2xl font-bold tracking-tight text-white leading-snug">
+                {fc.headline as string}
+              </h2>
+
+              {Array.isArray(fc.teasers) && (fc.teasers as string[]).length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {(fc.teasers as string[]).map((teaser, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-cyan-400 text-sm mt-0.5 shrink-0">→</span>
+                      <span className="text-sm text-zinc-300/70 leading-snug">{teaser}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 pt-1 border-t border-zinc-800">
+                <DotScale value={fc.post_difficulty as 1 | 2 | 3} />
+                {fc.post_reading_time_min && (
+                  <span className="text-zinc-500 text-xs">{fc.post_reading_time_min as number} min read</span>
+                )}
               </div>
             </div>
           ) : (
-            /* Fallback for non-Books formats */
+            /* Fallback for other formats */
             <div className="bg-zinc-900/50 rounded-2xl px-5 py-6 flex flex-col gap-3">
               <h2 className="text-3xl font-bold tracking-tight text-white leading-snug">
                 {post.title}
               </h2>
               {fc?.essence && (
-                <p className="text-zinc-300 text-base leading-relaxed">{fc.essence}</p>
+                <p className="text-zinc-300 text-base leading-relaxed">{fc.essence as string}</p>
               )}
             </div>
           )}

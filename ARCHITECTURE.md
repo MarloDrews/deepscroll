@@ -6,7 +6,7 @@
 backend/
   requirements.txt              fastapi, uvicorn, sqlalchemy, passlib[bcrypt], python-jose[cryptography], python-dotenv, email-validator
   .env.example                  JWT_SECRET template (copy to .env, never commit .env)
-  seed.py                       idempotent: get-or-create 145 interests from taxonomy; reads SEED_ADMIN_PASSWORD from backend/.env; get-or-create @Marlo (marlo07drews@gmail.com, is_verified=True); upserts 1 Books post from docs/content-structure/examples/books_example.json (Kahneman "Thinking, Fast and Slow") — updates feed_card/sections/title/status if already present; legacy DB preserved as deepscroll.db.legacy_*
+  seed.py                       idempotent: get-or-create 145 interests from taxonomy; reads SEED_ADMIN_PASSWORD from backend/.env; get-or-create @Marlo (marlo07drews@gmail.com, is_verified=True); auto-discovers all *_example.json files in docs/content-structure/examples/ — upserts one post per file (format derived from filename, title from feed_card.title or feed_card.headline); FORMAT_INTEREST_SLUGS dict maps format → interest slugs; legacy DB preserved as deepscroll.db.legacy_*
   deepscroll.db                 SQLite database (gitignored)
   app/
     database.py                 engine, SessionLocal, Base, get_db dependency
@@ -211,9 +211,9 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | file                   | responsibility                                                              |
 |------------------------|-----------------------------------------------------------------------------|
 | page.tsx               | 8-tab feed (For You, Books, Facts, People, Ideas, Q&A, Stories, Academy — no Following tab); each tab is an independent lazy-fetched vertical snap feed; format tabs show EmptyState when empty; BottomNav (feed active) |
-| PostCard.tsx           | full-screen card; Books layout uses feed_card (cover, title, author, essence, teasers as amber-arrow rows one per teaser, metadata bar with DotScale difficulty); re-exports Post type from @/types/post; re-exports FORMAT_STYLES (8 formats including academy); like_count and comment_count initialized from PostOut; no separate counts fetch for comments |
-| types/post.ts          | TypeScript interfaces: Post, BooksFeedCard, Section, SectionType, VoiceItem, AtAGlanceBooksContent, CoreIdeaItem, TakeawayContent, QuizItem, RelatedPostItem, SourceItem, AuthorContextContent |
-| SectionRenderer.tsx    | dispatch component; sorts sections by order; switches on type to render named sub-component; passes isUserContent down to SVG-rendering sections; console.warn on unknown type |
+| PostCard.tsx           | full-screen card; Books layout uses feed_card (cover, title, author, essence, teasers as amber-arrow rows one per teaser, metadata bar with DotScale difficulty); Facts layout uses feed_card (field label, headline, teasers as cyan-arrow rows, reading time + DotScale); fallback for other formats shows title only; re-exports Post type from @/types/post; re-exports FORMAT_STYLES (8 formats including academy); like_count and comment_count initialized from PostOut; no separate counts fetch for comments |
+| types/post.ts          | TypeScript interfaces: Post (feed_card: Record<string,unknown>), BooksFeedCard, FactsFeedCard, Section, SectionType (25 types), VoiceItem, AtAGlanceBooksContent, CoreIdeaItem, TakeawayContent, QuizItem, RelatedPostItem, SourceItem, AuthorContextContent, SeeItContent, KeyNumberItem, AngleItem, KeyFigure, StoryContent, MisconceptionItem |
+| SectionRenderer.tsx    | dispatch component; sorts sections by order; switches on type to render named sub-component; passes isUserContent down to SVG-rendering sections; console.warn on unknown type; handles 25 section types (15 Books + 10 Facts) |
 | sections/EssenceSection.tsx | large centered text, min-height 140px |
 | sections/QuizBadgeSection.tsx | amber pill badge |
 | sections/VoicesSection.tsx | blockquotes with serif font, attribution footer |
@@ -229,6 +229,16 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | sections/AuthorContextSection.tsx | portrait + text + Wikipedia external link |
 | sections/CritiqueSection.tsx | secondary text with heading |
 | sections/SourcesSection.tsx | type badge (W/P/B/A/D) + label + external link icon |
+| sections/HeadlineSection.tsx | large centered headline; digit runs + optional scale words highlighted in cyan-400 via regex |
+| sections/SeeItSection.tsx | "See It" label; SVG (dangerouslySetInnerHTML/base64 per isUserContent) or image; caption + optional attribution |
+| sections/KeyNumbersSection.tsx | 2-column grid; value in cyan-400, optional unit in cyan-700, label in zinc-400 |
+| sections/TangibleSection.tsx | "Make It Tangible" label; bullet list with cyan dots |
+| sections/HowWeKnowSection.tsx | "How We Know" label; prose block |
+| sections/SurprisesSection.tsx | "Why It Surprises Us" label; cyan-950/20 background; prose in zinc-200 |
+| sections/AnglesSection.tsx | "Multiple Angles" label; list of titled angles with cyan-400 titles, prose, optional SVG; passes isUserContent |
+| sections/StorySection.tsx | "The Story Behind It" label; body prose; optional SVG/image; key_figures cards (name, lifespan, role in cyan-600, one_line); passes isUserContent |
+| sections/BiggerPictureSection.tsx | "The Bigger Picture" label; heavier prose in zinc-200 font-medium |
+| sections/MisconceptionsSection.tsx | "Common Misconceptions" label; per-item: myth (line-through, zinc-500) with red ✕, reality (zinc-300) with green ✓ |
 | EmptyState.tsx         | format-aware inline SVG icon + "coming soon" message; used by format tabs when posts.length === 0 |
 | BottomNav.tsx          | fixed bottom nav: Search / Stats / Feed (flame) / Create (plus-circle, white when logged in) / Profile; 5 buttons; active item highlighted; safe-area-inset-bottom aware |
 | saved-posts/page.tsx   | bookmarked posts feed: reads IDs from localStorage, fetches each via GET /api/posts/{id}, snap-scroll PostCards; skips missing posts; empty state; BottomNav (profile active) |
@@ -252,20 +262,20 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 - FastAPI backend with SQLite, CORS, full API
 - Section-based post schema: feed_card JSON + sections JSON array; old per-format fields removed
 - 15 section types for Books format (validated via Pydantic v2 discriminated union)
-- Seed script: 145 interests + 1 Books post (Kahneman "Thinking, Fast and Slow"); reads SEED_ADMIN_PASSWORD from .env
+- Seed script: 145 interests + auto-discovers all *_example.json files (currently Books + Facts); FORMAT_INTEREST_SLUGS maps format → interests
 - Legacy DB preserved as backend/deepscroll.db.legacy_*
 - Onboarding: interest picker → slugs saved to localStorage → gates feed
 - Feed: 8-tab horizontal swipe (For You + 7 formats, no Following tab) + vertical snap scroll per tab
 - EmptyState component for format tabs with no posts yet
 - Books feed card: cover, title, author, essence, 3 teasers, difficulty DotScale, year/genre
-- Detail page: SectionRenderer renders all 15 section types in order (SVG security: dangerouslySetInnerHTML for seed, base64 img for user)
+- Detail page: SectionRenderer renders 25 section types (15 Books + 10 Facts) in order (SVG security: dangerouslySetInnerHTML for seed, base64 img for user)
 - Create page: 3-step Books wizard with Feed Card block + interest picker (1–5) + 15 section accordions
 - My-posts page: cover thumbnail + title + author + status from feed_card
 - User accounts: JWT auth, register/login, follow system, public profiles, comments, likes, saves
 - Stats page, verification system, saved posts
 
 **Next**
-- Content for formats other than Books (facts, people, concepts, questions, stories, academy)
+- Content for formats other than Books and Facts (people, concepts, questions, stories, academy)
 - Quiz scoring implementation
 - Recommendation algorithm improvements
 - Pagination / infinite scroll

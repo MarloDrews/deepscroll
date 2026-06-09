@@ -1,0 +1,67 @@
+import type { StoryContent } from "../../types/post"
+
+interface Props {
+  content: StoryContent
+  isUserContent: boolean
+}
+
+function SvgBlock({ svg, isUserContent }: { svg: string; isUserContent: boolean }) {
+  if (isUserContent) {
+    return <img src={`data:image/svg+xml;base64,${btoa(svg)}`} alt="" className="w-full" />
+  }
+  return (
+    <div
+      className="w-full"
+      style={{ color: "#e4e4e7" }}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  )
+}
+
+export default function StorySection({ content, isUserContent }: Props) {
+  return (
+    <div className="px-5 py-6 flex flex-col gap-5">
+      <p className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">The Story Behind It</p>
+      <p className="text-base text-zinc-300 leading-relaxed">{content.body}</p>
+
+      {content.visual_svg && (
+        <div className="w-full max-w-[360px] mx-auto bg-transparent">
+          <SvgBlock svg={content.visual_svg} isUserContent={isUserContent} />
+        </div>
+      )}
+      {content.image_url && !content.visual_svg && (
+        <div className="w-full max-w-[360px] mx-auto">
+          <img src={content.image_url} alt="" className="w-full rounded-lg object-cover" />
+        </div>
+      )}
+
+      {content.key_figures && content.key_figures.length > 0 && (
+        <div className="flex flex-col gap-3 mt-1">
+          {content.key_figures.map((fig, i) => (
+            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-4 flex gap-3 items-start">
+              {fig.image_url && (
+                <img
+                  src={fig.image_url}
+                  alt={fig.name}
+                  className="w-10 h-10 rounded-full object-cover shrink-0 bg-zinc-800"
+                />
+              )}
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-sm font-semibold text-zinc-200">{fig.name}</span>
+                  {fig.lifespan && (
+                    <span className="text-xs text-zinc-500">{fig.lifespan}</span>
+                  )}
+                </div>
+                <span className="text-xs text-cyan-600">{fig.role}</span>
+                {fig.one_line && (
+                  <p className="text-xs text-zinc-400 leading-relaxed mt-1">{fig.one_line}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}

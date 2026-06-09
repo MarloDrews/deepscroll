@@ -14,6 +14,16 @@ import WorldContextSection from "./sections/WorldContextSection"
 import AuthorContextSection from "./sections/AuthorContextSection"
 import CritiqueSection from "./sections/CritiqueSection"
 import SourcesSection from "./sections/SourcesSection"
+import HeadlineSection from "./sections/HeadlineSection"
+import SeeItSection from "./sections/SeeItSection"
+import KeyNumbersSection from "./sections/KeyNumbersSection"
+import TangibleSection from "./sections/TangibleSection"
+import HowWeKnowSection from "./sections/HowWeKnowSection"
+import SurprisesSection from "./sections/SurprisesSection"
+import AnglesSection from "./sections/AnglesSection"
+import StorySection from "./sections/StorySection"
+import BiggerPictureSection from "./sections/BiggerPictureSection"
+import MisconceptionsSection from "./sections/MisconceptionsSection"
 
 interface Props {
   sections: Section[]
@@ -59,6 +69,26 @@ export default function SectionRenderer({ sections, isUserContent }: Props) {
             return <CritiqueSection key={i} content={c as string} />
           case "sources":
             return <SourcesSection key={i} content={c as any} />
+          case "headline":
+            return <HeadlineSection key={i} content={c as string} />
+          case "see_it":
+            return <SeeItSection key={i} content={c as any} isUserContent={isUserContent} />
+          case "key_numbers":
+            return <KeyNumbersSection key={i} content={c as any} />
+          case "tangible":
+            return <TangibleSection key={i} content={c as string[]} />
+          case "how_we_know":
+            return <HowWeKnowSection key={i} content={c as string} />
+          case "surprises":
+            return <SurprisesSection key={i} content={c as string} />
+          case "angles":
+            return <AnglesSection key={i} content={c as any} isUserContent={isUserContent} />
+          case "story":
+            return <StorySection key={i} content={c as any} isUserContent={isUserContent} />
+          case "bigger_picture":
+            return <BiggerPictureSection key={i} content={c as string} />
+          case "misconceptions":
+            return <MisconceptionsSection key={i} content={c as any} />
           default:
             console.warn(`SectionRenderer: unknown section type "${section.type}"`)
             return null
