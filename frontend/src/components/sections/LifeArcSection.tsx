@@ -1,3 +1,4 @@
+import SectionLabel from "../SectionLabel"
 interface Milestone {
   year: string
   label: string
@@ -18,7 +19,7 @@ interface Props {
 export default function LifeArcSection({ content, isUserContent }: Props) {
   return (
     <div className="px-5 py-6">
-      <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Life Arc</h3>
+      <SectionLabel className="mb-4">Life Arc</SectionLabel>
       {content.visual_svg && (
         <SvgBlock svg={content.visual_svg} isUserContent={isUserContent} className="w-full max-w-[400px] mx-auto my-2" />
       )}

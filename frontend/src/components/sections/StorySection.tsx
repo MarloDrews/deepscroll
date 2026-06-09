@@ -1,3 +1,4 @@
+import SectionLabel from "../SectionLabel"
 import type { StoryContent } from "../../types/post"
 import SvgBlock from "../SvgBlock"
 
@@ -9,7 +10,7 @@ interface Props {
 export default function StorySection({ content, isUserContent }: Props) {
   return (
     <div className="px-5 py-6 flex flex-col gap-5">
-      <p className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">The Story Behind It</p>
+      <SectionLabel>The Story Behind It</SectionLabel>
       <p className="text-base text-zinc-300 leading-relaxed">{content.body}</p>
 
       {content.visual_svg && (

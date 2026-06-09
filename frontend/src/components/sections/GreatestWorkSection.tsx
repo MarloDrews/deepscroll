@@ -1,3 +1,4 @@
+import SectionLabel from "../SectionLabel"
 interface GreatestWorkContent {
   title: string
   body: string
@@ -17,7 +18,7 @@ interface Props {
 export default function GreatestWorkSection({ content, isUserContent }: Props) {
   return (
     <div className="px-5 py-6 flex flex-col gap-3">
-      <h3 className="text-xs text-zinc-500 uppercase tracking-wide">Greatest Work</h3>
+      <SectionLabel>Greatest Work</SectionLabel>
       <h2 className="text-lg font-semibold text-rose-400 leading-snug">{content.title}</h2>
       <p className="text-base text-zinc-300 leading-relaxed">{content.body}</p>
 

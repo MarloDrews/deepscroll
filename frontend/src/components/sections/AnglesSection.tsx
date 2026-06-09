@@ -1,3 +1,4 @@
+import SectionLabel from "../SectionLabel"
 import type { AngleItem } from "../../types/post"
 import SvgBlock from "../SvgBlock"
 
@@ -9,7 +10,7 @@ interface Props {
 export default function AnglesSection({ content, isUserContent }: Props) {
   return (
     <div className="px-5 py-6 flex flex-col gap-8">
-      <p className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">Multiple Angles</p>
+      <SectionLabel>Multiple Angles</SectionLabel>
       {content.map((angle, i) => (
         <div key={i} className="flex flex-col gap-2">
           <h3 className="text-base font-semibold text-cyan-400 leading-snug">{angle.title}</h3>

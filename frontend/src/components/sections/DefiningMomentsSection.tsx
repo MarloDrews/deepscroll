@@ -1,3 +1,4 @@
+import SectionLabel from "../SectionLabel"
 interface Episode {
   title: string
   year_or_period: string
@@ -19,7 +20,7 @@ interface Props {
 export default function DefiningMomentsSection({ content, isUserContent }: Props) {
   return (
     <div className="px-5 py-6 flex flex-col gap-10">
-      <h3 className="text-xs text-zinc-500 uppercase tracking-wide -mb-4">Defining Moments</h3>
+      <SectionLabel className="-mb-4">Defining Moments</SectionLabel>
       {content.map((episode, i) => (
         <div key={i} className="flex flex-col gap-3">
           <div className="flex items-baseline gap-2 flex-wrap">
