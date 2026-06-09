@@ -22,6 +22,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const { user } = useAuth()
 
   const [post, setPost] = useState<Post | null>(null)
+  const [notFound, setNotFound] = useState(false)
   const [closing, setClosing] = useState(false)
   const [comments, setComments] = useState<Comment[]>([])
   const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -44,13 +45,17 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     apiFetch(`/api/posts/${id}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data: Post | null) => {
-        if (!data) return
+        if (!data) {
+          setNotFound(true)
+          return
+        }
         setPost(data)
         setSaved(isPostSaved(data.id))
         if (!likeInteractedRef.current) {
           setLikesCount(getCachedLikeCount(data.id) ?? data.like_count)
         }
       })
+      .catch(() => setNotFound(true))
     apiFetch(`/api/posts/${id}/comments`)
       .then((r) => r.json())
       .then(setComments)
@@ -136,8 +141,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     } else {
       unsavePost(post.id)
     }
-    // suppress unused var warning
-    void animatingSave
   }
 
   async function handleDelete(commentId: number) {
@@ -348,6 +351,14 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   />
                 </div>
               </>
+            ) : notFound ? (
+              <div className="flex flex-col items-center justify-center h-full gap-3 px-8 text-center">
+                <p className="text-white font-semibold">Post not found</p>
+                <p className="text-zinc-500 text-sm">It may have been removed or is awaiting review.</p>
+                <button onClick={close} className="text-zinc-400 text-sm underline">
+                  Go back
+                </button>
+              </div>
             ) : (
               <div className="flex items-center justify-center h-full">
                 <span className="text-zinc-600 text-sm">Loading...</span>
@@ -424,7 +435,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       strokeWidth={saved ? 0 : 2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="w-5 h-5 text-zinc-400"
+                      className={`w-5 h-5 text-zinc-400 ${animatingSave ? "heart-pop" : ""}`}
+                      onAnimationEnd={() => setAnimatingSave(false)}
                     >
                       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                     </svg>

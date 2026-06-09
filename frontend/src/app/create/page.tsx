@@ -445,7 +445,9 @@ export default function CreatePage() {
       <div className="h-[100dvh] bg-zinc-950 flex justify-center">
         <div className="w-full max-w-[430px] h-[100dvh] relative flex flex-col items-center justify-center px-8 text-center gap-4">
           <p className="text-white text-2xl font-bold">Post submitted</p>
-          <p className="text-zinc-400 text-sm">It will appear once approved.</p>
+          <p className="text-zinc-400 text-sm">
+            {user?.is_verified ? "It is now live in the feed." : "It will appear once approved."}
+          </p>
           <div className="flex flex-col gap-3 w-full mt-4">
             <button onClick={resetForm} className="bg-white text-zinc-950 font-semibold rounded-full h-12 w-full text-sm">Create another</button>
             <button onClick={() => router.push("/my-posts")} className="border border-zinc-700 text-white rounded-full h-12 w-full text-sm">View my posts</button>
