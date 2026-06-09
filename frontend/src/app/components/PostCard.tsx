@@ -354,6 +354,55 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 <span className="text-zinc-500 text-xs">{fc.genre as string}</span>
               </div>
             </div>
+          ) : post.format === "people" && fc ? (
+            <div className="bg-zinc-900/50 rounded-2xl px-5 py-5 flex flex-col gap-3">
+              <div className="flex gap-4 items-start">
+                {(fc.portrait as { image_url?: string } | undefined)?.image_url && (
+                  <div className="shrink-0 w-20 h-20 rounded-full overflow-hidden bg-zinc-800 border-2 border-rose-400/40">
+                    <img
+                      src={(fc.portrait as { image_url: string }).image_url}
+                      alt=""
+                      loading="lazy"
+                      className="w-full h-full object-cover object-top"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
+                    />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  {fc.role && (
+                    <p className="text-xs font-semibold tracking-widest text-rose-400 uppercase mb-0.5">
+                      {fc.role as string}
+                    </p>
+                  )}
+                  <h2 className="text-2xl font-bold tracking-tight text-white leading-snug">
+                    {fc.name as string}
+                  </h2>
+                  {fc.lifespan && (
+                    <p className="text-zinc-500 text-xs mt-0.5">{fc.lifespan as string}</p>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-zinc-300 text-sm leading-relaxed">{fc.essence as string}</p>
+
+              {Array.isArray(fc.teasers) && (fc.teasers as string[]).length > 0 && (
+                <div className="mt-1 space-y-1">
+                  {(fc.teasers as string[]).map((teaser, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-rose-400 text-sm mt-0.5 shrink-0">→</span>
+                      <span className="text-sm text-zinc-300/70 leading-snug">{teaser}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 pt-1 border-t border-zinc-800">
+                <DotScale value={fc.post_difficulty as 1 | 2 | 3} />
+                {fc.post_reading_time_min && (
+                  <span className="text-zinc-500 text-xs">{fc.post_reading_time_min as number} min read</span>
+                )}
+              </div>
+            </div>
           ) : post.format === "facts" && fc ? (
             <div className="bg-zinc-900/50 rounded-2xl px-5 py-5 flex flex-col gap-3">
               {fc.field && (

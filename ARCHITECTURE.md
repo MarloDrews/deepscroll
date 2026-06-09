@@ -6,7 +6,7 @@
 backend/
   requirements.txt              fastapi, uvicorn, sqlalchemy, passlib[bcrypt], python-jose[cryptography], python-dotenv, email-validator
   .env.example                  JWT_SECRET template (copy to .env, never commit .env)
-  seed.py                       idempotent: get-or-create 145 interests from taxonomy; reads SEED_ADMIN_PASSWORD from backend/.env; get-or-create @Marlo (marlo07drews@gmail.com, is_verified=True); auto-discovers all *_example.json files in docs/content-structure/examples/ — upserts one post per file (format derived from filename, title from feed_card.title or feed_card.headline); FORMAT_INTEREST_SLUGS dict maps format → interest slugs; legacy DB preserved as deepscroll.db.legacy_*
+  seed.py                       idempotent: get-or-create 145 interests from taxonomy; reads SEED_ADMIN_PASSWORD from backend/.env; get-or-create @Marlo (marlo07drews@gmail.com, is_verified=True); auto-discovers all *_example.json files in docs/content-structure/examples/ — upserts one post per file (format derived from filename, title from feed_card.title or feed_card.headline or feed_card.name); FORMAT_INTEREST_SLUGS dict maps format → interest slugs; legacy DB preserved as deepscroll.db.legacy_*
   deepscroll.db                 SQLite database (gitignored)
   app/
     database.py                 engine, SessionLocal, Base, get_db dependency
@@ -211,13 +211,13 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | file                   | responsibility                                                              |
 |------------------------|-----------------------------------------------------------------------------|
 | page.tsx               | 8-tab feed (For You, Books, Facts, People, Ideas, Q&A, Stories, Academy — no Following tab); each tab is an independent lazy-fetched vertical snap feed; format tabs show EmptyState when empty; BottomNav (feed active) |
-| PostCard.tsx           | full-screen card; Books layout uses feed_card (cover, title, author, essence, teasers as amber-arrow rows one per teaser, metadata bar with DotScale difficulty); Facts layout uses feed_card (field label, headline, teasers as cyan-arrow rows, reading time + DotScale); fallback for other formats shows title only; re-exports Post type from @/types/post; re-exports FORMAT_STYLES (8 formats including academy); like_count and comment_count initialized from PostOut; no separate counts fetch for comments |
-| types/post.ts          | TypeScript interfaces: Post (feed_card: Record<string,unknown>), BooksFeedCard, FactsFeedCard, Section, SectionType (25 types), VoiceItem, AtAGlanceBooksContent, CoreIdeaItem, TakeawayContent, QuizItem, RelatedPostItem, SourceItem, AuthorContextContent, SeeItContent, KeyNumberItem, AngleItem, KeyFigure, StoryContent, MisconceptionItem |
-| SectionRenderer.tsx    | dispatch component; sorts sections by order; switches on type to render named sub-component; passes isUserContent down to SVG-rendering sections; console.warn on unknown type; handles 25 section types (15 Books + 10 Facts) |
+| PostCard.tsx           | full-screen card; Books layout: cover thumbnail + title/author + essence + teasers (amber arrows) + metadata bar; Facts layout: field label + headline + teasers (cyan arrows) + read time + DotScale; People layout: circular portrait + role label (rose-400) + name + lifespan + essence + teasers (rose arrows) + read time + DotScale; fallback for other formats shows title only; re-exports Post type from @/types/post; re-exports FORMAT_STYLES (8 formats including academy) |
+| types/post.ts          | TypeScript interfaces: Post (feed_card: Record<string,unknown>), BooksFeedCard, FactsFeedCard, PeopleFeedCard, Section, SectionType (34 types), VoiceItem, AtAGlanceBooksContent, AtAGlancePeopleContent, CoreIdeaItem, TakeawayContent, QuizItem, RelatedPostItem, SourceItem, AuthorContextContent, SeeItContent, KeyNumberItem, AngleItem, KeyFigure, StoryContent, MisconceptionItem |
+| SectionRenderer.tsx    | dispatch component; sorts sections by order; switches on type to render named sub-component; passes isUserContent down to SVG-rendering sections; console.warn on unknown type; handles 34 section types (15 Books + 10 Facts + 9 People) |
 | sections/EssenceSection.tsx | large centered text, min-height 140px |
 | sections/QuizBadgeSection.tsx | amber pill badge |
 | sections/VoicesSection.tsx | blockquotes with serif font, attribution footer |
-| sections/AtAGlanceSection.tsx | 2-column grid, DotScale for reading_ease and post_difficulty, best_for full-width |
+| sections/AtAGlanceSection.tsx | 2-column grid; detects people vs books by presence of "born" field; people: born/died/nationality/field/known_for/read-time/difficulty; books: genre/year/country/pages/reading_ease/read-time/difficulty/best_for |
 | sections/WhyEnduresSection.tsx | prose with left amber border |
 | sections/HeartSection.tsx | standard prose |
 | sections/StructureSection.tsx | numbered list with amber numbers |
@@ -239,6 +239,15 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | sections/StorySection.tsx | "The Story Behind It" label; body prose; optional SVG/image; key_figures cards (name, lifespan, role in cyan-600, one_line); passes isUserContent |
 | sections/BiggerPictureSection.tsx | "The Bigger Picture" label; heavier prose in zinc-200 font-medium |
 | sections/MisconceptionsSection.tsx | "Common Misconceptions" label; per-item: myth (line-through, zinc-500) with red ✕, reality (zinc-300) with green ✓ |
+| sections/IdentitySection.tsx | People: large lead paragraph (xl, font-semibold) |
+| sections/PortraitSection.tsx | People: full-width image (max-h-420px) with caption + attribution |
+| sections/WhyTheyMatterSection.tsx | People: "Why They Matter" heading + body prose |
+| sections/LifeArcSection.tsx | People: "Life Arc" heading + SVG timeline (dangerouslySetInnerHTML/base64 per isUserContent; btoa uses encodeURIComponent for non-ASCII SVG text) + milestone list (year in rose-400 mono) |
+| sections/DefiningMomentsSection.tsx | People: "Defining Moments" heading + chronological episodes with year (rose-400 mono), location, title (h4), body, optional SVG, optional image+caption |
+| sections/GreatestWorkSection.tsx | People: "Greatest Work" heading + rose-400 title + body + optional SVG/image; passes isUserContent |
+| sections/WhatDroveThemSection.tsx | People: "What Drove Them" heading + body prose |
+| sections/LegacySection.tsx | People: "Legacy" heading + body prose + optional present_day_impact in rose-400/10 callout box |
+| sections/TheirWorldSection.tsx | People: "The World They Lived In" heading + secondary prose |
 | EmptyState.tsx         | format-aware inline SVG icon + "coming soon" message; used by format tabs when posts.length === 0 |
 | BottomNav.tsx          | fixed bottom nav: Search / Stats / Feed (flame) / Create (plus-circle, white when logged in) / Profile; 5 buttons; active item highlighted; safe-area-inset-bottom aware |
 | saved-posts/page.tsx   | bookmarked posts feed: reads IDs from localStorage, fetches each via GET /api/posts/{id}, snap-scroll PostCards; skips missing posts; empty state; BottomNav (profile active) |
@@ -262,20 +271,20 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 - FastAPI backend with SQLite, CORS, full API
 - Section-based post schema: feed_card JSON + sections JSON array; old per-format fields removed
 - 15 section types for Books format (validated via Pydantic v2 discriminated union)
-- Seed script: 145 interests + auto-discovers all *_example.json files (currently Books + Facts); FORMAT_INTEREST_SLUGS maps format → interests
+- Seed script: 145 interests + auto-discovers all *_example.json files (currently Books + Facts + People); FORMAT_INTEREST_SLUGS maps format → interests; _post_title falls back to feed_card.name for People
 - Legacy DB preserved as backend/deepscroll.db.legacy_*
 - Onboarding: interest picker → slugs saved to localStorage → gates feed
 - Feed: 8-tab horizontal swipe (For You + 7 formats, no Following tab) + vertical snap scroll per tab
 - EmptyState component for format tabs with no posts yet
 - Books feed card: cover, title, author, essence, 3 teasers, difficulty DotScale, year/genre
-- Detail page: SectionRenderer renders 25 section types (15 Books + 10 Facts) in order (SVG security: dangerouslySetInnerHTML for seed, base64 img for user)
+- Detail page: SectionRenderer renders 34 section types (15 Books + 10 Facts + 9 People) in order (SVG security: dangerouslySetInnerHTML for seed, base64 img for user)
 - Create page: 3-step Books wizard with Feed Card block + interest picker (1–5) + 15 section accordions
 - My-posts page: cover thumbnail + title + author + status from feed_card
 - User accounts: JWT auth, register/login, follow system, public profiles, comments, likes, saves
 - Stats page, verification system, saved posts
 
 **Next**
-- Content for formats other than Books and Facts (people, concepts, questions, stories, academy)
+- Content for formats other than Books, Facts, and People (concepts, questions, stories, academy)
 - Quiz scoring implementation
 - Recommendation algorithm improvements
 - Pagination / infinite scroll

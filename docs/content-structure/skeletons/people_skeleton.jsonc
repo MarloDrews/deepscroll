@@ -1,0 +1,477 @@
+// people_skeleton.jsonc
+// Deepscroll — People format skeleton.
+//
+// Every REQUIRED section must be present. OPTIONAL sections: include only
+// when they add genuine depth for this specific person.
+//
+// Two principles distinguish the People format:
+//   1. The portrait is the primary visual anchor, not decoration. The face
+//      pulls in the feed; a second in-context image anchors the detail view.
+//   2. No hagiography. The post honours the person without flattering them.
+//      Failure, doubt, and moral complexity belong in the post when they
+//      were real in the life. The `critique` section is OPTIONAL but must
+//      not be skipped merely because the person is generally admired.
+//
+// Narrative spine: formation → turning point → peak work → legacy. The
+// section order is built around this arc.
+//
+// ━━━ LENGTH RULE (applies to every length range below) ━━━━━━━━━━━━━━━
+// All sentence counts, word counts, and item counts in this file are
+// GUIDELINES, not hard limits. Exceed them when the content demands it.
+// A pivotal life may need 12 defining moments; a quiet contribution may
+// need 4. Prefer accuracy and depth over hitting a number. The only hard
+// constraints are: quiz length 5–10, related_posts length 3 (when
+// included), options length exactly 4 per quiz question.
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//
+// See DEEPSCROLL_CONTENT_STRUCTURE.md for full spec, STYLE_GUIDE_LONGFORM.md
+// for prose rules (em-dashes banned in user-facing text; vocabulary
+// blacklist applies). Accent color: rose-400 #fb7185.
+
+{
+  // ─── FEED CARD ──────────────────────────────────────────────────────
+  // What the user sees before tapping. Portrait + name + essence + 3
+  // teasers. The face pulls, the one-liner promises a story with weight.
+  // No "meet the person who…" framing; no rhetorical questions.
+  "feed_card": {
+    "portrait": {
+      "image_url": "",          // string — Wikimedia Commons portrait URL.
+                                // Prefer a well-lit recognisable face over
+                                // a famous group shot. The portrait is the
+                                // primary visual hook; do not leave empty.
+      "image_attribution": ""   // string — licence + photographer or source,
+                                // e.g. "Public domain / Library of Congress"
+    },
+    "name": "",                 // string — full name as commonly known
+                                // (e.g. "Marie Curie", not "Maria Skłodowska-
+                                // Curie"). One or two lines max.
+    "role": "",                 // string — one-word or short-phrase descriptor:
+                                // "Physicist", "Anti-Apartheid Leader",
+                                // "Poet", "Activist", "Mathematician". Rendered
+                                // small above the name. Avoid evaluative labels
+                                // ("genius", "revolutionary").
+    "lifespan": "",             // string — "1867–1934". For living people:
+                                // "born 1942" or "b. 1942".
+    "essence": "",              // string — one sentence distilling the life.
+                                // Dense and factual, not a eulogy opener.
+                                // Example: "Polish-French physicist who won
+                                // Nobel Prizes in two separate sciences, the
+                                // first person ever to do so."
+                                // No em-dashes in this string; the renderer
+                                // does not transform feed-card text.
+    "teasers": ["", "", ""],    // array[3], ~6 words each. Concrete
+                                // achievements, turning points, or stakes —
+                                // not personality adjectives. Vary structure.
+                                // Example: "Discovered two new elements",
+                                // "Carried radium in her pocket for decades",
+                                // "Died from her own discovery".
+    "post_reading_time_min": 0, // integer — honest estimate; 7–18 min range
+                                // for People posts. No underselling.
+    "post_difficulty": 1        // 1=accessible, 2=moderate, 3=demanding.
+                                // Most biographical posts land at 1–2.
+  },
+
+  // ─── SECTIONS ───────────────────────────────────────────────────────
+  "sections": [
+
+    // ── PART 1 — THE OPENING (~90 sec read) ──────────────────────────
+    // Hook. The face pulls; the opening trio confirms the reader came to
+    // the right place before they invest further. Each section here should
+    // work as a standalone micro-experience.
+
+    {
+      "type": "identity",  // REQUIRED
+      "order": 1,
+      "content": ""        // string — one dense sentence: who this person
+                           // was (or is), stated with precision. Avoid the
+                           // word "renowned". The sentence should contain
+                           // something the reader didn't already know.
+                           // Example: "Marie Curie was a Polish-born
+                           // physicist who isolated two radioactive elements
+                           // and won Nobel Prizes in two different sciences,
+                           // Physics in 1903 and Chemistry in 1911."
+                           // Length guideline: ~30–60 words. Treat as
+                           // guideline; the file header explains the rule.
+                           // No em-dashes inside the content string.
+    },
+
+    {
+      "type": "quiz_badge",  // REQUIRED
+      "order": 2,
+      "content": ""          // string — format exactly: "🎯 N questions at
+                             // the end — earn Elo" where N matches the
+                             // actual quiz array length below.
+    },
+
+    {
+      "type": "portrait",  // REQUIRED — for People, the portrait is the
+      "order": 3,          // primary visual anchor, not decorative. Use
+                           // the same image as feed_card.portrait if no
+                           // better in-context shot exists; otherwise
+                           // prefer a different high-quality Wikimedia image
+                           // that adds context (e.g. the person at work,
+                           // not a formal posed portrait).
+      "content": {
+        "image_url": "",          // string — Wikimedia Commons URL
+        "image_caption": "",      // string — one sentence: who, when, context.
+                                  // Example: "Curie in her Paris laboratory,
+                                  // c. 1904, shortly after her first Nobel."
+        "image_attribution": ""   // string — required when image_url present.
+                                  // Licence + source.
+      }
+    },
+
+    {
+      "type": "voices",  // REQUIRED — "In Their Own Words"
+      "order": 4,
+      // 3–4 quotes by the person themselves. Large typography, minimal
+      // attribution. The reader should hear the voice before reading the
+      // analysis. Do not editorialize in the attribution; just anchor in
+      // time or recipient. Avoid quotes that read as motivational-poster
+      // material; prefer quotes that reveal how the person actually thought.
+      // A 5th quote is acceptable when it reveals a qualitatively different
+      // facet (cf. the header length rule).
+      "content": [
+        {
+          "quote": "",         // string — the quote, exact. No paraphrase.
+          "attribution": ""    // string — max ~7 words. Year and minimal
+                               // context only: "— 1921", "— letter to
+                               // Einstein, 1903", "— Nobel lecture, 1911".
+        }
+      ]
+      // Repeat object for each quote. Spec range: 3–4 quotes.
+    },
+
+    {
+      "type": "at_a_glance",  // REQUIRED — compact reference card
+      "order": 5,
+      // Rendered by the frontend as a scannable key-value card. People-
+      // specific fields listed below; do not add fields from other formats
+      // (no genre, no ISBN). Per-field requirements noted inline. Omit a
+      // field rather than leaving it as an empty string.
+      "content": {
+        "born": "",               // REQUIRED — "7 November 1867, Warsaw,
+                                  // Russian Empire". Include city + country
+                                  // when historically meaningful.
+        "died": "",               // REQUIRED for deceased; OMIT entirely for
+                                  // living people. Format: "4 July 1934,
+                                  // Passy, France". Do not write "N/A" or
+                                  // leave empty.
+        "nationality": "",        // REQUIRED — primary or dual, as the
+                                  // person self-identified or is commonly
+                                  // identified. "Polish-French" is fine.
+        "field": "",              // REQUIRED — academic or professional
+                                  // field(s), comma-separated.
+                                  // "Physics, Chemistry".
+        "known_for": "",          // REQUIRED — one line, most significant
+                                  // contribution. "Isolation of radium and
+                                  // polonium; first dual Nobel laureate".
+        "movement_or_era": "",    // OPTIONAL — intellectual or historical
+                                  // movement when one genuinely applies:
+                                  // "Enlightenment", "Harlem Renaissance",
+                                  // "Second Wave Feminism". Omit otherwise;
+                                  // do not invent a movement to fill the slot.
+        "post_reading_time_min": 0,  // REQUIRED — mirrors feed_card value
+        "post_difficulty": 1         // REQUIRED — mirrors feed_card value
+      }
+    },
+
+    // ── PART 2 — THE OVERVIEW (~2 min read) ───────────────────────────
+    // Orientation layer. The reader now understands the person broadly
+    // before going deep. Why They Matter is the "if you only read one
+    // section" section. Life Arc gives spatial orientation for the deep
+    // dive to follow.
+
+    {
+      "type": "why_they_matter",  // REQUIRED
+      "order": 6,
+      "content": ""               // string — 4–6 sentences on central
+                                  // significance. Whoever reads only this
+                                  // section gets the essence. What did this
+                                  // person contribute, and why does it still
+                                  // matter? Do not open with the name and a
+                                  // birth year. Do not close with a
+                                  // "continues to inspire" cliché.
+                                  // Length guideline: 80–150 words. This is
+                                  // a guideline; exceed when the person's
+                                  // work genuinely requires more to convey
+                                  // significance accurately.
+    },
+
+    {
+      "type": "life_arc",  // REQUIRED — visual timeline giving spatial
+      "order": 7,          // orientation before the deep dive. The reader
+                           // can see the whole shape of the life before
+                           // reading any moment in detail. SVG-rendered.
+      "content": {
+        "visual_svg": "",      // string — SVG per SVG_STANDARD.md.
+                               // viewBox="0 0 400 300", rose-400 #fb7185
+                               // accent. A horizontal or vertical timeline
+                               // is the natural choice here. Milestones
+                               // should match milestones array below.
+                               // currentColor for structural lines,
+                               // rose-400 for key nodes or accent marks.
+        "milestones": [        // array[5–8] — key life points in
+                               // chronological order. 5 minimum; 8 maximum
+                               // to keep the timeline readable. This is a
+                               // guideline: a life with 9 genuinely distinct
+                               // turning points may use 9.
+          {
+            "year": "",        // string — "1867" or "1891–1895" for spans
+            "label": ""        // string — 3–6 words. What happened.
+                               // "Born in Warsaw", "Nobel Prize, Physics",
+                               // "Isolates radium". No full sentences.
+          }
+        ]
+      }
+    },
+
+    // ── PART 3 — THE CORE ─────────────────────────────────────────────
+    // The substantive deep dive. Defining Moments is the spine; Greatest
+    // Work and What Drove Them add depth for posts where they matter.
+
+    {
+      "type": "defining_moments",  // REQUIRED — the narrative core
+      "order": 8,
+      // Chronological episodes. Each is a self-contained story beat:
+      // a turning point, a breakthrough, a crisis, a key encounter, a
+      // major work. Narrative prose, not analytical summary. Avoid
+      // hagiography: moments of failure, doubt, and moral complexity are
+      // as valid as triumphs.
+      "content": [
+        {
+          "title": "",           // string — an active descriptive title for
+                                 // this episode, 3–8 words. Not a date and
+                                 // not the year. Concrete and specific over
+                                 // dramatic. "Arriving in Paris with Nothing",
+                                 // "The Pitchblende Experiments", "Breaking
+                                 // with Becquerel". Avoid clickbait framings
+                                 // ("The Discovery That Changed Everything").
+          "year_or_period": "",  // string — "1891" or "1891–1895". Used for
+                                 // timeline anchoring, not displayed as the
+                                 // section title.
+          "body": "",            // string — 3–6 sentences of narrative prose.
+                                 // Length guideline: 60–120 words per moment.
+                                 // This is a guideline; a pivotal episode
+                                 // may warrant more. Open with a concrete
+                                 // scene or action, not context-setting.
+                                 // Close with consequence, not summary.
+          "image_url": "",       // string | omit — Wikimedia image for this
+                                 // episode specifically. Omit if no relevant
+                                 // image exists; do not use a generic portrait
+                                 // again.
+          "image_caption": "",   // string | omit — required if image_url set
+          "image_attribution": "",// string | omit — required if image_url set
+          "visual_svg": "",      // string | omit — a small inline SVG if a
+                                 // diagram adds something the prose can't.
+                                 // Per SVG_STANDARD.md, rose-400 accent.
+                                 // Rare for People posts; use sparingly.
+          "location": ""         // string | omit — city or region if
+                                 // location is significant to the episode.
+                                 // "Paris", "Johannesburg", "Berlin, 1933".
+        }
+      ]
+      // Repeat object per episode. Spec: 5–10 episodes. This is a
+      // guideline; a life with fewer but richer episodes may warrant 4.
+      // Prefer depth over completeness: 6 vivid episodes beat 10 thin ones.
+    },
+
+    {
+      "type": "greatest_work",  // OPTIONAL
+      "order": 9,
+      // Include when one contribution stands clearly above the rest and
+      // warrants deeper analysis than the chronological mention in
+      // defining_moments. For scientists: the core theory or discovery.
+      // For artists: the central work. For activists: the defining reform
+      // or moment.
+      // Skip when: the person's significance is distributed across many
+      // contributions with no single peak; or when defining_moments
+      // already covers it with sufficient depth.
+      "content": {
+        "title": "",         // string — name of the work, theory, or
+                             // contribution being examined
+        "body": "",          // string — deeper analysis. This goes further
+                             // than the chronological mention. What makes
+                             // this work significant? What decisions or
+                             // insights produced it? What did it change?
+                             // Length guideline: 80–180 words. This is a
+                             // guideline; a technically complex work may
+                             // require more to explain accurately.
+        "visual_svg": "",    // string | omit — per SVG_STANDARD.md, rose-400
+                             // #fb7185 accent. Use only when a diagram
+                             // genuinely adds what prose cannot.
+        "image_url": "",     // string | omit — an image of the work itself
+                             // if meaningful (a painting, a document, an
+                             // apparatus). Not another portrait.
+        "image_caption": "", // string | omit
+        "image_attribution": "" // string | omit
+      }
+    },
+
+    {
+      "type": "what_drove_them",  // OPTIONAL
+      "order": 10,
+      // Include when the person's inner life — personality, obsessions,
+      // relationships, contradictions — materially explains their work or
+      // choices. This is the human behind the achievements.
+      // Skip when: the person left little personal record; or when this
+      // section would reduce to personality-adjective lists rather than
+      // genuine character portraiture.
+      "content": ""  // string — prose. Motivation, character, relationships,
+                     // eccentricities. What shaped them before the work?
+                     // What sustained or tormented them during it?
+                     // Grounded in evidence, not pop-psychology inference.
+                     // Avoid: "driven by a deep passion for…"
+                     // Length guideline: 80–160 words. This is a guideline;
+                     // a psychologically complex figure may need more.
+    },
+
+    // ── PART 4 — WHAT STAYS WITH YOU ─────────────────────────────────
+    // Synthesis and durability. What changed, what continues, what the
+    // reader takes away. Combines legacy with forward-looking reflection.
+
+    {
+      "type": "legacy",  // REQUIRED
+      "order": 11,
+      "content": {
+        "body": "",                // string — REQUIRED within this section.
+                                   // What changed in the world because of
+                                   // this person. What continues today. What
+                                   // we can take from the life — framed as
+                                   // genuine reflection, not an inspirational
+                                   // close. Do not end with "continues to
+                                   // inspire millions". Do not flatten
+                                   // contested legacies into a triumphant
+                                   // summary.
+                                   // Length guideline: 80–160 words. This is
+                                   // a guideline; exceed when the legacy is
+                                   // genuinely complex.
+        "present_day_impact": "",  // string | omit — one or two sentences on
+                                   // something that exists *today* because of
+                                   // this person: an institution, a law, a
+                                   // scientific field, a movement. Concrete.
+                                   // Include when a specific present-day
+                                   // thread is traceable; omit when the
+                                   // legacy is more diffuse.
+        "visual_svg": "",          // string | omit — per SVG_STANDARD.md,
+                                   // rose-400 accent. E.g. a simple impact
+                                   // map or timeline continuation. Rare here;
+                                   // use only when a diagram genuinely adds
+                                   // what prose cannot.
+        "image_url": "",           // string | omit
+        "image_caption": "",       // string | omit
+        "image_attribution": ""    // string | omit
+      }
+    },
+
+    // ── PART 5 — TEST YOURSELF ────────────────────────────────────────
+
+    {
+      "type": "quiz",  // REQUIRED — affects Elo score
+      "order": 12,
+      // array[5–10]. Test understanding of the person's significance,
+      // choices, and context — not trivia (exact years, middle names).
+      // Distractors should be plausible misconceptions a casual reader
+      // would genuinely consider. The explanation should teach, not merely
+      // declare the answer correct.
+      "content": [
+        {
+          "question": "",
+          "options": ["", "", "", ""],  // exactly 4
+          "answer_index": 0,            // 0–3
+          "explanation": ""             // string — explains the reasoning
+                                        // behind the correct answer; one or
+                                        // two sentences. Do not begin with
+                                        // "The correct answer is…"
+        }
+      ]
+      // Repeat object per question. 5 questions minimum.
+    },
+
+    {
+      "type": "related_posts",  // OPTIONAL — "People & Ideas Like This"
+      "order": 13,
+      // Include when 3 genuinely relevant posts can be identified. Skip
+      // rather than pad with loosely related content. The three slots
+      // should ideally span formats: e.g. another person post + a books
+      // post + a concepts or facts post.
+      "content": [
+        {
+          "post_id": "",      // string — leave empty if not yet assigned
+          "title": "",        // string
+          "format": "",       // "books"|"facts"|"people"|"concepts"|
+                              // "questions"|"stories"|"academy"
+          "mini_teaser": ""   // string — one sentence on why it connects
+        }
+      ]
+      // Exactly 3 items when included.
+    },
+
+    // ── PART 6 — CONTEXT (smaller typography, secondary) ─────────────
+    // These sections sit below the natural end-point. A reader who stopped
+    // at the quiz got the full experience; these reward those who want
+    // more texture or intellectual honesty. Their World provides frame;
+    // Shadows provides balance.
+
+    {
+      "type": "their_world",  // OPTIONAL — "The World They Lived In"
+      "order": 14,
+      // Include when historical or social context is essential for
+      // understanding the constraints or opportunities this person faced —
+      // not as background filler but as genuine explanatory layer.
+      // Examples: a woman in 19th-century science; a dissident under
+      // authoritarianism; an artist in a moment of political crisis.
+      // Skip when the person's context is broadly familiar or when it
+      // would repeat what defining_moments already covered.
+      "content": ""  // string — era, society, intellectual climate. What
+                     // forces shaped the environment they worked in? What
+                     // were the structural constraints or tailwinds?
+                     // Length guideline: 80–160 words. This is a guideline;
+                     // a figure whose context is widely misunderstood may
+                     // warrant more.
+    },
+
+    {
+      "type": "critique",  // OPTIONAL — "Shadows & Contradictions"
+      "order": 15,
+      // Include whenever the person held contradictory positions, caused
+      // harm, or is the subject of legitimate historical reassessment.
+      // This is not a gotcha section — it is an honesty section. A post
+      // without this section is not implicitly a clean record; it means
+      // there was nothing sharp enough to surface. Examples of what
+      // belongs here: Jefferson and slavery, Heidegger and Nazism,
+      // Gandhi's racism, Freud's blind spots, Watson's ethics.
+      // Skip when: there is genuinely nothing of substance to say, and
+      // including a forced critique would itself be dishonest.
+      // Do NOT skip merely because the person is generally admired.
+      "content": ""  // string — prose. Specific, evidence-grounded. Do
+                     // not flatten into "despite this, they were great".
+                     // Do not manufacture balance for its own sake either.
+                     // Length guideline: 60–150 words. This is a guideline.
+    },
+
+    {
+      "type": "sources",  // REQUIRED — "Sources & Further Reading"
+      "order": 16,
+      // array[1–10]. Prefer primary sources and academic biographies over
+      // Wikipedia as the sole reference. Wikipedia is acceptable as one
+      // entry for accessibility, but should not be the only source.
+      // Each URL must resolve. For people: look for archive collections,
+      // published letters, authoritative biographies.
+      "content": [
+        {
+          "label": "",   // string — human-readable reference. Full
+                         // bibliographic citation or site name.
+                         // "Robert Reid, Marie Curie (1974)" or
+                         // "Nobel Prize official biography (nobelprize.org)"
+          "url": "",     // string — full URL
+          "type": ""     // "wikipedia"|"paper"|"book"|"article"|"database"
+        }
+      ]
+      // Repeat object per source. At least 2 sources recommended; 1 is
+      // the minimum only when a single authoritative source genuinely
+      // dominates (e.g. a single definitive biography).
+    }
+
+  ]
+}

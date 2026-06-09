@@ -24,6 +24,15 @@ import AnglesSection from "./sections/AnglesSection"
 import StorySection from "./sections/StorySection"
 import BiggerPictureSection from "./sections/BiggerPictureSection"
 import MisconceptionsSection from "./sections/MisconceptionsSection"
+import IdentitySection from "./sections/IdentitySection"
+import PortraitSection from "./sections/PortraitSection"
+import WhyTheyMatterSection from "./sections/WhyTheyMatterSection"
+import LifeArcSection from "./sections/LifeArcSection"
+import DefiningMomentsSection from "./sections/DefiningMomentsSection"
+import GreatestWorkSection from "./sections/GreatestWorkSection"
+import WhatDroveThemSection from "./sections/WhatDroveThemSection"
+import LegacySection from "./sections/LegacySection"
+import TheirWorldSection from "./sections/TheirWorldSection"
 
 interface Props {
   sections: Section[]
@@ -89,6 +98,24 @@ export default function SectionRenderer({ sections, isUserContent }: Props) {
             return <BiggerPictureSection key={i} content={c as string} />
           case "misconceptions":
             return <MisconceptionsSection key={i} content={c as any} />
+          case "identity":
+            return <IdentitySection key={i} content={c as string} />
+          case "portrait":
+            return <PortraitSection key={i} content={c as any} />
+          case "why_they_matter":
+            return <WhyTheyMatterSection key={i} content={c as string} />
+          case "life_arc":
+            return <LifeArcSection key={i} content={c as any} isUserContent={isUserContent} />
+          case "defining_moments":
+            return <DefiningMomentsSection key={i} content={c as any} isUserContent={isUserContent} />
+          case "greatest_work":
+            return <GreatestWorkSection key={i} content={c as any} isUserContent={isUserContent} />
+          case "what_drove_them":
+            return <WhatDroveThemSection key={i} content={c as string} />
+          case "legacy":
+            return <LegacySection key={i} content={c as any} />
+          case "their_world":
+            return <TheirWorldSection key={i} content={c as string} />
           default:
             console.warn(`SectionRenderer: unknown section type "${section.type}"`)
             return null

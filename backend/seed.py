@@ -62,7 +62,7 @@ FORMAT_INTEREST_SLUGS = {
 
 def _post_title(feed_card: dict) -> str:
     """Extract the display title from a feed_card regardless of format."""
-    return feed_card.get("title") or feed_card.get("headline") or ""
+    return feed_card.get("title") or feed_card.get("headline") or feed_card.get("name") or ""
 
 
 def slug_to_name(slug):

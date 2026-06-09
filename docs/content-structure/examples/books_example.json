@@ -5,9 +5,9 @@
     "author": "Daniel Kahneman",
     "essence": "A Nobel-winning psychologist's account of why your most confident judgments so often go wrong.",
     "teasers": [
-        "Why your confident gut feeling is often wrong",
-        "A spinning wheel can change what salary feels fair",
-        "Losing $100 hurts twice as much as gaining $100"
+      "Why your confident gut feeling is often wrong",
+      "A spinning wheel can change what salary feels fair",
+      "Losing $100 hurts twice as much as gaining $100"
     ],
     "post_reading_time_min": 16,
     "post_difficulty": 2,
@@ -266,7 +266,7 @@
       "order": 13,
       "content": {
         "body": "As a young officer in the Israeli army in the 1950s, Kahneman designed a structured interview to screen recruits and watched his confident predictions miss, his first brush with what he later called the illusion of validity. The research the book rests on came out of his decades-long partnership with Amos Tversky, begun at the Hebrew University in the late 1960s, in which the two wrote every sentence together and produced the studies of heuristics, biases, and prospect theory that the book gathers up. Tversky died in 1996, and the Nobel Prize in economics their work earned went to Kahneman alone in 2002, the first ever awarded to a psychologist.",
-        "image_url": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Daniel_Kahneman_%283283955327%29_%28cropped%29.jpg",
+        "image_url": "/seed-images/Daniel_Kahneman__283283955327_29__28cropped_29.jpg",
         "image_attribution": "Photo: nrkbeta / Flickr (2009), via Wikimedia Commons. License: CC BY 2.0.",
         "wikipedia_url": "https://en.wikipedia.org/wiki/Daniel_Kahneman"
       }

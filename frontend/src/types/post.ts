@@ -14,6 +14,28 @@ export interface AtAGlanceBooksContent {
   best_for: string
 }
 
+export interface AtAGlancePeopleContent {
+  born: string
+  died?: string
+  nationality: string
+  field: string
+  known_for: string
+  movement_or_era?: string
+  post_reading_time_min: number
+  post_difficulty: 1 | 2 | 3
+}
+
+export interface PeopleFeedCard {
+  portrait: { image_url: string; image_attribution: string }
+  name: string
+  role: string
+  lifespan: string
+  essence: string
+  teasers: [string, string, string]
+  post_reading_time_min: number
+  post_difficulty: 1 | 2 | 3
+}
+
 export interface CoreIdeaItem {
   title: string
   body: string
@@ -122,6 +144,15 @@ export type SectionType =
   | "story"
   | "bigger_picture"
   | "misconceptions"
+  | "identity"
+  | "portrait"
+  | "why_they_matter"
+  | "life_arc"
+  | "defining_moments"
+  | "greatest_work"
+  | "what_drove_them"
+  | "legacy"
+  | "their_world"
 
 export interface Section {
   type: SectionType | string
