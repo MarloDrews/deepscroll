@@ -130,6 +130,11 @@ interface MyStats {
   my_streak: { current_days: number; best_days: number }
   my_milestones: { label: string; achieved: boolean; achieved_at: string | null }[]
   my_likes_given_by_format: { format: string; count: number }[]
+  my_elo: {
+    global_rating: number | null
+    formats: Record<string, { rating: number; answered_count: number }>
+  }
+  my_quiz: { answered: number; correct: number; accuracy: number }
 }
 
 // --- Custom chart components ---
@@ -1473,7 +1478,46 @@ function MyStatsTab({
       <StatCard label="Pending" value={overview.posts_pending} />
       <StatCard label="Likes Received" value={overview.likes_received} />
       <StatCard label="Comments Received" value={overview.comments_received} />
+      <StatCard label="Posts Liked" value={overview.posts_liked} />
       <StatCard label="Saved Posts" value={savedCount >= 0 ? savedCount : "—"} />
+    </div>
+  )
+
+  // 1b. Knowledge score (Elo)
+  const eloFormats = Object.entries(data.my_elo.formats)
+  const eloMax = Math.max(1600, ...eloFormats.map(([, d]) => d.rating))
+  const knowledgeBlock = (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-3 gap-3">
+        <StatCard label="Global Score" value={data.my_elo.global_rating ?? "—"} />
+        <StatCard label="Answered" value={data.my_quiz.answered} />
+        <StatCard label="Accuracy" value={`${data.my_quiz.accuracy}%`} />
+      </div>
+      {eloFormats.length === 0 ? (
+        <p className="text-zinc-500 text-xs">
+          Answer post quizzes to build your score. Correct answers raise it, wrong answers lower it.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {eloFormats.map(([fmt, d]) => (
+            <div key={fmt} className="flex items-center gap-3">
+              <span className="w-20 shrink-0 text-xs text-zinc-400 capitalize">{fmt}</span>
+              <div className="flex-1 h-2 bg-zinc-900 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${Math.min(100, (d.rating / eloMax) * 100)}%`,
+                    backgroundColor: FORMAT_COLORS[fmt] ?? DEFAULT_COLOR,
+                  }}
+                />
+              </div>
+              <span className="w-12 shrink-0 text-right text-xs text-zinc-300 font-semibold">
+                {Math.round(d.rating)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 
@@ -1913,6 +1957,14 @@ function MyStatsTab({
           Overview
         </div>
         {overviewCards}
+      </div>
+
+      {/* 1b. My Knowledge Score */}
+      <div className="px-4 py-4 border-b border-zinc-900">
+        <div className="text-zinc-300 text-xs font-semibold uppercase tracking-widest mb-3">
+          My Knowledge Score
+        </div>
+        {knowledgeBlock}
       </div>
 
       {/* 2. My Posts over Time */}
