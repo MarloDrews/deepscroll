@@ -8,33 +8,36 @@ backend/
   .env.example                  JWT_SECRET template (copy to .env, never commit .env)
   seed.py                       idempotent: get-or-create 145 interests from taxonomy; reads SEED_ADMIN_PASSWORD from backend/.env; get-or-create @Marlo (marlo07drews@gmail.com, is_verified=True); auto-discovers all *_example.json files in docs/content-structure/examples/ — upserts one post per file (format derived from filename, title from feed_card.title|concept_name|the_question|headline|name); upsert key is (author_id, format) so title changes do not create duplicates; FORMAT_INTEREST_SLUGS dict maps format → interest slugs (books/facts/people/concepts/questions/stories defined); legacy DB preserved as deepscroll.db.legacy_*
   tests/smoke_test.py           end-to-end API smoke test (quiz/Elo, avatar, user search) against a throwaway DB in a temp dir; run with .venv\Scripts\python.exe tests\smoke_test.py (needs httpx)
+  tests/chat_test.py            end-to-end chat test (conversation rules, history authz, websocket auth/send/broadcast/rejection) against a throwaway DB; run with .venv\Scripts\python.exe tests\chat_test.py
+  tests/security_test.py        regression test for the June 2026 security review fixes; run with .venv\Scripts\python.exe tests\security_test.py
   tests/_db_inspect.py          idempotent helper: adds users.avatar_url to an existing deepscroll.db (create_all never adds columns); alternative to a full reset
   deepscroll.db                 SQLite database (gitignored)
   app/
     database.py                 engine, SessionLocal, Base, get_db dependency
-    main.py                     FastAPI app, CORS for localhost:3000, router registration, create_all on startup
+    main.py                     FastAPI app, CORS origins from FRONTEND_ORIGIN env (default localhost:3000, "*" stripped), 10 MB request body cap middleware, router registration, create_all on startup
     models.py                   ORM models: Interest, Post (feed_card JSON not null, sections JSON not null, is_user_content Boolean not null default False, author_id FK→users nullable; indexes on format/status/created_at; author_username and author_is_verified as properties), Event (user_id nullable FK), User (posts relationship, is_verified boolean default false, is_private boolean default false, bio string nullable, avatar_url string nullable), Follow (follower_id FK→users, following_id FK→users, status "pending"|"accepted", created_at; UniqueConstraint uq_follow), UserElo (user_id+format unique, rating float, answered_count), QuizAnswer (user_id+post_id+question_index unique, chosen_index, is_correct, rating_delta), Comment, post_interests join table
     elo.py                      Elo knowledge score: start 1000, floor 100, K=32 first 30 answers per format then 16, question rating 800/1000/1200 from post_difficulty, global = average of per-format ratings (None until first answer)
     auth.py                     hash_password, verify_password, create_access_token, decode_access_token, get_current_user, get_optional_user (returns User|None, used for optional auth)
     schemas.py                  Pydantic v2 models: 15 section types with Literal discriminator → AnySection union; BooksFeedCard; PostCreate (Books required sections: essence/quiz_badge/voices/at_a_glance/heart/core_ideas/takeaway/quiz/sources; image_url recursive check for /uploads/ prefix); PostOut (feed_card dict, sections list[dict], is_user_content bool, like_count int, comment_count int; strips answer_index+explanation from quiz sections so answers never reach the client); UserOut (incl. avatar_url), InterestOut, EventIn, UploadResponse, SvgUploadResponse
     sanitize.py                 validate_image() — chunked read, magic-byte check, animated-GIF reject, Pillow re-encode; sanitize_svg() / sanitize_svg_text() — defusedxml XXE check, lxml element+attribute whitelist, dangerous-pattern rejection
     upload_config.py            UPLOAD_DIR (absolute path at repo root/user_uploads/), size limits (5 MB images, 512 KB SVGs)
-    rate_limit.py               in-memory per-user rate limiter (dict of timestamps); check_rate_limit(user_id, key, max, window_secs)
+    rate_limit.py               in-memory per-user rate limiter (dict of timestamps); check_rate_limit(user_id, key, max, window_secs); identity may also be a string ("ip:...", "email:...") for unauthenticated endpoints
     post_counts.py              attach_counts(posts, db) / attach_counts_one(post, db) — batched like_count+comment_count attachment shared by posts/feed/search routers
     scoring.py                    score_posts() — interest match (tier-scaled), format engagement, repeat penalty
     routers/
       interests.py              GET /api/interests
       feed.py                   GET /api/feed — three-tier: direct matches → related co-tags → all remaining; GET /api/feed/following (auth, posts from followed users, limit 50); GET /api/feed/user/{username} (no auth, published posts by user, limit 50)
 
-      events.py                 POST /api/events (captures user_id when auth token present; deduplicates "like" events per user+post for auth users, also within a batch); GET /api/posts/{id}/likes → {count, liked}
-      auth.py                   POST /api/auth/register, POST /api/auth/login, GET /api/auth/me, PATCH /api/auth/me (update username/password/is_private/bio), POST /api/auth/me/avatar (multipart, validate_image pipeline, 10/hr), DELETE /api/auth/me (soft delete: sets is_active=False)
-      follows.py                POST /api/users/{username}/follow; DELETE /api/users/{username}/follow; POST /api/users/{username}/follow/accept; DELETE /api/users/{username}/follow/reject; GET /api/users/{username}/followers; GET /api/users/{username}/following; GET /api/users/{username}/follow-requests (auth, own only); GET /api/users/{username}/profile (no auth, returns counts + follow_status); all user payloads include avatar_url
-      search.py                 GET /api/search — Python-side search across post.title, feed_card.essence, feed_card.author, heart section content, core_ideas title+body; ranked by title-match then recency; limit 50; GET /api/search/users — username substring search, prefix matches first, limit 20, follow_status per row when authed
+      events.py                 POST /api/events (captures user_id when auth token present; deduplicates "like" events per user+post for auth users, also within a batch; max 50 events/batch; unknown post ids dropped); GET /api/posts/{id}/likes → {count, liked}; pending posts 404 for non-authors
+      auth.py                   POST /api/auth/register (10/hr per IP; username must match ^[A-Za-z0-9._-]{3,30}$ — forward-only), POST /api/auth/login (10/5min per email + 30/5min per IP), GET /api/auth/me, PATCH /api/auth/me (update username/password/is_private/bio; same username rule), POST /api/auth/me/avatar (multipart, validate_image pipeline, 10/hr), DELETE /api/auth/me (soft delete: sets is_active=False)
+      follows.py                POST /api/users/{username}/follow (60/hr); DELETE /api/users/{username}/follow; POST /api/users/{username}/follow/accept; DELETE /api/users/{username}/follow/reject; GET /api/users/{username}/followers; GET /api/users/{username}/following (private lists visible to owner + accepted followers); GET /api/users/{username}/follow-requests (auth, own only); GET /api/users/{username}/profile (no auth, returns counts + follow_status); all user payloads include avatar_url
+      search.py                 GET /api/search — Python-side search across post.title, feed_card.essence, feed_card.author, heart section content, core_ideas title+body; ranked by title-match then recency; limit 50; GET /api/search/users — username substring search, prefix matches first, limit 20, follow_status per row when authed; both: q max 100 chars, 60/min per user or IP
       quiz.py                   POST /api/quiz/answer (optional auth; validates against stored answer_index; first authed answer per question updates Elo, own posts never scored, 60/min); GET /api/quiz/state/{post_id} (auth, answered questions with corrections); GET /api/users/{username}/elo (public, global + per-format ratings)
-      comments.py               GET /api/posts/{id}/comments?count=true → {count} or full list; POST /api/posts/{id}/comments (auth); DELETE /api/comments/{id} (auth, own comment only)
+      comments.py               GET /api/posts/{id}/comments?count=true → {count} or full list; POST /api/posts/{id}/comments (auth, 30/5min); DELETE /api/comments/{id} (auth, own comment only); pending posts 404 for non-authors
       uploads.py                POST /api/upload/image (10/hr, validate_image, UUID filename); POST /api/upload/svg (10/hr, sanitize_svg, returns svg_content string not URL)
       admin.py                  PATCH /api/admin/users/{user_id}/verify — sets is_verified=True; caller must be authenticated and is_verified; 403 otherwise
       posts.py                  GET /api/posts/mine (auth, any status); POST /api/posts (auth, 20/day, status="published" if verified else "pending", sets is_user_content=True, sanitizes visual_svg fields); GET /api/posts/{id} (pending visible to author only); _attach_counts() helper adds like_count+comment_count as Python attributes before Pydantic serialization
+      chat.py                   GET /api/chat/conversations (auth, sorted by last activity, last-message preview); POST /api/chat/conversations (auth, 20/hr; body {usernames[], name?}; DM for 1 username with per-pair dedupe, group for 2-19; each target needs an accepted follow in either direction); GET /api/chat/conversations/{id}/messages?before_id&limit (auth, participant only, 404 otherwise); WS /api/chat/ws (first-frame JWT auth, see SECURITY)
       stats.py                  GET /api/stats/global (no auth, all platform analytics); GET /api/stats/me (auth, personal stats — my_streak/my_milestones/my_engagement_score/my_elo/my_quiz/posts_liked/my_likes_given_by_format computed server-side; posts_saved stays -1, counted client-side from localStorage); FORMATS includes all 7 formats incl. academy
 
 user_uploads/                 gitignored; absolute path outside backend/ so files are never importable as Python modules; subdirs: images/, svgs/
@@ -45,7 +48,7 @@ frontend/
   src/app/
     layout.tsx                  root layout, Geist font, title "Deepscroll"
     globals.css                 Tailwind import, Geist font wiring, design tokens (@theme: surface-0/1/2/overlay, edge/edge-strong, ink levels, radius-card/field), dark-only body base, heart-pop + heart-boom keyframes
-    page.tsx                    home feed: 9-tab bar (For You + Following + 7 formats derived from lib/formats.ts), horizontal snap between tabs, vertical snap within each, real-time indicator; Following tab uses /api/feed/following with login/empty states; BottomNav (feed active)
+    page.tsx                    home feed: 9-tab bar (For You + Following + 7 formats derived from lib/formats.ts), horizontal snap between tabs, vertical snap within each, real-time indicator; search button top-right above the tab strip (TikTok style, tabs fade under it); Following tab uses /api/feed/following with login/empty states; BottomNav (feed active)
     onboarding/
       page.tsx                  server component — renders InterestPicker (no props)
       InterestPicker.tsx        client — fetches /api/interests, groups 145 pills into 10 categories, sticky header/footer, saves slugs to localStorage
@@ -61,6 +64,10 @@ frontend/
       page.tsx                  search input + Posts|Accounts scope toggle; posts scope: format chips + compact result cards; accounts scope: /api/search/users rows with Avatar, verified badge, bio and follow/unfollow button; debounced 300ms; BottomNav (search active)
     create/
       page.tsx                  3-step Books creation wizard: step 1 — 7 format cards (only Books enabled, rest "coming soon"); step 2 — duplicate check; step 3 — Books form with Feed Card block, interest picker (1–5 required), 15 section accordions (9 required / 6 optional); submits {format, title, feed_card, sections, interests} to POST /api/posts; success screen links to /my-posts; BottomNav (create active)
+    chat/
+      page.tsx                  conversation list (avatar, name, last-message preview, relative time) + New chat overlay (user search via /api/search/users, multi-select chips, optional group name); login prompt when logged out; BottomNav (chat active)
+      [id]/
+        page.tsx                conversation view: history via GET messages, live updates over the websocket, own messages right/white, others left/zinc, sender labels in groups, textarea send (Enter sends, max 2000 chars), connection status in header
     my-posts/
       page.tsx                  lists the current user's own posts with cover thumbnail (from feed_card.cover_url), title, author, format badge, status badge, timestamps; fetches GET /api/posts/mine; empty state links to /create; BottomNav (create active)
     saved-posts/
@@ -70,7 +77,7 @@ frontend/
         page.tsx                full-screen detail page; header: format badge, attribution, cover image (Books), title, author, interest tags; SectionRenderer renders all 15 section types in order; sticky comment bar with like + save + share buttons; slide-up animation, swipe-right-to-close; attribution: Submitted by @user (blue verified badge) for user content; Deepscroll + violet badge for seed/official
     components/
       PostCard.tsx               full-screen snap card; format-aware layout with image, stat/meta highlight, hook, inline SVG; re-exports Post type; format styles come from lib/formats.ts
-      BottomNav.tsx              fixed bottom nav: Search / Stats / Feed (flame) / Create (plus-circle, center, white when logged in) / Profile; 5 buttons; active item highlighted; safe-area-inset-bottom aware
+      BottomNav.tsx              fixed bottom nav: Chat (message bubble) / Stats / Feed (flame) / Create (plus-circle, center, white when logged in) / Profile; 5 buttons; active item highlighted; safe-area-inset-bottom aware
       Providers.tsx              "use client" boundary; wraps children with AuthProvider so layout.tsx stays a Server Component
     lib/
       eventQueue.ts             module-level batch queue; flushes every 5s or at 5 events to POST /api/events with Authorization header when token present; exports hasPendingLike/cancelPendingLike so unlike-before-flush can cancel an in-flight event; deduplicates "like" events per post_id within the current queue
@@ -78,6 +85,7 @@ frontend/
       auth.tsx                  AuthContext + AuthProvider: stores JWT in localStorage under "deepscroll_token", restores session via /api/auth/me on load, exposes user/login/register/logout/updateUser/loading; normalizes FastAPI string/array error details
       api.ts                    apiFetch wrapper: prepends NEXT_PUBLIC_API_URL, attaches Authorization: Bearer header when token present; skips Content-Type for FormData bodies
       relativeTime.ts           shared relativeTime(iso) formatter (just now / Nm / Nh / Nd / short date)
+      chatSocket.ts             useChatSocket hook: one ws per page, http→ws url derivation, first-frame JWT auth, auto-reconnect (3s), send(conversationId, body); exports ChatMessage/Conversation types + MESSAGE_MAX_CHARS
       likedPosts.ts             isPostLiked, likePost, unlikePost, getLikedPostIds; localStorage key "deepscroll_liked"; getCachedLikeCount/setCachedLikeCount; key "deepscroll_like_counts"; isLikeSent/markLikeSent/unmarkLikeSent; key "deepscroll_like_sent" tracks posts whose like event reached the backend — used in the server-count reconciliation formula; one-time migration seeds sent-key from liked-key; server-safe; TODO: replace with backend endpoint
       savedPosts.ts             isPostSaved, savePost, unsavePost, getSavedPostIds; localStorage key "deepscroll_saved"; server-safe; TODO: replace with backend endpoint
   src/lib/
@@ -192,6 +200,33 @@ Join table linking posts ↔ interests (many-to-many).
 | created_at   | DateTime          | default now                                         |
 Unique constraint: (follower_id, following_id)
 
+### conversations
+| column     | type     | description                                    |
+|------------|----------|------------------------------------------------|
+| id         | Integer  | primary key                                    |
+| is_group   | Boolean  | false = DM (always exactly 2 participants)     |
+| name       | String?  | group display name; NULL for DMs               |
+| created_by | FK→users | conversation creator                           |
+| created_at | DateTime | default now                                    |
+
+### conversation_participants
+| column          | type             | description            |
+|-----------------|------------------|------------------------|
+| id              | Integer          | primary key            |
+| conversation_id | FK→conversations | indexed                |
+| user_id         | FK→users         | indexed                |
+| joined_at       | DateTime         | default now            |
+Unique constraint: (conversation_id, user_id)
+
+### messages
+| column          | type             | description                          |
+|-----------------|------------------|--------------------------------------|
+| id              | Integer          | primary key                          |
+| conversation_id | FK→conversations | indexed                              |
+| sender_id       | FK→users         |                                      |
+| body            | Text             | plain text; 1-2000 chars enforced    |
+| created_at      | DateTime         | default now, indexed                 |
+
 ### user_elo
 | column         | type     | description                                  |
 |----------------|----------|----------------------------------------------|
@@ -253,6 +288,10 @@ GET  /api/search/users  ?q=...   auth optional                                  
 POST /api/quiz/answer   auth optional  body: {post_id, question_index, chosen_index}    → {correct, correct_index, explanation, already_answered, scored, elo: {format, rating, delta, global_rating} | null}  Elo only for authed first-time answers on others' posts  60/min  400 bad index  404 missing post
 GET  /api/quiz/state/{post_id}  Authorization: Bearer <token>                           → {answers: [{question_index, chosen_index, correct, correct_index, explanation}]}  restores answered quiz UI
 GET  /api/users/{username}/elo                                                          → {global_rating: int|null, formats: {fmt: {rating, answered_count}}}  404 if user not found
+GET  /api/chat/conversations  Authorization: Bearer <token>                             → [{id, is_group, name, participants[{username, avatar_url, is_verified}], last_message|null, created_at}]  sorted by last activity
+POST /api/chat/conversations  Authorization: Bearer <token>  body: {usernames[], name?} → conversation 201  DM deduped per pair  403 if a target has no accepted follow either direction  20/hr
+GET  /api/chat/conversations/{id}/messages  ?before_id&limit  Authorization: Bearer     → [{id, conversation_id, sender_id, sender_username, body, created_at}] ascending  404 for non-participants
+WS   /api/chat/ws             first frame {type:"auth", token}  → {type:"auth_ok"}; then {type:"send", conversation_id, body} → broadcast {type:"message", message} to all connected participants; {type:"ping"}→pong; errors as {type:"error", detail}; closes 4401 unauthorized / 4403 insecure scheme
 ```
 
 ## ELO KNOWLEDGE SCORE
@@ -266,7 +305,27 @@ can only ever be scored once per user (DB unique constraint) and answering your 
 moves your rating, so replays and self-quizzing cannot farm Elo. answer_index/explanation are
 stripped from API post payloads; correctness is decided only server-side.
 
+## CHAT / WEBSOCKET DESIGN
+
+One socket per client at WS /api/chat/ws serves all of that user's conversations; the server
+routes by participant lookup, the client never subscribes to anything. Auth is a first frame
+{type:"auth", token} validated with the existing JWT decode + is_active check (token stays out
+of URLs and logs; browsers cannot set WS headers). Plain ws:// is refused (4403) unless the
+client is local or x-forwarded-proto says https — production must run wss behind TLS. Sending
+goes through the socket only ({type:"send"}); persistence happens before broadcast, and the
+sender's echo doubles as the delivery confirmation. Participant-only authorization is re-checked
+in the DB on every send and every REST call; non-participants get 404/error indistinguishable
+from nonexistent conversations. Conversation creation requires an accepted follow in either
+direction with every target (so private accounts are unreachable until they approve). DMs are
+deduplicated per user pair; groups hold 2-19 targets + creator. Messages: plain text 1-2000
+chars, 30/min per user; no E2E encryption by design (would split DM/group into two systems and
+break moderation). ConnectionManager and rate limits are in-process — fine single-worker,
+needs Redis pub/sub for multi-worker. Deliberate scope cuts: no read receipts, no typing
+indicators, no message deletion, conversation list does not live-update (refetch on open).
+
 ## SECURITY
+
+See SECURITY_REVIEW.md (June 2026) for the full audit: what was fixed vs accepted vs open decisions.
 
 Comment body is untrusted user input stored as plain text. React's default JSX text rendering
 writes to the DOM via `.textContent`, which the browser treats as literal characters — `<script>`
@@ -291,7 +350,7 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 
 | file                   | responsibility                                                              |
 |------------------------|-----------------------------------------------------------------------------|
-| page.tsx               | 9-tab feed (For You, Following, Books, Facts, People, Ideas, Q&A, Stories, Academy); each tab is an independent lazy-fetched vertical snap feed; Following tab shows login prompt or find-people empty state; format tabs show EmptyState when empty; BottomNav (feed active) |
+| page.tsx               | 9-tab feed (For You, Following, Books, Facts, People, Ideas, Q&A, Stories, Academy); each tab is an independent lazy-fetched vertical snap feed; search button top-right above the tab strip; Following tab shows login prompt or find-people empty state; format tabs show EmptyState when empty; BottomNav (feed active) |
 | PostCard.tsx           | full-screen card; Books layout: cover thumbnail + title/author + essence + teasers (amber arrows) + metadata bar; Facts layout: field label + headline + teasers (cyan arrows) + read time + DotScale; People layout: circular portrait + role label (rose-400) + name + lifespan + essence + teasers (rose arrows) + read time + DotScale; fallback for other formats shows title only; re-exports Post type from @/types/post; format styles from lib/formats.ts |
 | types/post.ts          | TypeScript interfaces: Post (feed_card: Record<string,unknown>), BooksFeedCard, FactsFeedCard, PeopleFeedCard, Section, SectionType (34 types), VoiceItem, AtAGlanceBooksContent, AtAGlancePeopleContent, CoreIdeaItem, TakeawayContent, QuizItem, RelatedPostItem, SourceItem, AuthorContextContent, SeeItContent, KeyNumberItem, AngleItem, KeyFigure, StoryContent, MisconceptionItem; fcStr/fcNum typed feed_card accessors |
 | SectionRenderer.tsx    | dispatch component; sorts sections by order; switches on type to render named sub-component; passes isUserContent down to SVG-rendering sections and postId to QuizSection; console.warn on unknown type; handles 34 section types (15 Books + 10 Facts + 9 People) |
@@ -331,7 +390,7 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | sections/LegacySection.tsx | People: "Legacy" heading + body prose + optional present_day_impact in rose-400/10 callout box |
 | sections/TheirWorldSection.tsx | People: "The World They Lived In" heading + secondary prose |
 | EmptyState.tsx         | format-aware inline SVG icon + "coming soon" message; used by format tabs when posts.length === 0 |
-| BottomNav.tsx          | fixed bottom nav: Search / Stats / Feed (flame) / Create (plus-circle, white when logged in) / Profile; 5 buttons; active item highlighted; safe-area-inset-bottom aware |
+| BottomNav.tsx          | fixed bottom nav: Chat / Stats / Feed (flame) / Create (plus-circle, white when logged in) / Profile; 5 buttons; active item highlighted; safe-area-inset-bottom aware |
 | saved-posts/page.tsx   | bookmarked posts feed: reads IDs from localStorage, fetches each via GET /api/posts/{id}, snap-scroll PostCards; skips missing posts; empty state; BottomNav (profile active) |
 | search/page.tsx        | search input + format chips (All + 7 formats from lib/formats.ts) + compact result cards; debounced 300ms; links to post detail; shows inline verified badge next to author_username if author_is_verified; BottomNav (search active) |
 | InterestPicker.tsx     | onboarding pill grid; 10 category sections + Other; fetches own data; gates entry to feed via localStorage |
@@ -344,6 +403,9 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | CommentsSection.tsx    | read-only display component; receives comments/currentUsername/onDelete/deletingId as props; relative timestamps (UTC-aware); plain-text only (no dangerouslySetInnerHTML); exports Comment interface |
 | CommentsBottomSheet.tsx | bottom sheet modal for feed card comments; self-contained state (fetch/post/delete); drag-to-close on handle bar; sticky input; fixed overlay with max-w-[430px] sheet |
 | Toast.tsx              | fixed bottom-center pill notification; visible prop controls opacity via CSS transition; pointer-events-none |
+| chat/page.tsx          | conversation list + New chat overlay (multi-select user picker, optional group name); BottomNav (chat active) |
+| chat/[id]/page.tsx     | conversation view: REST history + live websocket messages, bubble layout, plain-text rendering only |
+| chatSocket.ts          | useChatSocket hook: first-frame JWT auth, auto-reconnect, send(); ChatMessage/Conversation types |
 | stats/page.tsx         | Global and My Stats tabs; 19 global sections + 17 personal sections; per-section chart-type pill selector; WaffleChart (10×10 grid), CalendarHeatmap (12-month squares), ActivityHeatmap (7×24 grid), GaugeChart (SVG arc + needle) as custom components; recharts for all other chart types |
 
 ## CURRENT STATUS
@@ -365,6 +427,8 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 - My-posts page: cover thumbnail + title + author + status from feed_card
 - User accounts: JWT auth, register/login, follow system, public profiles, comments, likes, saves
 - Stats page, verification system, saved posts
+- Real-time chat: DMs + group chats over WebSocket (see CHAT / WEBSOCKET DESIGN), conversation list + chat view, chat in bottom nav (search moved top-right)
+- Security hardening pass (June 2026, see SECURITY_REVIEW.md)
 
 **Next**
 - Content for academy format
