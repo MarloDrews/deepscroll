@@ -8,6 +8,7 @@ backend/
   .env.example                  JWT_SECRET template (copy to .env, never commit .env)
   seed.py                       idempotent: get-or-create 145 interests from taxonomy; reads SEED_ADMIN_PASSWORD from backend/.env; get-or-create @Marlo (marlo07drews@gmail.com, is_verified=True); auto-discovers all *_example.json files in docs/content-structure/examples/ — upserts one post per file (format derived from filename, title from feed_card.title|concept_name|the_question|headline|name); upsert key is (author_id, format) so title changes do not create duplicates; FORMAT_INTEREST_SLUGS dict maps format → interest slugs (books/facts/people/concepts/questions/stories defined); legacy DB preserved as deepscroll.db.legacy_*
   tests/smoke_test.py           end-to-end API smoke test (quiz/Elo, avatar, user search) against a throwaway DB in a temp dir; run with .venv\Scripts\python.exe tests\smoke_test.py (needs httpx)
+  tests/_db_inspect.py          idempotent helper: adds users.avatar_url to an existing deepscroll.db (create_all never adds columns); alternative to a full reset
   deepscroll.db                 SQLite database (gitignored)
   app/
     database.py                 engine, SessionLocal, Base, get_db dependency
