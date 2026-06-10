@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from .database import Base, engine
 from . import models  # noqa: F401 — registers models with Base before create_all
 from .routers import admin as admin_router, auth as auth_router, comments as comments_router, events as events_router, feed, follows as follows_router, interests as interests_router, posts as posts_router, search as search_router, stats as stats_router
-from .routers import quiz as quiz_router, uploads as uploads_router
+from .routers import chat as chat_router, quiz as quiz_router, uploads as uploads_router
 from .upload_config import UPLOAD_DIR
 
 
@@ -41,6 +41,7 @@ app.include_router(search_router.router, prefix="/api")
 app.include_router(stats_router.router, prefix="/api")
 app.include_router(follows_router.router, prefix="/api")
 app.include_router(quiz_router.router, prefix="/api")
+app.include_router(chat_router.router, prefix="/api")
 
 
 @app.get("/health")
