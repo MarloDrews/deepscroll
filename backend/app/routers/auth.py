@@ -1,13 +1,17 @@
+import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
 from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy.orm import Session
 
 from ..auth import create_access_token, get_current_user, hash_password, verify_password
 from ..database import get_db
 from ..models import User
+from ..rate_limit import check_rate_limit
+from ..sanitize import validate_image
 from ..schemas import UserOut
+from ..upload_config import UPLOAD_DIR
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -150,6 +154,31 @@ def patch_me(
     if body.bio is not None:
         current_user.bio = body.bio
 
+    db.commit()
+    db.refresh(current_user)
+    return UserOut.model_validate(current_user)
+
+
+@router.post("/me/avatar", response_model=UserOut)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Same hardened pipeline as post images: magic-byte check + Pillow re-encode.
+    check_rate_limit(current_user.id, "avatar_upload", 10, 3600)
+    try:
+        data, media_type = await validate_image(file)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    ext = media_type.split("/")[1]
+    if ext == "jpeg":
+        ext = "jpg"
+    filename = f"{uuid.uuid4()}.{ext}"
+    (UPLOAD_DIR / "images" / filename).write_bytes(data)
+
+    current_user.avatar_url = f"/uploads/images/{filename}"
     db.commit()
     db.refresh(current_user)
     return UserOut.model_validate(current_user)

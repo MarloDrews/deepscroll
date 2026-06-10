@@ -18,6 +18,7 @@ class UserOut(BaseModel):
     is_verified: bool
     is_private: bool
     bio: str | None
+    avatar_url: str | None
 
 
 class EventIn(BaseModel):

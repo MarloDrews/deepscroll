@@ -72,6 +72,7 @@ class User(Base):
     is_verified   = Column(Boolean, default=False, nullable=False)
     is_private    = Column(Boolean, default=False, nullable=False)
     bio           = Column(String, nullable=True)
+    avatar_url    = Column(String, nullable=True)
 
     posts = relationship("Post", back_populates="author", foreign_keys="Post.author_id")
 

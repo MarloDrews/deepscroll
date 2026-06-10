@@ -21,11 +21,19 @@ os.environ.setdefault("JWT_SECRET", "smoke-test-secret")
 _tmp = tempfile.mkdtemp(prefix="deepscroll_smoke_")
 os.chdir(_tmp)
 
+from pathlib import Path  # noqa: E402
+
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.database import Base, SessionLocal, engine  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import Post  # noqa: E402
+from app.routers import auth as auth_router  # noqa: E402
+
+# Redirect avatar uploads into the temp dir so the real user_uploads/ stays clean.
+_upload_dir = Path(_tmp) / "user_uploads"
+(_upload_dir / "images").mkdir(parents=True)
+auth_router.UPLOAD_DIR = _upload_dir
 
 Base.metadata.create_all(bind=engine)
 client = TestClient(app)
@@ -164,6 +172,42 @@ def main():
     check("stats my_elo", d["my_elo"]["global_rating"] is not None)
     check("stats my_quiz", d["my_quiz"]["answered"] == 2 and d["my_quiz"]["correct"] == 1)
     check("stats posts_liked is real", d["overview"]["posts_liked"] >= 0)
+
+    # --- Avatar upload (hardened image pipeline) ---
+    import io
+    from PIL import Image
+    buf = io.BytesIO()
+    Image.new("RGB", (64, 64), (200, 40, 40)).save(buf, format="PNG")
+    r = client.post("/api/auth/me/avatar", headers=a_h,
+                    files={"file": ("me.png", buf.getvalue(), "image/png")})
+    check("avatar upload", r.status_code == 200, r.text)
+    avatar_url = r.json()["avatar_url"]
+    check("avatar url shape", avatar_url is not None and avatar_url.startswith("/uploads/images/"))
+    r = client.post("/api/auth/me/avatar", headers=a_h,
+                    files={"file": ("evil.png", b"#!/bin/sh\necho pwned", "image/png")})
+    check("non-image avatar rejected", r.status_code == 400, r.text)
+
+    # --- Avatar appears on the public profile ---
+    r = client.get("/api/users/alice/profile")
+    check("profile has avatar", r.json()["avatar_url"] == avatar_url)
+
+    # --- User search ---
+    r = client.get("/api/search/users", params={"q": "ali"})
+    d = r.json()
+    check("anon user search", r.status_code == 200 and len(d) == 1 and d[0]["username"] == "alice")
+    check("anon search no follow status", d[0]["follow_status"] is None)
+    r = client.get("/api/search/users", params={"q": "b"}, headers=a_h)
+    d = r.json()
+    bob_row = next(u for u in d if u["username"] == "bob")
+    check("authed search follow status", bob_row["follow_status"] == "none")
+    r = client.post("/api/users/bob/follow", headers=a_h)
+    check("follow bob", r.status_code == 200 and r.json()["status"] == "accepted")
+    r = client.get("/api/search/users", params={"q": "bob"}, headers=a_h)
+    check("search reflects follow", r.json()[0]["follow_status"] == "accepted")
+    r = client.get("/api/search/users", params={"q": "alice"}, headers=a_h)
+    check("search marks self", r.json()[0]["is_self"] is True)
+    r = client.get("/api/search/users", params={"q": ""})
+    check("empty query returns nothing", r.json() == [])
 
     print(f"\nAll {PASS} checks passed.")
 

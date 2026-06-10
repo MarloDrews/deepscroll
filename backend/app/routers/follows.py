@@ -17,6 +17,7 @@ class FollowUserOut(BaseModel):
     username: str
     is_verified: bool
     is_private: bool
+    avatar_url: Optional[str] = None
 
 
 class ProfileOut(BaseModel):
@@ -24,6 +25,7 @@ class ProfileOut(BaseModel):
     is_verified: bool
     is_private: bool
     bio: Optional[str]
+    avatar_url: Optional[str]
     follower_count: int
     following_count: int
     post_count: int
@@ -183,6 +185,7 @@ def get_follow_requests(
         {
             "username": f.follower.username,
             "is_verified": f.follower.is_verified,
+            "avatar_url": f.follower.avatar_url,
             "created_at": f.created_at.isoformat(),
         }
         for f in follows
@@ -228,6 +231,7 @@ def get_profile(
         is_verified=target.is_verified,
         is_private=target.is_private,
         bio=target.bio,
+        avatar_url=target.avatar_url,
         follower_count=follower_count,
         following_count=following_count,
         post_count=post_count,
