@@ -36,12 +36,12 @@ const FORMATS = FORMAT_IDS.map((id) => ({
 interface Interest { id: number; name: string; slug: string }
 
 const inputCls =
-  "w-full bg-surface-2 border border-edge-strong rounded-field px-4 py-3 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-600"
-const labelCls = "text-zinc-400 text-xs uppercase tracking-wider mb-2 mt-4 block"
+  "field text-sm py-3"
+const labelCls = "label-caps mb-2 mt-4 block"
 
 function FieldError({ msg }: { msg: string | undefined }) {
   if (!msg) return null
-  return <p className="text-red-400 text-xs mt-1">{msg}</p>
+  return <p className="text-bad text-xs mt-1">{msg}</p>
 }
 
 function Accordion({
@@ -51,29 +51,29 @@ function Accordion({
 }) {
   const [open, setOpen] = useState(defaultOpen ?? false)
   return (
-    <div className="border border-zinc-800 rounded-xl overflow-hidden mb-3">
+    <div className="card overflow-hidden mb-3">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-zinc-900/60 text-left"
+        className="w-full flex items-center justify-between px-4 py-3 bg-surface-1 text-left cursor-pointer"
       >
-        <span className="text-sm font-medium text-white">{title}</span>
+        <span className="text-sm font-medium text-ink">{title}</span>
         <div className="flex items-center gap-2">
           {required && (
-            <span className="text-xs text-amber-400 border border-amber-400/40 rounded px-1.5 py-0.5">
+            <span className="text-xs text-lamp border border-lamp/40 rounded px-1.5 py-0.5">
               Required
             </span>
           )}
           {!required && (
-            <span className="text-xs text-zinc-500 border border-zinc-700 rounded px-1.5 py-0.5">
+            <span className="text-xs text-ink-muted border border-edge-strong rounded px-1.5 py-0.5">
               Optional
             </span>
           )}
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" className={`text-zinc-400 transition-transform ${open ? "rotate-180" : ""}`}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" className={`text-ink-dim transition-transform ${open ? "rotate-180" : ""}`}>
             <path d="M6 9l6 6 6-6" />
           </svg>
         </div>
       </button>
-      {open && <div className="px-4 pb-4 pt-3 bg-zinc-950/40">{children}</div>}
+      {open && <div className="px-4 pb-4 pt-3 bg-surface-0/40">{children}</div>}
     </div>
   )
 }
@@ -440,10 +440,10 @@ export default function CreatePage() {
 
   if (!loading && !user) {
     return (
-      <div className="h-[100dvh] bg-zinc-950 flex justify-center">
+      <div className="h-[100dvh] bg-surface-0 flex justify-center">
         <div className="w-full max-w-[430px] h-[100dvh] relative flex flex-col items-center justify-center px-8 text-center gap-4">
-          <p className="text-white text-lg font-semibold">Sign in to create a post</p>
-          <button onClick={() => router.push("/login")} className="bg-white text-zinc-950 font-semibold rounded-full px-8 py-3 text-sm">Sign in</button>
+          <p className="font-serif text-ink text-xl font-medium">Sign in to create a post</p>
+          <button onClick={() => router.push("/login")} className="btn btn-primary rounded-full px-8 py-3">Sign in</button>
         </div>
       </div>
     )
@@ -452,15 +452,15 @@ export default function CreatePage() {
 
   if (step === "success") {
     return (
-      <div className="h-[100dvh] bg-zinc-950 flex justify-center">
+      <div className="h-[100dvh] bg-surface-0 flex justify-center">
         <div className="w-full max-w-[430px] h-[100dvh] relative flex flex-col items-center justify-center px-8 text-center gap-4">
-          <p className="text-white text-2xl font-bold">Post submitted</p>
-          <p className="text-zinc-400 text-sm">
+          <p className="font-serif text-ink text-2xl font-medium">Post submitted</p>
+          <p className="text-ink-dim text-sm">
             {user?.is_verified ? "It is now live in the feed." : "It will appear once approved."}
           </p>
           <div className="flex flex-col gap-3 w-full mt-4">
-            <button onClick={resetForm} className="bg-white text-zinc-950 font-semibold rounded-full h-12 w-full text-sm">Create another</button>
-            <button onClick={() => router.push("/my-posts")} className="border border-zinc-700 text-white rounded-full h-12 w-full text-sm">View my posts</button>
+            <button onClick={resetForm} className="btn btn-primary rounded-full h-12 w-full">Create another</button>
+            <button onClick={() => router.push("/my-posts")} className="btn btn-ghost rounded-full h-12 w-full">View my posts</button>
           </div>
         </div>
       </div>
@@ -470,17 +470,17 @@ export default function CreatePage() {
   const stepNum = step as number
 
   return (
-    <div className="h-[100dvh] bg-zinc-950 flex justify-center">
+    <div className="h-[100dvh] bg-surface-0 flex justify-center">
       <div className="w-full max-w-[430px] h-[100dvh] relative">
         <div className="h-full overflow-y-auto pb-24 [&::-webkit-scrollbar]:hidden [scrollbar-width:none] px-4 pt-6">
 
-          <p className="text-zinc-500 text-xs text-center mb-3">Step {stepNum} of 3</p>
-          <div className="h-0.5 bg-zinc-800 rounded-full mb-6">
-            <div className="h-full bg-white rounded-full transition-all duration-300" style={{ width: `${(stepNum / 3) * 100}%` }} />
+          <p className="text-ink-muted text-xs font-mono text-center mb-3">Step {stepNum} of 3</p>
+          <div className="h-0.5 bg-surface-3 rounded-full mb-6">
+            <div className="h-full bg-lamp rounded-full transition-all duration-300" style={{ width: `${(stepNum / 3) * 100}%` }} />
           </div>
 
           {step > 1 && (
-            <button onClick={() => setStep((prev) => (prev as number) - 1 as 1|2|3)} className="flex items-center gap-1 text-zinc-400 text-sm mb-4">
+            <button onClick={() => setStep((prev) => (prev as number) - 1 as 1|2|3)} className="flex items-center gap-1 text-ink-dim hover:text-ink text-sm mb-4 cursor-pointer transition-colors duration-150">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M15 18l-6-6 6-6" /></svg>
               Back
             </button>
@@ -489,17 +489,17 @@ export default function CreatePage() {
           {/* STEP 1: Format selection */}
           {step === 1 && (
             <>
-              <h1 className="text-white text-xl font-bold mb-1">Choose a format</h1>
-              <p className="text-zinc-400 text-sm mb-5">What kind of post are you creating?</p>
+              <h1 className="font-serif text-ink text-2xl font-medium mb-1">Choose a format</h1>
+              <p className="text-ink-dim text-sm mb-5">What kind of post are you creating?</p>
               <div className="grid grid-cols-2 gap-3 mb-6">
                 {FORMATS.map((fmt) => {
                   const selected = selectedFormat === fmt.id
                   if (!fmt.enabled) {
                     return (
-                      <div key={fmt.id} className="rounded-card p-5 border border-zinc-800 bg-zinc-900/30 opacity-50 relative">
-                        <div className="font-semibold text-zinc-400 text-sm">{fmt.name}</div>
-                        <div className="text-zinc-600 text-xs mt-0.5">{fmt.description}</div>
-                        <span className="absolute top-2 right-2 text-[10px] text-zinc-500 border border-zinc-700 rounded px-1.5 py-0.5">Coming soon</span>
+                      <div key={fmt.id} className="rounded-card p-5 border border-edge bg-surface-1/40 opacity-50 relative">
+                        <div className="font-semibold text-ink-dim text-sm">{fmt.name}</div>
+                        <div className="text-ink-faint text-xs mt-0.5">{fmt.description}</div>
+                        <span className="absolute top-2 right-2 text-[10px] text-ink-muted border border-edge-strong rounded px-1.5 py-0.5">Coming soon</span>
                       </div>
                     )
                   }
@@ -507,10 +507,10 @@ export default function CreatePage() {
                     <button
                       key={fmt.id}
                       onClick={() => setSelectedFormat(fmt.id)}
-                      className={`rounded-card p-5 text-left transition-colors ${selected ? `border-2 ${fmt.accent} bg-zinc-900` : "border border-zinc-800 bg-zinc-900/50"}`}
+                      className={`rounded-card p-5 text-left transition-colors ${selected ? `border-2 ${fmt.accent} bg-surface-1` : "border border-edge bg-surface-1/60"} cursor-pointer`}
                     >
-                      <div className="font-semibold text-white text-sm">{fmt.name}</div>
-                      <div className="text-zinc-400 text-xs mt-0.5">{fmt.description}</div>
+                      <div className="font-semibold text-ink text-sm">{fmt.name}</div>
+                      <div className="text-ink-dim text-xs mt-0.5">{fmt.description}</div>
                     </button>
                   )
                 })}
@@ -518,7 +518,7 @@ export default function CreatePage() {
               <button
                 onClick={() => { if (selectedFormat) setStep(2) }}
                 disabled={!selectedFormat}
-                className="bg-white text-zinc-950 font-semibold rounded-full h-12 w-full text-sm disabled:opacity-30 transition-opacity"
+                className="btn btn-primary rounded-full h-12 w-full disabled:opacity-30"
               >
                 Next &rarr;
               </button>
@@ -528,16 +528,16 @@ export default function CreatePage() {
           {/* STEP 2: Duplicate check */}
           {step === 2 && (
             <>
-              <h1 className="text-white text-xl font-bold mb-1">Does this already exist?</h1>
-              <p className="text-zinc-400 text-sm mb-5">Search to avoid duplicates</p>
+              <h1 className="font-serif text-ink text-2xl font-medium mb-1">Does this already exist?</h1>
+              <p className="text-ink-dim text-sm mb-5">Search to avoid duplicates</p>
               <div className="relative mb-4">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none">
                   <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
                 </svg>
                 <input
                   type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search existing posts..."
-                  className="w-full bg-surface-2 border border-edge-strong rounded-field pl-9 pr-4 py-3 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-600"
+                  className="field text-sm pl-9 py-3"
                 />
               </div>
               {searchLoading && <div className="flex justify-center py-4"><Spinner size="sm" /></div>}
@@ -546,16 +546,16 @@ export default function CreatePage() {
                   {searchResults.map((post) => {
                     const style = FORMAT_STYLES[post.format as FormatId]
                     return (
-                      <button key={post.id} onClick={() => window.open(`/post/${post.id}`, "_blank")} className="w-full text-left bg-surface-1 rounded-card px-4 py-3">
-                        {style && <span className={`text-xs font-medium ${style.text}`}>{style.badge}</span>}
-                        <p className="text-white font-semibold text-sm mt-0.5 line-clamp-2">{post.title}</p>
-                        {fcStr(post.feed_card, "essence") && <p className="text-zinc-400 text-xs mt-1 line-clamp-2">{fcStr(post.feed_card, "essence")}</p>}
+                      <button key={post.id} onClick={() => window.open(`/post/${post.id}`, "_blank")} className="w-full text-left card px-4 py-3 cursor-pointer hover:bg-surface-2 transition-colors duration-150">
+                        {style && <span className={`label-caps ${style.text}`}>{style.badge}</span>}
+                        <p className="text-ink font-serif font-medium text-[15px] mt-0.5 line-clamp-2">{post.title}</p>
+                        {fcStr(post.feed_card, "essence") && <p className="text-ink-dim text-xs mt-1 line-clamp-2">{fcStr(post.feed_card, "essence")}</p>}
                       </button>
                     )
                   })}
                 </div>
               )}
-              <button onClick={() => setStep(3)} className="bg-white text-zinc-950 font-semibold rounded-full h-12 w-full text-sm mt-4">
+              <button onClick={() => setStep(3)} className="btn btn-primary rounded-full h-12 w-full mt-4">
                 Continue anyway
               </button>
             </>
@@ -564,11 +564,11 @@ export default function CreatePage() {
           {/* STEP 3: Books form */}
           {step === 3 && (
             <>
-              <h1 className="text-white text-xl font-bold mb-5">Books post</h1>
+              <h1 className="font-serif text-ink text-2xl font-medium mb-5">Books post</h1>
 
               {/* Feed Card block */}
-              <div className="border border-amber-400/30 rounded-xl px-4 pb-4 pt-3 mb-3 bg-amber-400/5">
-                <p className="text-amber-400 text-xs font-semibold uppercase tracking-wider mb-3">Feed Card</p>
+              <div className="border border-lamp/30 rounded-card px-4 pb-4 pt-3 mb-3 bg-lamp/5">
+                <p className="label-caps text-lamp mb-3">Feed Card</p>
 
                 <label className={labelCls}>Book title *</label>
                 <input type="text" value={fc.title} onChange={(e) => setFcField("title", e.target.value)} maxLength={200} placeholder="Thinking, Fast and Slow" className={inputCls} data-err={errors.fc_title || undefined} />
@@ -578,11 +578,11 @@ export default function CreatePage() {
                 <input type="text" value={fc.author} onChange={(e) => setFcField("author", e.target.value)} placeholder="Daniel Kahneman" className={inputCls} />
                 <FieldError msg={errors.fc_author} />
 
-                <label className={labelCls}>Essence * <span className="normal-case text-zinc-600">(~200 chars, why this book matters)</span></label>
+                <label className={labelCls}>Essence * <span className="normal-case text-ink-faint">(~200 chars, why this book matters)</span></label>
                 <textarea value={fc.essence} onChange={(e) => setFcField("essence", e.target.value)} maxLength={300} rows={3} placeholder="The core insight in one or two sentences..." className={`${inputCls} resize-none`} />
                 <FieldError msg={errors.fc_essence} />
 
-                <label className={labelCls}>Teaser 1 * <span className="normal-case text-zinc-600">(~40 chars)</span></label>
+                <label className={labelCls}>Teaser 1 * <span className="normal-case text-ink-faint">(~40 chars)</span></label>
                 <input type="text" value={fc.teaser1} onChange={(e) => setFcField("teaser1", e.target.value)} maxLength={80} placeholder="What you'll learn..." className={inputCls} />
                 <FieldError msg={errors.fc_teaser1} />
                 <label className={labelCls}>Teaser 2 *</label>
@@ -620,28 +620,28 @@ export default function CreatePage() {
 
                 <label className={labelCls}>Cover image</label>
                 <div className="flex items-center gap-3">
-                  <label className="shrink-0 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-zinc-400 cursor-pointer hover:border-zinc-500 transition-colors">
+                  <label className="btn btn-ghost shrink-0 px-3 py-2 text-xs cursor-pointer">
                     <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleCoverUpload} />
                     {coverUploading ? "Uploading..." : "Upload"}
                   </label>
                   {fc.cover_url && (
                     <img src={`${API_URL}${fc.cover_url}`} alt="" className="w-10 h-14 object-cover rounded" />
                   )}
-                  {!fc.cover_url && <span className="text-zinc-600 text-xs">or type /uploads/… URL</span>}
+                  {!fc.cover_url && <span className="text-ink-faint text-xs">or type /uploads/… URL</span>}
                 </div>
                 <FieldError msg={errors.cover} />
               </div>
 
               {/* Interests */}
-              <div className="border border-zinc-800 rounded-xl px-4 pb-4 pt-3 mb-3">
+              <div className="card px-4 pb-4 pt-3 mb-3">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-amber-400 text-xs font-semibold uppercase tracking-wider">Interests *</p>
-                  <span className="text-zinc-500 text-xs">{selectedInterests.length}/5</span>
+                  <p className="label-caps text-lamp">Interests *</p>
+                  <span className="text-ink-muted text-xs font-mono">{selectedInterests.length}/5</span>
                 </div>
                 <FieldError msg={errors.interests} />
                 {interestSections.map((sec) => (
                   <div key={sec.label} className="mb-3">
-                    <p className="text-zinc-600 text-xs mb-1.5">{sec.label}</p>
+                    <p className="text-ink-faint text-xs mb-1.5">{sec.label}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {sec.items.map((interest) => {
                         const isSelected = selectedInterests.includes(interest.slug)
@@ -649,7 +649,7 @@ export default function CreatePage() {
                           <button
                             key={interest.slug}
                             onClick={() => toggleInterest(interest.slug)}
-                            className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${isSelected ? "bg-amber-400 text-zinc-950" : "bg-zinc-800 text-zinc-400"}`}
+                            className={`rounded-full px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors duration-150 ${isSelected ? "bg-lamp text-surface-0" : "bg-surface-2 text-ink-dim"}`}
                           >
                             {interest.name}
                           </button>
@@ -661,16 +661,16 @@ export default function CreatePage() {
               </div>
 
               {/* Section accordions */}
-              <p className="text-zinc-500 text-xs uppercase tracking-wider mb-3 mt-5">Sections</p>
+              <p className="label-caps mb-3 mt-5">Sections</p>
 
               <Accordion title="Essence" required defaultOpen>
-                <p className="text-zinc-500 text-xs mb-2">The core insight in one strong sentence (shown full-screen on the detail page)</p>
+                <p className="text-ink-muted text-xs mb-2">The core insight in one strong sentence (shown full-screen on the detail page)</p>
                 <textarea value={sEssence} onChange={(e) => { setSEssence(e.target.value); clearError("s_essence") }} rows={2} maxLength={300} placeholder="Why our fast intuitive thinking often misleads us..." className={`${inputCls} resize-none`} />
                 <FieldError msg={errors.s_essence} />
               </Accordion>
 
               <Accordion title="Quiz Badge" required defaultOpen>
-                <p className="text-zinc-500 text-xs mb-2">Short amber pill text above the quiz (e.g. &ldquo;Test your understanding&rdquo;)</p>
+                <p className="text-ink-muted text-xs mb-2">Short gold pill text above the quiz (e.g. &ldquo;Test your understanding&rdquo;)</p>
                 <input type="text" value={sQuizBadge} onChange={(e) => { setSQuizBadge(e.target.value); clearError("s_quiz_badge") }} maxLength={60} placeholder="Test your understanding" className={inputCls} />
                 <FieldError msg={errors.s_quiz_badge} />
               </Accordion>
@@ -678,17 +678,17 @@ export default function CreatePage() {
               <Accordion title="Voices (3–4 quotes)" required defaultOpen>
                 <FieldError msg={errors.s_voices} />
                 {voices.map((v, i) => (
-                  <div key={i} className="mb-3 border border-zinc-800 rounded-lg p-3">
-                    <p className="text-zinc-500 text-xs mb-2">Quote {i + 1}</p>
+                  <div key={i} className="mb-3 border border-edge rounded-field p-3">
+                    <p className="text-ink-muted text-xs mb-2">Quote {i + 1}</p>
                     <textarea value={v.quote} onChange={(e) => { const n = [...voices]; n[i] = { ...n[i], quote: e.target.value }; setVoices(n) }} rows={2} placeholder="Quote text..." className={`${inputCls} resize-none mb-2`} />
                     <input type="text" value={v.attribution} onChange={(e) => { const n = [...voices]; n[i] = { ...n[i], attribution: e.target.value }; setVoices(n) }} placeholder="Attribution (name, role, page, etc.)" className={inputCls} />
                   </div>
                 ))}
                 {voices.length < 4 && (
-                  <button onClick={() => setVoices([...voices, emptyVoice()])} className="text-amber-400 text-xs">+ Add quote</button>
+                  <button onClick={() => setVoices([...voices, emptyVoice()])} className="text-lamp text-xs font-semibold cursor-pointer">+ Add quote</button>
                 )}
                 {voices.length > 3 && (
-                  <button onClick={() => setVoices(voices.slice(0, -1))} className="text-zinc-500 text-xs ml-3">Remove last</button>
+                  <button onClick={() => setVoices(voices.slice(0, -1))} className="text-ink-muted text-xs cursor-pointer ml-3">Remove last</button>
                 )}
               </Accordion>
 
@@ -704,18 +704,18 @@ export default function CreatePage() {
                     { key: "best_for" as const, label: "Best for", placeholder: "Curious minds" },
                   ].map(({ key, label, placeholder }) => (
                     <div key={key}>
-                      <label className="text-zinc-500 text-xs mb-1 block">{label}</label>
+                      <label className="text-ink-muted text-xs mb-1 block">{label}</label>
                       <input type="text" value={atAGlance[key]} onChange={(e) => setAtAGlance({ ...atAGlance, [key]: e.target.value })} placeholder={placeholder} className={inputCls} />
                     </div>
                   ))}
                   <div>
-                    <label className="text-zinc-500 text-xs mb-1 block">Reading ease</label>
+                    <label className="text-ink-muted text-xs mb-1 block">Reading ease</label>
                     <select value={atAGlance.reading_ease} onChange={(e) => setAtAGlance({ ...atAGlance, reading_ease: e.target.value as "1"|"2"|"3" })} className={inputCls}>
                       <option value="1">1 — Easy</option><option value="2">2 — Moderate</option><option value="3">3 — Dense</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-zinc-500 text-xs mb-1 block">Difficulty</label>
+                    <label className="text-ink-muted text-xs mb-1 block">Difficulty</label>
                     <select value={atAGlance.post_difficulty} onChange={(e) => setAtAGlance({ ...atAGlance, post_difficulty: e.target.value as "1"|"2"|"3" })} className={inputCls}>
                       <option value="1">1 — Easy</option><option value="2">2 — Medium</option><option value="3">3 — Hard</option>
                     </select>
@@ -724,7 +724,7 @@ export default function CreatePage() {
               </Accordion>
 
               <Accordion title="Heart" required defaultOpen>
-                <p className="text-zinc-500 text-xs mb-2">The central argument of the book in a paragraph</p>
+                <p className="text-ink-muted text-xs mb-2">The central argument of the book in a paragraph</p>
                 <textarea value={sHeart} onChange={(e) => { setSHeart(e.target.value); clearError("s_heart") }} rows={4} placeholder="The heart of the book is..." className={`${inputCls} resize-none`} />
                 <FieldError msg={errors.s_heart} />
               </Accordion>
@@ -732,45 +732,45 @@ export default function CreatePage() {
               <Accordion title="Core Ideas (6–12)" required defaultOpen>
                 <FieldError msg={errors.s_core_ideas} />
                 {coreIdeas.map((ci, i) => (
-                  <div key={i} className="mb-4 border border-zinc-800 rounded-lg p-3">
-                    <p className="text-zinc-500 text-xs mb-2">Idea {i + 1}</p>
-                    <label className="text-zinc-600 text-xs mb-1 block">Title *</label>
+                  <div key={i} className="mb-4 border border-edge rounded-field p-3">
+                    <p className="text-ink-muted text-xs mb-2">Idea {i + 1}</p>
+                    <label className="text-ink-faint text-xs mb-1 block">Title *</label>
                     <input type="text" value={ci.title} onChange={(e) => { const n = [...coreIdeas]; n[i] = { ...n[i], title: e.target.value }; setCoreIdeas(n) }} placeholder="Concept name..." className={`${inputCls} mb-2`} />
-                    <label className="text-zinc-600 text-xs mb-1 block">Body *</label>
+                    <label className="text-ink-faint text-xs mb-1 block">Body *</label>
                     <textarea value={ci.body} onChange={(e) => { const n = [...coreIdeas]; n[i] = { ...n[i], body: e.target.value }; setCoreIdeas(n) }} rows={3} placeholder="Explain the idea..." className={`${inputCls} resize-none mb-2`} />
-                    <label className="text-zinc-600 text-xs mb-1 block">In practice (optional)</label>
+                    <label className="text-ink-faint text-xs mb-1 block">In practice (optional)</label>
                     <input type="text" value={ci.in_practice} onChange={(e) => { const n = [...coreIdeas]; n[i] = { ...n[i], in_practice: e.target.value }; setCoreIdeas(n) }} placeholder="How to apply this..." className={`${inputCls} mb-2`} />
-                    <label className="text-zinc-600 text-xs mb-1 block">Pull quote (optional)</label>
+                    <label className="text-ink-faint text-xs mb-1 block">Pull quote (optional)</label>
                     <input type="text" value={ci.quote} onChange={(e) => { const n = [...coreIdeas]; n[i] = { ...n[i], quote: e.target.value }; setCoreIdeas(n) }} placeholder="A notable quote..." className={inputCls} />
                   </div>
                 ))}
                 <div className="flex gap-3">
                   {coreIdeas.length < 12 && (
-                    <button onClick={() => setCoreIdeas([...coreIdeas, emptyCoreIdea()])} className="text-amber-400 text-xs">+ Add idea</button>
+                    <button onClick={() => setCoreIdeas([...coreIdeas, emptyCoreIdea()])} className="text-lamp text-xs font-semibold cursor-pointer">+ Add idea</button>
                   )}
                   {coreIdeas.length > 6 && (
-                    <button onClick={() => setCoreIdeas(coreIdeas.slice(0, -1))} className="text-zinc-500 text-xs">Remove last</button>
+                    <button onClick={() => setCoreIdeas(coreIdeas.slice(0, -1))} className="text-ink-muted text-xs cursor-pointer">Remove last</button>
                   )}
                 </div>
               </Accordion>
 
               <Accordion title="Takeaway" required defaultOpen>
                 <FieldError msg={errors.s_takeaway} />
-                <label className="text-zinc-500 text-xs mb-1 block">Framing</label>
+                <label className="text-ink-muted text-xs mb-1 block">Framing</label>
                 <select value={takeaway.framing} onChange={(e) => setTakeaway({ ...takeaway, framing: e.target.value as "framework"|"question" })} className={`${inputCls} mb-3`}>
                   <option value="framework">Framework (a model or principle)</option>
                   <option value="question">Question (a reflection prompt)</option>
                 </select>
-                <label className="text-zinc-500 text-xs mb-1 block">Body *</label>
+                <label className="text-ink-muted text-xs mb-1 block">Body *</label>
                 <textarea value={takeaway.body} onChange={(e) => { setTakeaway({ ...takeaway, body: e.target.value }); clearError("s_takeaway") }} rows={3} placeholder="The key thing to take away..." className={`${inputCls} resize-none`} />
               </Accordion>
 
               <Accordion title="Quiz (5–10 questions)" required defaultOpen>
                 <FieldError msg={errors.s_quiz} />
                 {quizItems.map((q, i) => (
-                  <div key={i} className="mb-4 border border-zinc-800 rounded-lg p-3">
-                    <p className="text-zinc-500 text-xs mb-2">Question {i + 1}</p>
-                    <label className="text-zinc-600 text-xs mb-1 block">Question text *</label>
+                  <div key={i} className="mb-4 border border-edge rounded-field p-3">
+                    <p className="text-ink-muted text-xs mb-2">Question {i + 1}</p>
+                    <label className="text-ink-faint text-xs mb-1 block">Question text *</label>
                     <textarea value={q.question} onChange={(e) => { const n = [...quizItems]; n[i] = { ...n[i], question: e.target.value }; setQuizItems(n) }} rows={2} className={`${inputCls} resize-none mb-2`} />
                     {(["A", "B", "C", "D"] as const).map((opt, j) => (
                       <div key={j} className="flex items-center gap-2 mb-1.5">
@@ -779,7 +779,7 @@ export default function CreatePage() {
                           name={`quiz_answer_${i}`}
                           checked={q.answer_index === String(j) as "0"|"1"|"2"|"3"}
                           onChange={() => { const n = [...quizItems]; n[i] = { ...n[i], answer_index: String(j) as "0"|"1"|"2"|"3" }; setQuizItems(n) }}
-                          className="shrink-0 accent-amber-400"
+                          className="shrink-0 accent-lamp"
                         />
                         <input
                           type="text"
@@ -790,16 +790,16 @@ export default function CreatePage() {
                         />
                       </div>
                     ))}
-                    <label className="text-zinc-600 text-xs mb-1 block mt-2">Explanation *</label>
+                    <label className="text-ink-faint text-xs mb-1 block mt-2">Explanation *</label>
                     <textarea value={q.explanation} onChange={(e) => { const n = [...quizItems]; n[i] = { ...n[i], explanation: e.target.value }; setQuizItems(n) }} rows={2} placeholder="Why this is the correct answer..." className={`${inputCls} resize-none`} />
                   </div>
                 ))}
                 <div className="flex gap-3">
                   {quizItems.length < 10 && (
-                    <button onClick={() => setQuizItems([...quizItems, emptyQuizItem()])} className="text-amber-400 text-xs">+ Add question</button>
+                    <button onClick={() => setQuizItems([...quizItems, emptyQuizItem()])} className="text-lamp text-xs font-semibold cursor-pointer">+ Add question</button>
                   )}
                   {quizItems.length > 5 && (
-                    <button onClick={() => setQuizItems(quizItems.slice(0, -1))} className="text-zinc-500 text-xs">Remove last</button>
+                    <button onClick={() => setQuizItems(quizItems.slice(0, -1))} className="text-ink-muted text-xs cursor-pointer">Remove last</button>
                   )}
                 </div>
               </Accordion>
@@ -807,12 +807,12 @@ export default function CreatePage() {
               <Accordion title="Sources (1–10)" required defaultOpen>
                 <FieldError msg={errors.s_sources} />
                 {sources.map((s, i) => (
-                  <div key={i} className="mb-3 border border-zinc-800 rounded-lg p-3">
-                    <label className="text-zinc-600 text-xs mb-1 block">Label *</label>
+                  <div key={i} className="mb-3 border border-edge rounded-field p-3">
+                    <label className="text-ink-faint text-xs mb-1 block">Label *</label>
                     <input type="text" value={s.label} onChange={(e) => { const n = [...sources]; n[i] = { ...n[i], label: e.target.value }; setSources(n) }} placeholder="Book title, article name..." className={`${inputCls} mb-2`} />
-                    <label className="text-zinc-600 text-xs mb-1 block">URL *</label>
+                    <label className="text-ink-faint text-xs mb-1 block">URL *</label>
                     <input type="url" value={s.url} onChange={(e) => { const n = [...sources]; n[i] = { ...n[i], url: e.target.value }; setSources(n) }} placeholder="https://..." className={`${inputCls} mb-2`} />
-                    <label className="text-zinc-600 text-xs mb-1 block">Type</label>
+                    <label className="text-ink-faint text-xs mb-1 block">Type</label>
                     <select value={s.type} onChange={(e) => { const n = [...sources]; n[i] = { ...n[i], type: e.target.value }; setSources(n) }} className={inputCls}>
                       {SOURCE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -820,10 +820,10 @@ export default function CreatePage() {
                 ))}
                 <div className="flex gap-3">
                   {sources.length < 10 && (
-                    <button onClick={() => setSources([...sources, emptySource()])} className="text-amber-400 text-xs">+ Add source</button>
+                    <button onClick={() => setSources([...sources, emptySource()])} className="text-lamp text-xs font-semibold cursor-pointer">+ Add source</button>
                   )}
                   {sources.length > 1 && (
-                    <button onClick={() => setSources(sources.slice(0, -1))} className="text-zinc-500 text-xs">Remove last</button>
+                    <button onClick={() => setSources(sources.slice(0, -1))} className="text-ink-muted text-xs cursor-pointer">Remove last</button>
                   )}
                 </div>
               </Accordion>
@@ -838,23 +838,23 @@ export default function CreatePage() {
                   <div key={i} className="flex gap-2 mb-2">
                     <input type="text" value={s} onChange={(e) => { const n = [...structure]; n[i] = e.target.value; setStructure(n) }} placeholder={`Part ${i + 1}...`} className={`${inputCls} flex-1`} />
                     {structure.length > 1 && (
-                      <button onClick={() => setStructure(structure.filter((_, idx) => idx !== i))} className="text-zinc-500 text-lg w-8 h-10 flex items-center justify-center shrink-0">×</button>
+                      <button onClick={() => setStructure(structure.filter((_, idx) => idx !== i))} className="text-ink-muted text-lg w-8 h-10 flex items-center justify-center shrink-0 cursor-pointer">×</button>
                     )}
                   </div>
                 ))}
                 {structure.length < 10 && (
-                  <button onClick={() => setStructure([...structure, ""])} className="text-amber-400 text-xs mt-1">+ Add part</button>
+                  <button onClick={() => setStructure([...structure, ""])} className="text-lamp text-xs font-semibold cursor-pointer mt-1">+ Add part</button>
                 )}
               </Accordion>
 
               <Accordion title="Related Posts (3)">
                 {relatedPosts.map((r, i) => (
-                  <div key={i} className="mb-3 border border-zinc-800 rounded-lg p-3">
-                    <label className="text-zinc-600 text-xs mb-1 block">Title</label>
+                  <div key={i} className="mb-3 border border-edge rounded-field p-3">
+                    <label className="text-ink-faint text-xs mb-1 block">Title</label>
                     <input type="text" value={r.title} onChange={(e) => { const n = [...relatedPosts]; n[i] = { ...n[i], title: e.target.value }; setRelatedPosts(n) }} placeholder="Related book or post title..." className={`${inputCls} mb-2`} />
-                    <label className="text-zinc-600 text-xs mb-1 block">Mini teaser</label>
+                    <label className="text-ink-faint text-xs mb-1 block">Mini teaser</label>
                     <input type="text" value={r.mini_teaser} onChange={(e) => { const n = [...relatedPosts]; n[i] = { ...n[i], mini_teaser: e.target.value }; setRelatedPosts(n) }} placeholder="One line about it..." className={`${inputCls} mb-2`} />
-                    <label className="text-zinc-600 text-xs mb-1 block">Format</label>
+                    <label className="text-ink-faint text-xs mb-1 block">Format</label>
                     <select value={r.format} onChange={(e) => { const n = [...relatedPosts]; n[i] = { ...n[i], format: e.target.value }; setRelatedPosts(n) }} className={inputCls}>
                       {["books", "facts", "people", "concepts", "questions", "stories", "academy"].map((f) => <option key={f} value={f}>{f}</option>)}
                     </select>
@@ -868,7 +868,7 @@ export default function CreatePage() {
 
               <Accordion title="Author Context">
                 <textarea value={authorContext.body} onChange={(e) => setAuthorContext({ ...authorContext, body: e.target.value })} rows={3} placeholder="About the author..." className={`${inputCls} resize-none mb-2`} />
-                <label className="text-zinc-600 text-xs mb-1 block">Wikipedia URL</label>
+                <label className="text-ink-faint text-xs mb-1 block">Wikipedia URL</label>
                 <input type="url" value={authorContext.wikipedia_url} onChange={(e) => setAuthorContext({ ...authorContext, wikipedia_url: e.target.value })} placeholder="https://en.wikipedia.org/wiki/..." className={inputCls} />
               </Accordion>
 
@@ -878,15 +878,15 @@ export default function CreatePage() {
 
               {/* Submit */}
               {errors.image_urls && (
-                <div className="bg-red-900/20 border border-red-800 rounded-xl px-4 py-3 mb-3">
-                  <p className="text-red-400 text-sm">{errors.image_urls}</p>
+                <div className="bg-bad/10 border border-bad/40 rounded-card px-4 py-3 mb-3">
+                  <p className="text-bad text-sm">{errors.image_urls}</p>
                 </div>
               )}
-              {serverError && <p className="text-red-400 text-sm mb-3">{serverError}</p>}
+              {serverError && <p className="text-bad text-sm mb-3">{serverError}</p>}
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="bg-white text-zinc-950 font-semibold rounded-full h-12 w-full text-sm disabled:opacity-50 transition-opacity mt-4"
+                className="btn btn-primary rounded-full h-12 w-full mt-4"
               >
                 {submitting ? "Submitting..." : "Submit post"}
               </button>

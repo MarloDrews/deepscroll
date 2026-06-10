@@ -34,14 +34,14 @@ interface UserResult {
 function Snippet({ post }: { post: Post }) {
   const text = fcStr(post.feed_card, "essence") || fcStr(post.feed_card, "headline")
   const snippet = text.length > 120 ? text.slice(0, 120) + "…" : text
-  return <p className="text-zinc-400 text-xs mt-1 line-clamp-2">{snippet}</p>
+  return <p className="text-ink-dim text-xs mt-1 line-clamp-2">{snippet}</p>
 }
 
 function FormatBadge({ format }: { format: string }) {
   const style = FORMAT_STYLES[format as FormatId]
   if (!style) return null
   return (
-    <span className={`text-xs font-medium ${style.text}`}>
+    <span className={`label-caps ${style.text}`}>
       {style.badge}
     </span>
   )
@@ -78,25 +78,25 @@ function UserRow({ user, loggedIn }: { user: UserResult; loggedIn: boolean }) {
   return (
     <button
       onClick={() => router.push(`/profile/${user.username}`)}
-      className="w-full text-left bg-surface-1 rounded-card px-4 py-3 flex items-center gap-3"
+      className="w-full text-left card px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-surface-2 transition-colors duration-150"
     >
       <Avatar username={user.username} avatarUrl={user.avatar_url} size={44} />
       <div className="flex-1 min-w-0">
-        <p className="flex items-center gap-1.5 text-white text-sm font-semibold truncate">
+        <p className="flex items-center gap-1.5 text-ink text-sm font-semibold truncate">
           @{user.username}
           {user.is_verified && <VerifiedBadge size={14} />}
         </p>
-        {user.bio && <p className="text-zinc-500 text-xs truncate">{user.bio}</p>}
-        {user.is_private && !user.bio && <p className="text-zinc-600 text-xs">Private account</p>}
+        {user.bio && <p className="text-ink-muted text-xs truncate">{user.bio}</p>}
+        {user.is_private && !user.bio && <p className="text-ink-faint text-xs">Private account</p>}
       </div>
       {loggedIn && !user.is_self && (
         <span
           onClick={toggleFollow}
           role="button"
-          className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-opacity ${busy ? "opacity-50" : ""} ${
+          className={`btn shrink-0 px-3 py-1.5 text-xs ${busy ? "opacity-50" : ""} ${
             following || requested
-              ? "border border-zinc-600 text-zinc-400"
-              : "bg-white text-zinc-950"
+              ? "btn-ghost"
+              : "btn-primary"
           }`}
         >
           {following ? "Following" : requested ? "Requested" : "Follow"}
@@ -157,15 +157,15 @@ export default function SearchPage() {
   const emptyUsers = scope === "accounts" && userResults !== null && userResults.length === 0
 
   return (
-    <div className="h-[100dvh] bg-zinc-950 flex justify-center">
+    <div className="h-[100dvh] bg-surface-0 flex justify-center">
       <div className="w-full max-w-[430px] h-[100dvh] relative">
 
         {/* Top bar: back + search input */}
-        <div className="absolute top-0 left-0 right-0 z-20 bg-zinc-950 px-3 pt-3 pb-2">
+        <div className="absolute top-0 left-0 right-0 z-20 bg-surface-0 px-3 pt-3 pb-2">
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.back()}
-              className="shrink-0 w-9 h-9 flex items-center justify-center text-zinc-400"
+              className="shrink-0 w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink transition-colors duration-150 cursor-pointer"
               aria-label="Go back"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -175,7 +175,7 @@ export default function SearchPage() {
 
             <div className="relative flex-1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none">
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
               </svg>
@@ -185,12 +185,12 @@ export default function SearchPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={scope === "posts" ? "Search posts, books, questions…" : "Search accounts…"}
-                className="w-full bg-zinc-900 rounded-xl text-white placeholder:text-zinc-500 text-sm pl-9 pr-9 py-2.5 focus:outline-none"
+                className="field text-sm pl-9 pr-9 py-2.5"
               />
               {query && (
                 <button
                   onClick={() => setQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink transition-colors cursor-pointer"
                   aria-label="Clear search"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
@@ -207,8 +207,8 @@ export default function SearchPage() {
               <button
                 key={s}
                 onClick={() => setScope(s)}
-                className={`flex-1 rounded-lg py-1.5 text-xs font-semibold capitalize transition-colors ${
-                  scope === s ? "bg-zinc-800 text-white" : "bg-zinc-900 text-zinc-500"
+                className={`flex-1 rounded-field py-1.5 text-xs font-semibold capitalize cursor-pointer transition-colors duration-150 ${
+                  scope === s ? "bg-surface-3 text-ink" : "bg-surface-1 text-ink-muted"
                 }`}
               >
                 {s}
@@ -226,12 +226,12 @@ export default function SearchPage() {
                   <button
                     key={chip.value}
                     onClick={() => setFormatFilter(chip.value)}
-                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`chip shrink-0 px-3 py-1 text-xs ${
                       isActive
                         ? style
-                          ? `bg-zinc-800 ${style.text}`
-                          : "bg-zinc-700 text-white"
-                        : "bg-zinc-800 text-zinc-400"
+                          ? `bg-surface-3 border-edge-strong ${style.text}`
+                          : "chip-on"
+                        : "chip-off"
                     }`}
                   >
                     {chip.label}
@@ -250,14 +250,14 @@ export default function SearchPage() {
             </div>
           ) : !hasQuery ? (
             <div className="flex flex-col items-center justify-center pt-20 text-center px-6">
-              <p className="text-zinc-500 text-sm">
+              <p className="text-ink-muted text-sm">
                 {scope === "posts" ? "Search posts, books, questions…" : "Find people to follow"}
               </p>
             </div>
           ) : emptyPosts || emptyUsers ? (
             <div className="flex flex-col items-center justify-center pt-20 text-center px-6 gap-2">
-              <p className="text-white font-semibold text-sm">No results for &ldquo;{query}&rdquo;</p>
-              <p className="text-zinc-500 text-xs">
+              <p className="text-ink font-serif font-medium text-base">No results for &ldquo;{query}&rdquo;</p>
+              <p className="text-ink-muted text-xs">
                 {scope === "posts" ? "Try a different word or format" : "Try a different username"}
               </p>
             </div>
@@ -273,13 +273,13 @@ export default function SearchPage() {
                 <button
                   key={post.id}
                   onClick={() => router.push(`/post/${post.id}`)}
-                  className="w-full text-left bg-surface-1 rounded-card px-4 py-3"
+                  className="w-full text-left card px-4 py-3 cursor-pointer hover:bg-surface-2 transition-colors duration-150"
                 >
                   <FormatBadge format={post.format} />
-                  <p className="text-white font-semibold text-sm mt-0.5 line-clamp-2">{post.title}</p>
-                  <p className="flex items-center gap-1 text-zinc-600 text-xs mt-0.5">
+                  <p className="text-ink font-serif font-medium text-[15px] mt-0.5 line-clamp-2">{post.title}</p>
+                  <p className="flex items-center gap-1 text-ink-faint text-xs mt-0.5">
                     {post.is_user_content && post.author_username ? (
-                      <Link href={`/profile/${post.author_username}`} className="hover:text-zinc-400 transition-colors" onClick={(e) => e.stopPropagation()}>
+                      <Link href={`/profile/${post.author_username}`} className="hover:text-ink-dim transition-colors" onClick={(e) => e.stopPropagation()}>
                         @{post.author_username}
                       </Link>
                     ) : "Deepscroll"}
