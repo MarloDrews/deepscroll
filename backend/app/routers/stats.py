@@ -14,10 +14,26 @@ router = APIRouter(tags=["stats"])
 
 FORMATS = ["books", "facts", "people", "concepts", "questions", "stories", "academy"]
 
-# SQLite strftime %w: 0=Sun, 1=Mon, ..., 6=Sat
+# PostgreSQL extract('dow'): 0=Sun, 1=Mon, ..., 6=Sat
 # Remap to Mon=0, Tue=1, ..., Sun=6
 _WD_REMAP = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6}
 _WD_LABELS_ORDER = [("Mon", 1), ("Tue", 2), ("Wed", 3), ("Thu", 4), ("Fri", 5), ("Sat", 6), ("Sun", 0)]
+
+
+def _month(col):
+    return func.to_char(col, "YYYY-MM")
+
+
+def _weekday(col):
+    return func.extract("dow", col)
+
+
+def _hour(col):
+    return func.extract("hour", col)
+
+
+def _date(col):
+    return func.to_char(col, "YYYY-MM-DD")
 
 
 def _last_n_months(n: int) -> List[str]:
@@ -139,7 +155,7 @@ def get_global_stats(db: Session = Depends(get_db)):
         )
         .join(Event, and_(Event.post_id == Post.id, Event.event_type == "like"))
         .outerjoin(User, Post.author_id == User.id)
-        .group_by(Post.id)
+        .group_by(Post.id, Post.title, Post.format, User.username)
         .order_by(func.count(Event.id).desc())
         .limit(10)
         .all()
@@ -149,41 +165,41 @@ def get_global_stats(db: Session = Depends(get_db)):
     posts_over_time = _fill_months([
         {"period": r.period, "count": r.cnt}
         for r in db.query(
-            func.strftime("%Y-%m", Post.created_at).label("period"),
+            _month(Post.created_at).label("period"),
             func.count(Post.id).label("cnt"),
         )
-        .group_by(func.strftime("%Y-%m", Post.created_at))
+        .group_by(_month(Post.created_at))
         .all()
     ])
 
     users_over_time = _fill_months([
         {"period": r.period, "count": r.cnt}
         for r in db.query(
-            func.strftime("%Y-%m", User.created_at).label("period"),
+            _month(User.created_at).label("period"),
             func.count(User.id).label("cnt"),
         )
-        .group_by(func.strftime("%Y-%m", User.created_at))
+        .group_by(_month(User.created_at))
         .all()
     ])
 
     comments_over_time = _fill_months([
         {"period": r.period, "count": r.cnt}
         for r in db.query(
-            func.strftime("%Y-%m", Comment.created_at).label("period"),
+            _month(Comment.created_at).label("period"),
             func.count(Comment.id).label("cnt"),
         )
-        .group_by(func.strftime("%Y-%m", Comment.created_at))
+        .group_by(_month(Comment.created_at))
         .all()
     ])
 
     likes_over_time = _fill_months([
         {"period": r.period, "count": r.cnt}
         for r in db.query(
-            func.strftime("%Y-%m", Event.created_at).label("period"),
+            _month(Event.created_at).label("period"),
             func.count(Event.id).label("cnt"),
         )
         .filter(Event.event_type == "like")
-        .group_by(func.strftime("%Y-%m", Event.created_at))
+        .group_by(_month(Event.created_at))
         .all()
     ])
 
@@ -212,25 +228,25 @@ def get_global_stats(db: Session = Depends(get_db)):
     wd_lookup = {
         int(r.wd): r.cnt
         for r in db.query(
-            func.strftime("%w", Post.created_at).label("wd"),
+            _weekday(Post.created_at).label("wd"),
             func.count(Post.id).label("cnt"),
         )
-        .group_by(func.strftime("%w", Post.created_at))
+        .group_by(_weekday(Post.created_at))
         .all()
     }
     activity_by_weekday = [
-        {"weekday": label, "count": wd_lookup.get(sqlite_wd, 0)}
-        for label, sqlite_wd in _WD_LABELS_ORDER
+        {"weekday": label, "count": wd_lookup.get(pg_wd, 0)}
+        for label, pg_wd in _WD_LABELS_ORDER
     ]
 
     # --- Activity by hour ---
     hr_lookup = {
         int(r.hr): r.cnt
         for r in db.query(
-            func.strftime("%H", Post.created_at).label("hr"),
+            _hour(Post.created_at).label("hr"),
             func.count(Post.id).label("cnt"),
         )
-        .group_by(func.strftime("%H", Post.created_at))
+        .group_by(_hour(Post.created_at))
         .all()
     }
     activity_by_hour = [{"hour": h, "count": hr_lookup.get(h, 0)} for h in range(24)]
@@ -239,13 +255,13 @@ def get_global_stats(db: Session = Depends(get_db)):
     hm_lookup = {
         (int(r.wd), int(r.hr)): r.cnt
         for r in db.query(
-            func.strftime("%w", Post.created_at).label("wd"),
-            func.strftime("%H", Post.created_at).label("hr"),
+            _weekday(Post.created_at).label("wd"),
+            _hour(Post.created_at).label("hr"),
             func.count(Post.id).label("cnt"),
         )
         .group_by(
-            func.strftime("%w", Post.created_at),
-            func.strftime("%H", Post.created_at),
+            _weekday(Post.created_at),
+            _hour(Post.created_at),
         )
         .all()
     }
@@ -261,7 +277,7 @@ def get_global_stats(db: Session = Depends(get_db)):
     for month in months:
         m_posts = (
             db.query(func.count(Post.id))
-            .filter(func.strftime("%Y-%m", Post.created_at) == month)
+            .filter(_month(Post.created_at) == month)
             .scalar() or 0
         )
         m_likes = (
@@ -269,7 +285,7 @@ def get_global_stats(db: Session = Depends(get_db)):
             .join(Post, Post.id == Event.post_id)
             .filter(
                 Event.event_type == "like",
-                func.strftime("%Y-%m", Post.created_at) == month,
+                _month(Post.created_at) == month,
             )
             .scalar() or 0
         )
@@ -364,11 +380,11 @@ def get_my_stats(
         [
             {"period": r.period, "count": r.cnt}
             for r in db.query(
-                func.strftime("%Y-%m", Post.created_at).label("period"),
+                _month(Post.created_at).label("period"),
                 func.count(Post.id).label("cnt"),
             )
             .filter(Post.author_id == uid)
-            .group_by(func.strftime("%Y-%m", Post.created_at))
+            .group_by(_month(Post.created_at))
             .all()
         ],
         key=lambda x: x["period"],
@@ -379,12 +395,12 @@ def get_my_stats(
         [
             {"period": r.period, "count": r.cnt}
             for r in db.query(
-                func.strftime("%Y-%m", Event.created_at).label("period"),
+                _month(Event.created_at).label("period"),
                 func.count(Event.id).label("cnt"),
             )
             .join(Post, Post.id == Event.post_id)
             .filter(Event.event_type == "like", Post.author_id == uid)
-            .group_by(func.strftime("%Y-%m", Event.created_at))
+            .group_by(_month(Event.created_at))
             .all()
         ],
         key=lambda x: x["period"],
@@ -395,12 +411,12 @@ def get_my_stats(
         [
             {"period": r.period, "count": r.cnt}
             for r in db.query(
-                func.strftime("%Y-%m", Comment.created_at).label("period"),
+                _month(Comment.created_at).label("period"),
                 func.count(Comment.id).label("cnt"),
             )
             .join(Post, Post.id == Comment.post_id)
             .filter(Post.author_id == uid)
-            .group_by(func.strftime("%Y-%m", Comment.created_at))
+            .group_by(_month(Comment.created_at))
             .all()
         ],
         key=lambda x: x["period"],
@@ -420,27 +436,27 @@ def get_my_stats(
     my_wd_lookup = {
         int(r.wd): r.cnt
         for r in db.query(
-            func.strftime("%w", Post.created_at).label("wd"),
+            _weekday(Post.created_at).label("wd"),
             func.count(Post.id).label("cnt"),
         )
         .filter(Post.author_id == uid)
-        .group_by(func.strftime("%w", Post.created_at))
+        .group_by(_weekday(Post.created_at))
         .all()
     }
     my_activity_by_weekday = [
-        {"weekday": label, "count": my_wd_lookup.get(sqlite_wd, 0)}
-        for label, sqlite_wd in _WD_LABELS_ORDER
+        {"weekday": label, "count": my_wd_lookup.get(pg_wd, 0)}
+        for label, pg_wd in _WD_LABELS_ORDER
     ]
 
     # --- My activity by hour ---
     my_hr_lookup = {
         int(r.hr): r.cnt
         for r in db.query(
-            func.strftime("%H", Post.created_at).label("hr"),
+            _hour(Post.created_at).label("hr"),
             func.count(Post.id).label("cnt"),
         )
         .filter(Post.author_id == uid)
-        .group_by(func.strftime("%H", Post.created_at))
+        .group_by(_hour(Post.created_at))
         .all()
     }
     my_activity_by_hour = [{"hour": h, "count": my_hr_lookup.get(h, 0)} for h in range(24)]
@@ -449,14 +465,14 @@ def get_my_stats(
     my_hm_lookup = {
         (int(r.wd), int(r.hr)): r.cnt
         for r in db.query(
-            func.strftime("%w", Post.created_at).label("wd"),
-            func.strftime("%H", Post.created_at).label("hr"),
+            _weekday(Post.created_at).label("wd"),
+            _hour(Post.created_at).label("hr"),
             func.count(Post.id).label("cnt"),
         )
         .filter(Post.author_id == uid)
         .group_by(
-            func.strftime("%w", Post.created_at),
-            func.strftime("%H", Post.created_at),
+            _weekday(Post.created_at),
+            _hour(Post.created_at),
         )
         .all()
     }
@@ -505,7 +521,7 @@ def get_my_stats(
         [
             {"period": r.period, "avg_duration_ms": round(r.avg_ms or 0.0, 2)}
             for r in db.query(
-                func.strftime("%Y-%m", Event.created_at).label("period"),
+                _month(Event.created_at).label("period"),
                 func.avg(Event.duration_ms).label("avg_ms"),
             )
             .join(Post, Post.id == Event.post_id)
@@ -514,7 +530,7 @@ def get_my_stats(
                 Post.author_id == uid,
                 Event.duration_ms.isnot(None),
             )
-            .group_by(func.strftime("%Y-%m", Event.created_at))
+            .group_by(_month(Event.created_at))
             .all()
         ],
         key=lambda x: x["period"],
@@ -578,8 +594,8 @@ def get_my_stats(
                 "SELECT COUNT(*) FROM ("
                 "  SELECT author_id, COUNT(*) as cnt FROM posts"
                 "  WHERE status='published' AND author_id IS NOT NULL"
-                "  GROUP BY author_id HAVING cnt > :my_count"
-                ")"
+                "  GROUP BY author_id HAVING COUNT(*) > :my_count"
+                ") AS sub"
             ),
             {"my_count": posts_published},
         ).scalar() or 0
@@ -592,8 +608,8 @@ def get_my_stats(
                 "  SELECT p.author_id, COUNT(e.id) as cnt FROM events e"
                 "  JOIN posts p ON p.id = e.post_id"
                 "  WHERE e.event_type='like' AND p.author_id IS NOT NULL"
-                "  GROUP BY p.author_id HAVING cnt > :my_count"
-                ")"
+                "  GROUP BY p.author_id HAVING COUNT(e.id) > :my_count"
+                ") AS sub"
             ),
             {"my_count": likes_received},
         ).scalar() or 0
@@ -617,7 +633,7 @@ def get_my_stats(
                 "    JOIN posts p ON p.id=c.post_id GROUP BY p.author_id) cc ON cc.author_id=u.id"
                 "  LEFT JOIN (SELECT author_id, COUNT(id) as cnt FROM posts"
                 "    WHERE status='published' GROUP BY author_id) pc ON pc.author_id=u.id"
-                ")"
+                ") AS sub"
             )
         ).scalar()
         or 0
@@ -628,10 +644,10 @@ def get_my_stats(
 
     # --- My streak ---
     date_rows = (
-        db.query(func.strftime("%Y-%m-%d", Post.created_at).label("d"))
+        db.query(_date(Post.created_at).label("d"))
         .filter(Post.author_id == uid, Post.status == "published")
         .distinct()
-        .order_by(func.strftime("%Y-%m-%d", Post.created_at))
+        .order_by(_date(Post.created_at))
         .all()
     )
     date_list = sorted({r.d for r in date_rows})
