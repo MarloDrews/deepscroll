@@ -194,6 +194,86 @@ export interface CastMember {
   lifespan: string
 }
 
+// Academy section types
+
+export interface PaperAuthor {
+  name: string
+  affiliation: string
+}
+
+export interface PaperCardContent {
+  title: string
+  authors: PaperAuthor[]
+  venue: string
+  year: number
+  doi?: string
+  funding_source?: string
+}
+
+export interface HeadlineFigureContent {
+  visual_svg?: string
+  image_url?: string
+  image_caption: string
+}
+
+export interface KeyPriorItem {
+  citation: string
+  claim: string
+}
+
+export interface FieldContextContent {
+  body: string
+  key_priors: KeyPriorItem[]
+}
+
+export interface ApproachContent {
+  body: string
+  visual_svg?: string
+}
+
+export interface EquationItem {
+  latex: string
+  label: string
+  description: string
+}
+
+export interface NotationItem {
+  symbol: string
+  meaning: string
+}
+
+export interface FormalismContent {
+  body: string
+  equations: EquationItem[]
+  notation_legend: NotationItem[]
+}
+
+export interface KeyFindingItem {
+  title: string
+  finding: string
+  source_in_paper?: string
+  visual_svg?: string
+}
+
+export interface AtAGlanceAcademyContent {
+  study_type: string
+  pre_registered: boolean
+  open_data: boolean
+  open_code: boolean
+  replication_status: string
+  peer_review_status: string
+  result_direction: string
+  post_reading_time_min: number
+  post_difficulty: 1 | 2 | 3
+}
+
+export interface AuthorsContextItem {
+  name: string
+  role: string
+  one_line: string
+  affiliation?: string
+}
+
 export type SectionType =
   | "essence"
   | "quiz_badge"
@@ -260,6 +340,20 @@ export type SectionType =
   | "mental_takeaway"
   | "origin"
   | "nearby_concepts"
+  | "paper_card"
+  | "tldr"
+  | "headline_figure"
+  | "the_big_idea"
+  | "field_context"
+  | "approach"
+  | "formalism"
+  | "key_findings"
+  | "robustness"
+  | "limitations"
+  | "objections"
+  | "implications"
+  | "connections_to_other_fields"
+  | "authors_context"
 
 export interface Section {
   type: SectionType | string

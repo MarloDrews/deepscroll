@@ -60,6 +60,7 @@ FORMAT_INTEREST_SLUGS = {
     "concepts": ["mental-models", "critical-thinking", "epistemology"],
     "questions": ["philosophy", "ethics", "critical-thinking", "epistemology"],
     "stories": ["history", "crime", "forgotten-history"],
+    "academy": ["neuroscience", "philosophy-of-mind", "mathematics", "artificial-intelligence"],
 }
 
 

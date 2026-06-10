@@ -1,0 +1,60 @@
+import katex from "katex"
+import SectionLabel from "../SectionLabel"
+import type { FormalismContent } from "../../types/post"
+import MathText from "../MathText"
+
+interface Props {
+  content: FormalismContent
+}
+
+function DisplayMath({ latex }: { latex: string }) {
+  let html = latex
+  try {
+    html = katex.renderToString(latex, { displayMode: true, throwOnError: false, output: "html" })
+  } catch {
+    // fall through
+  }
+  return <div className="overflow-x-auto py-1" dangerouslySetInnerHTML={{ __html: html }} />
+}
+
+export default function FormalismSection({ content }: Props) {
+  return (
+    <div className="px-5 py-6 flex flex-col gap-5">
+      <SectionLabel>Formalism</SectionLabel>
+
+      <p className="text-sm text-zinc-400 leading-relaxed">
+        <MathText text={content.body} />
+      </p>
+
+      <div className="flex flex-col gap-5">
+        {content.equations.map((eq, i) => (
+          <div key={i} className="flex flex-col gap-2">
+            <p className="text-xs font-semibold text-indigo-400 uppercase tracking-wide">{eq.label}</p>
+            <div className="bg-zinc-900 rounded-xl px-4 py-3 border border-zinc-800">
+              <DisplayMath latex={eq.latex} />
+            </div>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              <MathText text={eq.description} />
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {content.notation_legend.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <p className="text-xs uppercase tracking-widest text-zinc-600">Notation</p>
+          <div className="flex flex-col divide-y divide-zinc-800">
+            {content.notation_legend.map((item, i) => (
+              <div key={i} className="flex gap-4 py-2 items-baseline">
+                <div className="shrink-0 w-28">
+                  <MathText text={`$${item.symbol}$`} className="text-sm text-zinc-300 font-mono" />
+                </div>
+                <p className="text-sm text-zinc-400 leading-snug">{item.meaning}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

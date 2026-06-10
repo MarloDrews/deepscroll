@@ -18,6 +18,7 @@ user_uploads/
 
 # Logs
 *.log
+.claude/skills/ui-ux-pro-max
 
 # OS / Editor
 .DS_Store

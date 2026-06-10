@@ -64,6 +64,20 @@ import WhereItBreaksSection from "./sections/WhereItBreaksSection"
 import MentalTakeawaySection from "./sections/MentalTakeawaySection"
 import OriginSection from "./sections/OriginSection"
 import NearbyConceptsSection from "./sections/NearbyConceptsSection"
+import PaperCardSection from "./sections/PaperCardSection"
+import TldrSection from "./sections/TldrSection"
+import HeadlineFigureSection from "./sections/HeadlineFigureSection"
+import TheBigIdeaSection from "./sections/TheBigIdeaSection"
+import FieldContextSection from "./sections/FieldContextSection"
+import ApproachSection from "./sections/ApproachSection"
+import FormalismSection from "./sections/FormalismSection"
+import KeyFindingsSection from "./sections/KeyFindingsSection"
+import RobustnessSection from "./sections/RobustnessSection"
+import LimitationsSection from "./sections/LimitationsSection"
+import ObjectionsSection from "./sections/ObjectionsSection"
+import ImplicationsSection from "./sections/ImplicationsSection"
+import ConnectionsToOtherFieldsSection from "./sections/ConnectionsToOtherFieldsSection"
+import AuthorsContextSection from "./sections/AuthorsContextSection"
 
 interface Props {
   sections: Section[]
@@ -209,6 +223,34 @@ export default function SectionRenderer({ sections, isUserContent, postId }: Pro
             return <OriginSection key={i} content={c as any} />
           case "nearby_concepts":
             return <NearbyConceptsSection key={i} content={c as any} />
+          case "paper_card":
+            return <PaperCardSection key={i} content={c as any} />
+          case "tldr":
+            return <TldrSection key={i} content={c as string} />
+          case "headline_figure":
+            return <HeadlineFigureSection key={i} content={c as any} isUserContent={isUserContent} />
+          case "the_big_idea":
+            return <TheBigIdeaSection key={i} content={c as string} />
+          case "field_context":
+            return <FieldContextSection key={i} content={c as any} />
+          case "approach":
+            return <ApproachSection key={i} content={c as any} isUserContent={isUserContent} />
+          case "formalism":
+            return <FormalismSection key={i} content={c as any} />
+          case "key_findings":
+            return <KeyFindingsSection key={i} content={c as any} isUserContent={isUserContent} />
+          case "robustness":
+            return <RobustnessSection key={i} content={c as string} />
+          case "limitations":
+            return <LimitationsSection key={i} content={c as string} />
+          case "objections":
+            return <ObjectionsSection key={i} content={c as string} />
+          case "implications":
+            return <ImplicationsSection key={i} content={c as string} />
+          case "connections_to_other_fields":
+            return <ConnectionsToOtherFieldsSection key={i} content={c as string} />
+          case "authors_context":
+            return <AuthorsContextSection key={i} content={c as any} />
           default:
             console.warn(`SectionRenderer: unknown section type "${section.type}"`)
             return null

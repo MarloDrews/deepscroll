@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
 import type { QuizItem } from "../../types/post"
+import MathText from "../MathText"
 
 interface Props {
   content: QuizItem[]
@@ -81,7 +82,9 @@ function QuizCard({
     <div className="border border-zinc-700 rounded-xl overflow-hidden">
       <div className="px-4 py-4">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium text-zinc-200 leading-snug">{item.question}</p>
+          <p className="text-sm font-medium text-zinc-200 leading-snug">
+            <MathText text={item.question} />
+          </p>
           {result?.delta !== undefined && (
             <span
               className={`shrink-0 text-xs font-bold rounded-full px-2 py-0.5 ${
@@ -104,7 +107,7 @@ function QuizCard({
                   submitting && !result ? "opacity-60" : ""
                 }`}
               >
-                {opt}
+                <MathText text={opt} />
               </button>
             </li>
           ))}
@@ -118,7 +121,9 @@ function QuizCard({
             {result.correct ? "Correct" : "Incorrect"}
           </p>
           {result.explanation && (
-            <p className="text-sm text-zinc-400 leading-relaxed">{result.explanation}</p>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              <MathText text={result.explanation} />
+            </p>
           )}
         </div>
       )}
