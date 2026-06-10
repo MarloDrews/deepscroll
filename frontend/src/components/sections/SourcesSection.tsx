@@ -30,9 +30,9 @@ export default function SourcesSection({ content }: Props) {
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group"
+              className="flex items-center gap-2 text-sm text-ink-dim hover:text-ink transition-colors group"
             >
-              <span className="shrink-0 w-5 h-5 rounded flex items-center justify-center bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-zinc-400">
+              <span className="shrink-0 w-5 h-5 rounded flex items-center justify-center bg-surface-2 border border-edge-strong text-[10px] font-bold text-ink-dim">
                 {TYPE_LABELS[source.type] ?? "?"}
               </span>
               <span className="flex-1 leading-snug">{source.label}</span>

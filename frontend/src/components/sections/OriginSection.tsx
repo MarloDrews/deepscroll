@@ -19,16 +19,16 @@ export default function OriginSection({ content }: Props) {
   return (
     <div className="px-5 py-6 flex flex-col gap-4">
       <SectionLabel>Origin</SectionLabel>
-      <p className="text-sm text-zinc-400 leading-relaxed">{content.body}</p>
+      <p className="text-sm text-ink-dim leading-relaxed">{content.body}</p>
       {content.key_thinkers && content.key_thinkers.length > 0 && (
         <div className="flex flex-col gap-2">
           {content.key_thinkers.map((thinker, i) => (
-            <div key={i} className="flex flex-col gap-0.5 border border-zinc-800 rounded-xl px-4 py-3">
+            <div key={i} className="flex flex-col gap-0.5 border border-edge rounded-card px-4 py-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-sm font-semibold text-zinc-100">{thinker.name}</span>
-                <span className="text-xs text-violet-400/80">{thinker.role}</span>
+                <span className="text-sm font-semibold text-ink">{thinker.name}</span>
+                <span className="text-xs text-(--accent)/80">{thinker.role}</span>
               </div>
-              <p className="text-xs text-zinc-500 leading-snug">{thinker.one_line}</p>
+              <p className="text-xs text-ink-muted leading-snug">{thinker.one_line}</p>
             </div>
           ))}
         </div>

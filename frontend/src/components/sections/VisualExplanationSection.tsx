@@ -21,7 +21,7 @@ export default function VisualExplanationSection({ content, isUserContent }: Pro
         className="w-full max-w-[400px] mx-auto"
       />
       {content.image_caption && (
-        <p className="text-xs text-zinc-500 text-center leading-snug">{content.image_caption}</p>
+        <p className="text-xs text-ink-muted text-center leading-snug">{content.image_caption}</p>
       )}
     </div>
   )

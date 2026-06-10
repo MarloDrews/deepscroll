@@ -21,23 +21,23 @@ export default function AuthorContextSection({ content }: Props) {
             <img
               src={content.image_url}
               alt=""
-              className="w-16 h-16 rounded-full object-cover bg-zinc-700"
+              className="w-16 h-16 rounded-full object-cover bg-surface-3"
             />
             {content.image_attribution && (
-              <p className="text-xs text-zinc-600 mt-1 text-center max-w-[4rem]">
+              <p className="text-xs text-ink-faint mt-1 text-center max-w-[4rem]">
                 {content.image_attribution}
               </p>
             )}
           </div>
         )}
         <div className="flex flex-col gap-2">
-          <p className="text-sm text-zinc-400 leading-relaxed">{content.body}</p>
+          <p className="text-sm text-ink-dim leading-relaxed">{content.body}</p>
           {content.wikipedia_url && (
             <a
               href={content.wikipedia_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+              className="text-xs text-(--accent) hover:text-(--accent) transition-colors"
             >
               Wikipedia
               <ExternalLinkIcon />

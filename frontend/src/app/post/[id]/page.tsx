@@ -196,14 +196,16 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const style = post ? formatStyle(post.format) : null
 
   return (
-    <div className="h-[100dvh] bg-zinc-950 flex justify-center">
+    <div className="h-[100dvh] bg-surface-0 flex justify-center">
       <div className="w-full max-w-[430px] h-[100dvh] relative overflow-hidden">
         <div
-          className="absolute inset-0 bg-zinc-950 flex flex-col"
+          className="absolute inset-0 bg-surface-0 flex flex-col"
+          // --accent drives every format-colored detail in the header and sections.
           style={{
             animation: closing
               ? "slideDown 250ms ease-in forwards"
               : "slideUp 300ms ease-out forwards",
+            ["--accent" as string]: style?.accent,
           }}
         >
           <style>{`
@@ -223,7 +225,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           {/* Back button */}
           <button
             onClick={close}
-            className="absolute top-4 left-4 z-10 w-11 h-11 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+            className="absolute top-4 left-4 z-10 w-11 h-11 flex items-center justify-center text-ink-dim hover:text-ink transition-colors cursor-pointer"
             aria-label="Go back"
           >
             <svg
@@ -254,7 +256,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   {/* Format badge */}
                   <div className="flex items-center gap-2 mb-5">
                     <span className={`w-2 h-2 rounded-full shrink-0 ${style.dot}`} />
-                    <span className={`text-xs font-semibold tracking-widest ${style.text}`}>
+                    <span className={`label-caps ${style.text}`}>
                       {style.badge}
                     </span>
                   </div>
@@ -262,16 +264,16 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   {/* Attribution */}
                   <div className="flex items-center gap-1 mb-4">
                     {post.is_user_content && post.author_username ? (
-                      <span className="flex items-center gap-1 text-zinc-500 text-xs">
+                      <span className="flex items-center gap-1 text-ink-muted text-xs">
                         Submitted by{" "}
-                        <Link href={`/profile/${post.author_username}`} className="hover:text-zinc-300 transition-colors">
+                        <Link href={`/profile/${post.author_username}`} className="hover:text-ink-body transition-colors">
                           @{post.author_username}
                         </Link>
                         {post.author_is_verified && <VerifiedBadge size={16} />}
                       </span>
                     ) : !post.is_user_content ? (
                       <>
-                        <span className="text-zinc-500 text-xs">Deepscroll</span>
+                        <span className="text-ink-muted text-xs">Deepscroll</span>
                         <VerifiedBadge size={12} variant="official" />
                       </>
                     ) : null}
@@ -280,7 +282,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   {/* Books cover */}
                   {post.format === "books" && fcStr(post.feed_card, "cover_url") && (
                     <div className="flex justify-center mb-5">
-                      <div className="rounded-xl overflow-hidden shadow-xl w-32 h-48 bg-zinc-800">
+                      <div className="rounded-lg overflow-hidden w-32 h-48 bg-surface-2 border border-edge">
                         <img
                           src={fcStr(post.feed_card, "cover_url")}
                           alt=""
@@ -292,13 +294,13 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   )}
 
                   {/* Title */}
-                  <h1 className="text-2xl font-bold text-white leading-snug mb-1">
+                  <h1 className="font-serif text-3xl font-medium text-ink leading-snug mb-1">
                     {post.title}
                   </h1>
 
                   {/* Author (Books) */}
                   {post.format === "books" && fcStr(post.feed_card, "author") && (
-                    <p className="text-amber-400 text-sm font-medium mb-4">
+                    <p className="text-(--accent) text-sm font-medium mb-4">
                       {fcStr(post.feed_card, "author")}
                     </p>
                   )}
@@ -308,7 +310,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     {post.interests.map((name) => (
                       <span
                         key={name}
-                        className="px-3 py-1 rounded-full text-xs bg-zinc-800 text-zinc-400"
+                        className="px-3 py-1 rounded-full text-xs bg-surface-2 border border-edge text-ink-dim"
                       >
                         {name}
                       </span>
@@ -335,15 +337,15 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               </>
             ) : notFound ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 px-8 text-center">
-                <p className="text-white font-semibold">Post not found</p>
-                <p className="text-zinc-500 text-sm">It may have been removed or is awaiting review.</p>
-                <button onClick={close} className="text-zinc-400 text-sm underline">
+                <p className="text-ink font-serif font-medium text-lg">Post not found</p>
+                <p className="text-ink-muted text-sm">It may have been removed or is awaiting review.</p>
+                <button onClick={close} className="text-ink-dim text-sm underline cursor-pointer">
                   Go back
                 </button>
               </div>
             ) : (
               <div className="flex items-center justify-center h-full">
-                <span className="text-zinc-600 text-sm">Loading...</span>
+                <span className="text-ink-faint text-sm">Loading...</span>
               </div>
             )}
           </div>
@@ -360,7 +362,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       onChange={(e) => setStickyDraft(e.target.value)}
                       placeholder="Add a comment..."
                       maxLength={2000}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-full px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600"
+                      className="field rounded-full text-sm py-2"
                     />
                     <button
                       type="submit"
@@ -371,10 +373,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     </button>
                   </form>
                 ) : (
-                  <p className="text-sm text-zinc-500 py-1">
+                  <p className="text-sm text-ink-muted py-1">
                     <Link
                       href="/login"
-                      className="text-zinc-400 hover:text-white underline transition-colors"
+                      className="text-ink-dim hover:text-lamp underline transition-colors"
                     >
                       Sign in
                     </Link>{" "}
@@ -393,16 +395,16 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   >
                     <svg
                       viewBox="0 0 24 24"
-                      fill={liked ? "rgb(244,63,94)" : "none"}
+                      fill={liked ? "var(--color-bad)" : "none"}
                       stroke={liked ? "none" : "currentColor"}
                       strokeWidth={liked ? 0 : 2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="w-5 h-5 text-zinc-400"
+                      className="w-5 h-5 text-ink-dim"
                     >
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
-                    <span className="text-[10px] text-zinc-400 leading-none">{likesCount}</span>
+                    <span className="text-[10px] text-ink-dim font-mono leading-none">{likesCount}</span>
                   </button>
 
                   <button
@@ -412,12 +414,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   >
                     <svg
                       viewBox="0 0 24 24"
-                      fill={saved ? "rgb(251,191,36)" : "none"}
+                      fill={saved ? "var(--color-lamp)" : "none"}
                       stroke={saved ? "none" : "currentColor"}
                       strokeWidth={saved ? 0 : 2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className={`w-5 h-5 text-zinc-400 ${animatingSave ? "heart-pop" : ""}`}
+                      className={`w-5 h-5 text-ink-dim ${animatingSave ? "heart-pop" : ""}`}
                       onAnimationEnd={() => setAnimatingSave(false)}
                     >
                       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
@@ -436,7 +438,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       strokeWidth={2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="w-5 h-5 text-zinc-400"
+                      className="w-5 h-5 text-ink-dim"
                     >
                       <line x1="22" y1="2" x2="11" y2="13" />
                       <polygon points="22 2 15 22 11 13 2 9 22 2" />

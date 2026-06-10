@@ -21,7 +21,7 @@ export default function HeadlineFigureSection({ content, isUserContent }: Props)
         </div>
       )}
       {content.image_caption && (
-        <p className="text-xs text-zinc-500 text-center leading-relaxed">
+        <p className="text-xs text-ink-muted text-center leading-relaxed">
           <MathText text={content.image_caption} />
         </p>
       )}

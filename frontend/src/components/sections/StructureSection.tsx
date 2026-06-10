@@ -8,10 +8,10 @@ export default function StructureSection({ content }: Props) {
       <ol className="flex flex-col gap-3">
         {content.map((item, i) => (
           <li key={i} className="flex gap-3 items-start">
-            <span className="text-amber-400 font-semibold text-sm min-w-[1.25rem] pt-0.5">
+            <span className="text-(--accent) font-semibold text-sm min-w-[1.25rem] pt-0.5">
               {i + 1}.
             </span>
-            <span className="text-base text-zinc-300 leading-relaxed">{item}</span>
+            <span className="text-base text-ink-body leading-relaxed">{item}</span>
           </li>
         ))}
       </ol>

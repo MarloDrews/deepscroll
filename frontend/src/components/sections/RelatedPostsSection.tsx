@@ -19,10 +19,10 @@ function RelatedCard({ item }: { item: RelatedPostItem }) {
   const label = FORMAT_LABELS[item.format] ?? item.format
 
   const inner = (
-    <div className="flex flex-col gap-1.5 p-4 border border-zinc-700 rounded-xl min-w-[160px] flex-1">
-      <span className="text-xs text-zinc-500 uppercase tracking-wide">{label}</span>
-      <p className="text-sm font-medium text-zinc-200 leading-snug line-clamp-2">{item.title}</p>
-      <p className="text-xs text-zinc-500 line-clamp-2 mt-auto">{item.mini_teaser}</p>
+    <div className="flex flex-col gap-1.5 p-4 border border-edge-strong rounded-card min-w-[160px] flex-1">
+      <span className="text-xs text-ink-muted uppercase tracking-wide">{label}</span>
+      <p className="text-sm font-medium text-ink leading-snug line-clamp-2">{item.title}</p>
+      <p className="text-xs text-ink-muted line-clamp-2 mt-auto">{item.mini_teaser}</p>
     </div>
   )
 
@@ -33,7 +33,7 @@ function RelatedCard({ item }: { item: RelatedPostItem }) {
   return (
     <div className="opacity-60 relative">
       {inner}
-      <span className="absolute bottom-2 right-3 text-xs text-zinc-600">Coming soon</span>
+      <span className="absolute bottom-2 right-3 text-xs text-ink-faint">Coming soon</span>
     </div>
   )
 }

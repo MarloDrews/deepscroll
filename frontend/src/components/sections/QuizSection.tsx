@@ -23,15 +23,15 @@ interface AnswerResult {
 
 function optionClass(i: number, result: AnswerResult | undefined): string {
   if (!result) {
-    return "border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:bg-zinc-800/60 cursor-pointer"
+    return "border-edge-strong text-ink-body font-sans hover:border-ink-muted hover:bg-surface-2 cursor-pointer"
   }
   if (i === result.correctIndex) {
-    return "border-emerald-500 bg-emerald-500/10 text-emerald-200"
+    return "border-good bg-good/10 text-good"
   }
   if (i === result.chosenIndex) {
-    return "border-red-500 bg-red-500/10 text-red-300"
+    return "border-bad bg-bad/10 text-bad"
   }
-  return "border-zinc-800 text-zinc-600"
+  return "border-edge text-ink-faint font-sans"
 }
 
 function QuizCard({
@@ -79,18 +79,18 @@ function QuizCard({
   }
 
   return (
-    <div className="border border-zinc-700 rounded-xl overflow-hidden">
+    <div className="card overflow-hidden">
       <div className="px-4 py-4">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium text-zinc-200 leading-snug">
+          <p className="text-[15px] font-medium text-ink leading-snug">
             <MathText text={item.question} />
           </p>
           {result?.delta !== undefined && (
             <span
               className={`shrink-0 text-xs font-bold rounded-full px-2 py-0.5 ${
                 result.delta >= 0
-                  ? "bg-emerald-500/15 text-emerald-400"
-                  : "bg-red-500/15 text-red-400"
+                  ? "bg-good/15 text-good font-mono"
+                  : "bg-bad/15 text-bad font-mono"
               }`}
             >
               {result.delta >= 0 ? "+" : ""}{result.delta}
@@ -103,7 +103,7 @@ function QuizCard({
               <button
                 onClick={() => answer(i)}
                 disabled={!!result || submitting}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm border transition-colors disabled:cursor-default ${optionClass(i, result)} ${
+                className={`w-full text-left px-3 py-2 rounded-field text-sm font-sans border transition-colors duration-150 disabled:cursor-default ${optionClass(i, result)} ${
                   submitting && !result ? "opacity-60" : ""
                 }`}
               >
@@ -112,16 +112,16 @@ function QuizCard({
             </li>
           ))}
         </ol>
-        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+        {error && <p className="text-bad text-xs mt-2 font-sans">{error}</p>}
       </div>
 
       {result && (
         <div className="px-4 pb-4">
-          <p className={`text-xs font-semibold mb-1 ${result.correct ? "text-emerald-400" : "text-red-400"}`}>
+          <p className={`label-caps mb-1 ${result.correct ? "text-good" : "text-bad"}`}>
             {result.correct ? "Correct" : "Incorrect"}
           </p>
           {result.explanation && (
-            <p className="text-sm text-zinc-400 leading-relaxed">
+            <p className="text-sm text-ink-dim leading-relaxed">
               <MathText text={result.explanation} />
             </p>
           )}
@@ -175,14 +175,14 @@ export default function QuizSection({ content, postId }: Props) {
   return (
     <div className="px-5 py-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs uppercase tracking-widest text-zinc-500">Quiz</h3>
-        <span className="text-xs text-zinc-500">
+        <h3 className="label-caps">Quiz</h3>
+        <span className="text-xs text-ink-muted font-mono">
           {answered}/{content.length} answered
         </span>
       </div>
 
       {!user && (
-        <p className="text-xs text-zinc-500 -mt-2">
+        <p className="text-xs text-ink-muted -mt-2 font-sans">
           Log in to build your knowledge score with this quiz.
         </p>
       )}
@@ -200,13 +200,13 @@ export default function QuizSection({ content, postId }: Props) {
       ))}
 
       {allDone && (
-        <div className="border border-zinc-700 bg-zinc-900 rounded-xl px-4 py-3 text-center">
-          <p className="text-sm text-zinc-200 font-semibold">
+        <div className="card px-4 py-3 text-center">
+          <p className="text-sm text-ink font-semibold">
             {correct}/{content.length} correct
           </p>
           {lastRating !== undefined && (
-            <p className="text-xs text-zinc-500 mt-1">
-              Knowledge score: <span className="text-amber-400 font-semibold">{Math.round(lastRating)}</span>
+            <p className="text-xs text-ink-muted mt-1 font-sans">
+              Knowledge score: <span className="text-lamp font-semibold font-mono">{Math.round(lastRating)}</span>
             </p>
           )}
         </div>

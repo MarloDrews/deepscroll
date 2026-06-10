@@ -16,8 +16,8 @@ export default function NearbyConceptsSection({ content }: Props) {
       <div className="flex flex-col gap-4">
         {content.map((item, i) => (
           <div key={i} className="flex flex-col gap-1.5">
-            <span className="text-sm font-semibold text-violet-400">{item.concept}</span>
-            <p className="text-sm text-zinc-400 leading-relaxed">{item.distinction}</p>
+            <span className="text-sm font-semibold text-(--accent)">{item.concept}</span>
+            <p className="text-sm text-ink-dim leading-relaxed">{item.distinction}</p>
           </div>
         ))}
       </div>

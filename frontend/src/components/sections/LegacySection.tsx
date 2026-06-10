@@ -12,10 +12,10 @@ export default function LegacySection({ content }: Props) {
   return (
     <div className="px-5 py-6 flex flex-col gap-4">
       <SectionLabel>Legacy</SectionLabel>
-      <p className="text-base text-zinc-300 leading-relaxed">{content.body}</p>
+      <p className="text-base text-ink-body leading-relaxed">{content.body}</p>
       {content.present_day_impact && (
-        <div className="bg-rose-400/10 border border-rose-400/25 rounded-lg px-4 py-3">
-          <p className="text-sm text-rose-200 leading-relaxed">{content.present_day_impact}</p>
+        <div className="bg-(--accent)/10 border border-(--accent)/25 rounded-lg px-4 py-3">
+          <p className="text-sm text-ink leading-relaxed">{content.present_day_impact}</p>
         </div>
       )}
     </div>

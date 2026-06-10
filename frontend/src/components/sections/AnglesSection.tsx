@@ -13,8 +13,8 @@ export default function AnglesSection({ content, isUserContent }: Props) {
       <SectionLabel>Multiple Angles</SectionLabel>
       {content.map((angle, i) => (
         <div key={i} className="flex flex-col gap-2">
-          <h3 className="text-base font-semibold text-cyan-400 leading-snug">{angle.title}</h3>
-          <p className="text-sm text-zinc-300 leading-relaxed">{angle.body}</p>
+          <h3 className="text-base font-semibold text-(--accent) leading-snug">{angle.title}</h3>
+          <p className="text-sm text-ink-body leading-relaxed">{angle.body}</p>
           {angle.visual_svg && (
             <div className="w-full max-w-[360px] mx-auto bg-transparent mt-2">
               <SvgBlock svg={angle.visual_svg} isUserContent={isUserContent} />

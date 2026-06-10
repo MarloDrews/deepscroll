@@ -22,10 +22,10 @@ export default function SeeItSection({ content, isUserContent }: Props) {
         </div>
       )}
       {content.image_caption && (
-        <p className="text-xs text-zinc-500 text-center leading-relaxed">{content.image_caption}</p>
+        <p className="text-xs text-ink-muted text-center leading-relaxed">{content.image_caption}</p>
       )}
       {content.image_attribution && (
-        <p className="text-[10px] text-zinc-600 text-center">{content.image_attribution}</p>
+        <p className="text-[10px] text-ink-faint text-center">{content.image_attribution}</p>
       )}
     </div>
   )

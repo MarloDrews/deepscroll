@@ -89,7 +89,9 @@ export default function SectionRenderer({ sections, isUserContent, postId }: Pro
   const sorted = [...sections].sort((a, b) => a.order - b.order)
 
   return (
-    <div className="flex flex-col divide-y divide-edge">
+    // Serif is the reading voice; labels (.label-caps) and data (font-mono)
+    // opt back out locally. --accent is set by the post page container.
+    <div className="flex flex-col divide-y divide-edge font-serif">
       {sorted.map((section, i) => {
         const c = section.content
         switch (section.type) {

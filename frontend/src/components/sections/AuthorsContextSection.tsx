@@ -11,11 +11,11 @@ export default function AuthorsContextSection({ content }: Props) {
       <SectionLabel>{content.length === 1 ? "Author" : "Authors"}</SectionLabel>
       {content.map((author, i) => (
         <div key={i} className="flex flex-col gap-1">
-          <p className="text-sm font-semibold text-zinc-200">{author.name}</p>
-          <p className="text-xs text-zinc-500">{author.role}</p>
-          <p className="text-sm text-zinc-400 leading-snug">{author.one_line}</p>
+          <p className="text-sm font-semibold text-ink">{author.name}</p>
+          <p className="text-xs text-ink-muted">{author.role}</p>
+          <p className="text-sm text-ink-dim leading-snug">{author.one_line}</p>
           {author.affiliation && (
-            <p className="text-xs text-zinc-600">{author.affiliation}</p>
+            <p className="text-xs text-ink-faint">{author.affiliation}</p>
           )}
         </div>
       ))}

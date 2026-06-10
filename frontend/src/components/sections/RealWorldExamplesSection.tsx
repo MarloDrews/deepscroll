@@ -17,10 +17,10 @@ export default function RealWorldExamplesSection({ content }: Props) {
       {content.map((example, i) => (
         <div key={i} className="flex flex-col gap-2">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-200 leading-snug">{example.title}</h3>
-            <p className="text-xs text-violet-400/80 font-semibold tracking-widest uppercase mt-0.5">{example.domain}</p>
+            <h3 className="text-sm font-semibold text-ink leading-snug">{example.title}</h3>
+            <p className="text-xs text-(--accent)/80 font-semibold tracking-widest uppercase mt-0.5">{example.domain}</p>
           </div>
-          <p className="text-sm text-zinc-400 leading-relaxed">{example.body}</p>
+          <p className="text-sm text-ink-dim leading-relaxed">{example.body}</p>
         </div>
       ))}
     </div>

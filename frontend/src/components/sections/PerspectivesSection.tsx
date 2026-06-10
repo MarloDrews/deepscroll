@@ -12,17 +12,17 @@ export default function PerspectivesSection({ content }: Props) {
       {content.map((p, i) => (
         <div key={i} className="flex flex-col gap-3">
           <div>
-            <h3 className="text-base font-semibold text-emerald-400 leading-snug">{p.position_name}</h3>
-            <p className="text-xs text-zinc-500 mt-0.5">{p.school_or_thinker}</p>
+            <h3 className="text-base font-semibold text-(--accent) leading-snug">{p.position_name}</h3>
+            <p className="text-xs text-ink-muted mt-0.5">{p.school_or_thinker}</p>
           </div>
-          <p className="text-sm text-zinc-300 leading-relaxed">{p.body}</p>
-          <div className="border-l-2 border-emerald-400/40 pl-3 flex flex-col gap-2">
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              <span className="font-semibold text-zinc-300">Strongest argument: </span>
+          <p className="text-sm text-ink-body leading-relaxed">{p.body}</p>
+          <div className="border-l-2 border-(--accent)/40 pl-3 flex flex-col gap-2">
+            <p className="text-xs text-ink-dim leading-relaxed">
+              <span className="font-semibold text-ink-body">Strongest argument: </span>
               {p.strongest_argument}
             </p>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              <span className="font-semibold text-zinc-400">Example: </span>
+            <p className="text-xs text-ink-muted leading-relaxed">
+              <span className="font-semibold text-ink-dim">Example: </span>
               {p.concrete_example}
             </p>
           </div>

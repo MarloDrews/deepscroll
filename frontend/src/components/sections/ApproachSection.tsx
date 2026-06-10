@@ -12,7 +12,7 @@ export default function ApproachSection({ content, isUserContent }: Props) {
   return (
     <div className="px-5 py-6 flex flex-col gap-4">
       <SectionLabel>Approach</SectionLabel>
-      <p className="text-sm text-zinc-400 leading-relaxed">
+      <p className="text-sm text-ink-dim leading-relaxed">
         <MathText text={content.body} />
       </p>
       {content.visual_svg && (

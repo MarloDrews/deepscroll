@@ -11,13 +11,13 @@ export default function CastSection({ content }: Props) {
       <SectionLabel>Cast</SectionLabel>
       <div className="flex flex-col gap-3">
         {content.map((member, i) => (
-          <div key={i} className="flex flex-col gap-0.5 border border-zinc-800 rounded-xl px-4 py-3">
+          <div key={i} className="flex flex-col gap-0.5 border border-edge rounded-card px-4 py-3">
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-zinc-100">{member.name}</span>
-              <span className="text-xs text-zinc-500">{member.lifespan}</span>
+              <span className="text-sm font-semibold text-ink">{member.name}</span>
+              <span className="text-xs text-ink-muted">{member.lifespan}</span>
             </div>
-            <p className="text-xs font-semibold tracking-widest uppercase text-orange-400/80">{member.role}</p>
-            <p className="text-sm text-zinc-400 leading-snug mt-1">{member.one_line}</p>
+            <p className="text-xs font-semibold tracking-widest uppercase text-(--accent)/80">{member.role}</p>
+            <p className="text-sm text-ink-dim leading-snug mt-1">{member.one_line}</p>
           </div>
         ))}
       </div>

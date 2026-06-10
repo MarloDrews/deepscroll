@@ -14,8 +14,8 @@ export default function KeyFindingsSection({ content, isUserContent }: Props) {
       <SectionLabel>Key Findings</SectionLabel>
       {content.map((item, i) => (
         <div key={i} className="flex flex-col gap-2">
-          <p className="text-sm font-semibold text-zinc-200">{item.title}</p>
-          <p className="text-sm text-zinc-400 leading-relaxed">
+          <p className="text-sm font-semibold text-ink">{item.title}</p>
+          <p className="text-sm text-ink-dim leading-relaxed">
             <MathText text={item.finding} />
           </p>
           {item.visual_svg && (
@@ -24,7 +24,7 @@ export default function KeyFindingsSection({ content, isUserContent }: Props) {
             </div>
           )}
           {item.source_in_paper && (
-            <p className="text-xs text-zinc-600">Source: {item.source_in_paper}</p>
+            <p className="text-xs text-ink-faint">Source: {item.source_in_paper}</p>
           )}
         </div>
       ))}

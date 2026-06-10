@@ -24,13 +24,13 @@ export default function DefiningMomentsSection({ content, isUserContent }: Props
       {content.map((episode, i) => (
         <div key={i} className="flex flex-col gap-3">
           <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="text-xs font-mono text-rose-400 shrink-0">{episode.year_or_period}</span>
+            <span className="text-xs font-mono text-(--accent) shrink-0">{episode.year_or_period}</span>
             {episode.location && (
-              <span className="text-xs text-zinc-600">{episode.location}</span>
+              <span className="text-xs text-ink-faint">{episode.location}</span>
             )}
           </div>
-          <h4 className="text-lg font-semibold text-zinc-100 leading-snug">{episode.title}</h4>
-          <p className="text-base text-zinc-300 leading-relaxed">{episode.body}</p>
+          <h4 className="text-lg font-semibold text-ink leading-snug">{episode.title}</h4>
+          <p className="text-base text-ink-body leading-relaxed">{episode.body}</p>
 
           {episode.visual_svg && episode.visual_svg.length > 0 && (
             <SvgBlock svg={episode.visual_svg} isUserContent={isUserContent} className="w-full max-w-[400px] mx-auto my-3" />
@@ -46,10 +46,10 @@ export default function DefiningMomentsSection({ content, isUserContent }: Props
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
               />
               {episode.image_caption && (
-                <p className="text-xs text-zinc-500 mt-2 leading-snug">{episode.image_caption}</p>
+                <p className="text-xs text-ink-muted mt-2 leading-snug">{episode.image_caption}</p>
               )}
               {episode.image_attribution && (
-                <p className="text-xs text-zinc-700 mt-0.5">{episode.image_attribution}</p>
+                <p className="text-xs text-ink-faint mt-0.5">{episode.image_attribution}</p>
               )}
             </div>
           )}

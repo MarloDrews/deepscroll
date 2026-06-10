@@ -20,9 +20,9 @@ export default function PortraitSection({ content }: Props) {
       />
       {content.image_caption && (
         <div className="px-5 pt-3 pb-2">
-          <p className="text-sm text-zinc-400 leading-snug">{content.image_caption}</p>
+          <p className="text-sm text-ink-dim leading-snug">{content.image_caption}</p>
           {content.image_attribution && (
-            <p className="text-xs text-zinc-600 mt-1">{content.image_attribution}</p>
+            <p className="text-xs text-ink-faint mt-1">{content.image_attribution}</p>
           )}
         </div>
       )}

@@ -22,18 +22,18 @@ export default function FormalismSection({ content }: Props) {
     <div className="px-5 py-6 flex flex-col gap-5">
       <SectionLabel>Formalism</SectionLabel>
 
-      <p className="text-sm text-zinc-400 leading-relaxed">
+      <p className="text-sm text-ink-dim leading-relaxed">
         <MathText text={content.body} />
       </p>
 
       <div className="flex flex-col gap-5">
         {content.equations.map((eq, i) => (
           <div key={i} className="flex flex-col gap-2">
-            <p className="text-xs font-semibold text-indigo-400 uppercase tracking-wide">{eq.label}</p>
-            <div className="bg-zinc-900 rounded-xl px-4 py-3 border border-zinc-800">
+            <p className="text-xs font-semibold text-(--accent) uppercase tracking-wide">{eq.label}</p>
+            <div className="bg-surface-1 rounded-card px-4 py-3 border border-edge">
               <DisplayMath latex={eq.latex} />
             </div>
-            <p className="text-sm text-zinc-400 leading-relaxed">
+            <p className="text-sm text-ink-dim leading-relaxed">
               <MathText text={eq.description} />
             </p>
           </div>
@@ -42,14 +42,14 @@ export default function FormalismSection({ content }: Props) {
 
       {content.notation_legend.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-xs uppercase tracking-widest text-zinc-600">Notation</p>
-          <div className="flex flex-col divide-y divide-zinc-800">
+          <p className="text-xs uppercase tracking-widest text-ink-faint">Notation</p>
+          <div className="flex flex-col divide-y divide-edge">
             {content.notation_legend.map((item, i) => (
               <div key={i} className="flex gap-4 py-2 items-baseline">
                 <div className="shrink-0 w-28">
-                  <MathText text={`$${item.symbol}$`} className="text-sm text-zinc-300 font-mono" />
+                  <MathText text={`$${item.symbol}$`} className="text-sm text-ink-body font-mono" />
                 </div>
-                <p className="text-sm text-zinc-400 leading-snug">{item.meaning}</p>
+                <p className="text-sm text-ink-dim leading-snug">{item.meaning}</p>
               </div>
             ))}
           </div>

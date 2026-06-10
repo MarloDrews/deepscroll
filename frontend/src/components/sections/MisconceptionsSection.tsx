@@ -13,12 +13,12 @@ export default function MisconceptionsSection({ content }: Props) {
         {content.map((item, i) => (
           <div key={i} className="flex flex-col gap-2">
             <div className="flex items-start gap-2">
-              <span className="text-red-500 text-xs mt-0.5 shrink-0 font-bold">✕</span>
-              <span className="text-sm text-zinc-500 line-through leading-relaxed">{item.myth}</span>
+              <span className="text-bad text-xs mt-0.5 shrink-0 font-bold">✕</span>
+              <span className="text-sm text-ink-muted line-through leading-relaxed">{item.myth}</span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="text-emerald-400 text-xs mt-0.5 shrink-0 font-bold">✓</span>
-              <span className="text-sm text-zinc-300 leading-relaxed">{item.reality}</span>
+              <span className="text-good text-xs mt-0.5 shrink-0 font-bold">✓</span>
+              <span className="text-sm text-ink-body leading-relaxed">{item.reality}</span>
             </div>
           </div>
         ))}

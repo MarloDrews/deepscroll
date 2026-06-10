@@ -7,19 +7,19 @@ interface Props {
 export default function PaperCardSection({ content }: Props) {
   return (
     <div className="px-5 py-6">
-      <div className="border border-zinc-700 rounded-xl px-4 py-4 flex flex-col gap-3">
-        <p className="text-sm font-semibold text-zinc-100 leading-snug">{content.title}</p>
+      <div className="border border-edge-strong rounded-card px-4 py-4 flex flex-col gap-3">
+        <p className="text-sm font-semibold text-ink leading-snug">{content.title}</p>
         <div className="flex flex-col gap-1">
           {content.authors.map((a, i) => (
             <div key={i}>
-              <span className="text-xs text-zinc-300 font-medium">{a.name}</span>
+              <span className="text-xs text-ink-body font-medium">{a.name}</span>
               {a.affiliation && (
-                <span className="text-xs text-zinc-500"> · {a.affiliation}</span>
+                <span className="text-xs text-ink-muted"> · {a.affiliation}</span>
               )}
             </div>
           ))}
         </div>
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-500">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink-muted">
           <span>{content.venue}</span>
           <span>{content.year}</span>
           {content.funding_source && <span>{content.funding_source}</span>}
@@ -29,7 +29,7 @@ export default function PaperCardSection({ content }: Props) {
             href={content.doi}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors break-all"
+            className="text-xs text-(--accent) hover:text-(--accent) transition-colors break-all"
           >
             {content.doi}
           </a>

@@ -10,8 +10,8 @@ export default function TangibleSection({ content }: Props) {
       <ul className="flex flex-col gap-3">
         {content.map((line, i) => (
           <li key={i} className="flex items-start gap-3">
-            <span className="text-cyan-400 text-sm mt-0.5 shrink-0">•</span>
-            <span className="text-sm text-zinc-300 leading-relaxed">{line}</span>
+            <span className="text-(--accent) text-sm mt-0.5 shrink-0">•</span>
+            <span className="text-sm text-ink-body leading-relaxed">{line}</span>
           </li>
         ))}
       </ul>

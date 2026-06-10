@@ -16,12 +16,12 @@ export default function HowItWorksSection({ content }: Props) {
       <SectionLabel className="-mb-4">How It Works</SectionLabel>
       {content.map((step, i) => (
         <div key={i} className="flex gap-4">
-          <span className="shrink-0 w-6 h-6 rounded-full bg-violet-400/15 border border-violet-400/40 text-violet-400 text-xs flex items-center justify-center font-bold mt-0.5">
+          <span className="shrink-0 w-6 h-6 rounded-full bg-(--accent)/15 border border-(--accent)/40 text-(--accent) text-xs flex items-center justify-center font-bold mt-0.5">
             {step.step_number}
           </span>
           <div className="flex flex-col gap-1.5">
-            <h3 className="text-sm font-semibold text-violet-400 leading-snug">{step.title}</h3>
-            <p className="text-sm text-zinc-400 leading-relaxed">{step.body}</p>
+            <h3 className="text-sm font-semibold text-(--accent) leading-snug">{step.title}</h3>
+            <p className="text-sm text-ink-dim leading-relaxed">{step.body}</p>
           </div>
         </div>
       ))}
