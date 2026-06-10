@@ -63,7 +63,7 @@ frontend/
     search/
       page.tsx                  search input + Posts|Accounts scope toggle; posts scope: format chips + compact result cards; accounts scope: /api/search/users rows with Avatar, verified badge, bio and follow/unfollow button; debounced 300ms; BottomNav (search active)
     create/
-      page.tsx                  3-step Books creation wizard: step 1 — 7 format cards (only Books enabled, rest "coming soon"); step 2 — duplicate check; step 3 — Books form with Feed Card block, interest picker (1–5 required), 15 section accordions (9 required / 6 optional); submits {format, title, feed_card, sections, interests} to POST /api/posts; success screen links to /my-posts; BottomNav (create active)
+      page.tsx                  3-step creation wizard for all 7 formats: step 1 — 7 format cards (all enabled); step 2 — duplicate check; step 3 — Books: full wizard with Feed Card block + 15 section accordions (9 required / 6 optional); all other formats: format-specific feed card fields + body textarea (stored as heart section) + shared quiz + sources; submits {format, title, feed_card, sections, interests} to POST /api/posts; success screen links to /my-posts; BottomNav (create active)
     chat/
       page.tsx                  conversation list (avatar, name, last-message preview, relative time) + New chat overlay (user search via /api/search/users, multi-select chips, optional group name); login prompt when logged out; BottomNav (chat active)
       [id]/
@@ -407,7 +407,7 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | chat/page.tsx          | conversation list + New chat overlay (multi-select user picker, optional group name); BottomNav (chat active) |
 | chat/[id]/page.tsx     | conversation view: REST history + live websocket messages, bubble layout, plain-text rendering only |
 | chatSocket.ts          | useChatSocket hook: first-frame JWT auth, auto-reconnect, send(); ChatMessage/Conversation types |
-| stats/page.tsx         | Global and My Stats tabs; 19 global sections + 17 personal sections; per-section chart-type pill selector; WaffleChart (10×10 grid), CalendarHeatmap (12-month squares), ActivityHeatmap (7×24 grid), GaugeChart (SVG arc + needle) as custom components; recharts for all other chart types |
+| stats/page.tsx         | Global, Personal, and Friends tabs; per-section chart-type pill selector; WaffleChart (10×10 grid), CalendarHeatmap (12-month squares), ActivityHeatmap (7×24 grid), GaugeChart (SVG arc + needle) as custom components; recharts for all other chart types; Friends tab fetches /following + /elo + /profile per participant and renders 7 CategorySection blocks: Knowledge Leaderboard, Per-format Elo, Quiz Activity, Knowledge Efficiency (Elo/answer), Knowledge Breadth, Content Created, Social |
 
 ## CURRENT STATUS
 

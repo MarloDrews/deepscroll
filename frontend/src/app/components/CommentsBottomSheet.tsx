@@ -158,7 +158,7 @@ export default function CommentsBottomSheet({ postId, onClose, onCountChange }: 
               <button
                 type="submit"
                 disabled={!draft.trim() || posting}
-                className="text-sm text-lamp font-semibold disabled:text-ink-faint transition-colors cursor-pointer"
+                className="btn btn-quiet text-lamp disabled:text-ink-faint px-2"
               >
                 Post
               </button>

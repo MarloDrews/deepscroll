@@ -22,15 +22,11 @@ const FORMAT_DESCRIPTIONS: Record<FormatId, string> = {
   academy: "Teach something valuable",
 }
 
-// Only the Books wizard exists so far.
-const ENABLED_FORMATS = new Set<FormatId>(["books"])
-
 const FORMATS = FORMAT_IDS.map((id) => ({
   id,
   name: FORMAT_STYLES[id].label,
   accent: FORMAT_STYLES[id].border,
   description: FORMAT_DESCRIPTIONS[id],
-  enabled: ENABLED_FORMATS.has(id),
 }))
 
 interface Interest { id: number; name: string; slug: string }
@@ -139,6 +135,20 @@ export default function CreatePage() {
   const [authorContext, setAuthorContext] = useState({ body: "", image_url: "", image_attribution: "", wikipedia_url: "" })
   const [sources, setSources] = useState<Source[]>([emptySource()])
 
+  // Generic form state (non-Books formats)
+  const [gFc, setGFc] = useState({
+    field: "", headline: "",
+    name: "", role: "", born: "", died: "", nationality: "",
+    concept_name: "", one_liner: "",
+    the_question: "", framing: "empirical",
+    era: "", location: "",
+    authors_compact: "", venue: "", key_finding_one_line: "", published_year: "",
+    essence: "", teaser1: "", teaser2: "", teaser3: "",
+    reading_time: "", difficulty: "2" as "1"|"2"|"3",
+  })
+  const [genericBody, setGenericBody] = useState("")
+  const [genericQuizBadge, setGenericQuizBadge] = useState("")
+
   // Interests
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const [allInterests, setAllInterests] = useState<Interest[]>([])
@@ -183,6 +193,11 @@ export default function CreatePage() {
   function setFcField(key: keyof typeof fc, value: string) {
     setFc((prev) => ({ ...prev, [key]: value }))
     setErrors((prev) => { const n = { ...prev }; delete n[`fc_${key}`]; return n })
+  }
+
+  function setGFcField(key: keyof typeof gFc, value: string) {
+    setGFc((prev) => ({ ...prev, [key]: value }))
+    setErrors((prev) => { const n = { ...prev }; delete n[`gfc_${key}`]; return n })
   }
 
   function clearError(key: string) {
@@ -373,7 +388,122 @@ export default function CreatePage() {
     return errs
   }
 
+  // Build feed_card dict for non-Books formats based on gFc state
+  function buildGenericFeedCard(format: FormatId): Record<string, unknown> {
+    const teasers = [gFc.teaser1.trim(), gFc.teaser2.trim(), gFc.teaser3.trim()]
+    const base = {
+      teasers,
+      post_reading_time_min: parseInt(gFc.reading_time) || 0,
+      post_difficulty: parseInt(gFc.difficulty),
+    }
+    if (format === "facts") return { ...base, field: gFc.field.trim(), headline: gFc.headline.trim(), essence: gFc.essence.trim() }
+    if (format === "people") return { ...base, name: gFc.name.trim(), role: gFc.role.trim(), born: gFc.born.trim(), died: gFc.died.trim(), nationality: gFc.nationality.trim(), essence: gFc.essence.trim() }
+    if (format === "concepts") return { ...base, concept_name: gFc.concept_name.trim(), field: gFc.field.trim(), one_liner: gFc.one_liner.trim(), essence: gFc.essence.trim() }
+    if (format === "questions") return { ...base, the_question: gFc.the_question.trim(), framing: gFc.framing, essence: gFc.essence.trim() }
+    if (format === "stories") return { ...base, headline: gFc.headline.trim(), era: gFc.era.trim(), location: gFc.location.trim(), essence: gFc.essence.trim() }
+    if (format === "academy") return { ...base, field: gFc.field.trim(), title: gFc.concept_name.trim(), authors_compact: gFc.authors_compact.trim(), venue: gFc.venue.trim(), key_finding_one_line: gFc.key_finding_one_line.trim(), published_year: parseInt(gFc.published_year) || 0 }
+    return base
+  }
+
+  function buildGenericSections() {
+    const sections: Array<{ type: string; order: number; content: unknown }> = []
+    if (genericQuizBadge.trim()) sections.push({ type: "quiz_badge", order: 1, content: genericQuizBadge.trim() })
+    if (genericBody.trim()) sections.push({ type: "heart", order: 2, content: genericBody.trim() })
+    const validQuiz = quizItems.filter(q => q.question.trim() && q.options.every(o => o.trim()) && q.explanation.trim())
+    if (validQuiz.length >= 5) sections.push({
+      type: "quiz", order: 3,
+      content: validQuiz.map(q => ({
+        question: q.question.trim(),
+        options: q.options.map(o => o.trim()) as [string, string, string, string],
+        answer_index: parseInt(q.answer_index) as 0|1|2|3,
+        explanation: q.explanation.trim(),
+      })),
+    })
+    const validSources = sources.filter(s => s.label.trim() && s.url.trim())
+    if (validSources.length >= 1) sections.push({
+      type: "sources", order: 4,
+      content: validSources.map(s => ({ label: s.label.trim(), url: s.url.trim(), type: s.type })),
+    })
+    return sections
+  }
+
+  function validateGeneric(): Record<string, string> {
+    const errs: Record<string, string> = {}
+    const format = selectedFormat!
+    if (format === "facts") {
+      if (!gFc.field.trim()) errs.gfc_field = "Required"
+      if (!gFc.headline.trim()) errs.gfc_headline = "Required"
+    } else if (format === "people") {
+      if (!gFc.name.trim()) errs.gfc_name = "Required"
+      if (!gFc.role.trim()) errs.gfc_role = "Required"
+    } else if (format === "concepts") {
+      if (!gFc.concept_name.trim()) errs.gfc_concept_name = "Required"
+      if (!gFc.one_liner.trim()) errs.gfc_one_liner = "Required"
+    } else if (format === "questions") {
+      if (!gFc.the_question.trim()) errs.gfc_the_question = "Required"
+    } else if (format === "stories") {
+      if (!gFc.headline.trim()) errs.gfc_headline = "Required"
+      if (!gFc.era.trim()) errs.gfc_era = "Required"
+    } else if (format === "academy") {
+      if (!gFc.concept_name.trim()) errs.gfc_concept_name = "Required"
+      if (!gFc.authors_compact.trim()) errs.gfc_authors_compact = "Required"
+      if (!gFc.key_finding_one_line.trim()) errs.gfc_key_finding_one_line = "Required"
+    }
+    if (!gFc.essence.trim() && format !== "academy") errs.gfc_essence = "Required"
+    if (!gFc.teaser1.trim()) errs.gfc_teaser1 = "Required"
+    if (!gFc.teaser2.trim()) errs.gfc_teaser2 = "Required"
+    if (!gFc.teaser3.trim()) errs.gfc_teaser3 = "Required"
+    if (!gFc.reading_time || parseInt(gFc.reading_time) < 1) errs.gfc_reading_time = "Enter a positive number"
+    if (!genericBody.trim()) errs.generic_body = "Required"
+    const validQuiz = quizItems.filter(q => q.question.trim() && q.options.every(o => o.trim()) && q.explanation.trim())
+    if (validQuiz.length < 5) errs.s_quiz = "Need at least 5 complete questions"
+    const validSources = sources.filter(s => s.label.trim() && s.url.trim())
+    if (validSources.length < 1) errs.s_sources = "Add at least 1 source"
+    if (selectedInterests.length < 1) errs.interests = "Select 1–5 interests"
+    return errs
+  }
+
+  // Derive the post title from the format's primary field
+  function genericTitle(): string {
+    const format = selectedFormat!
+    if (format === "facts") return gFc.headline.trim()
+    if (format === "people") return gFc.name.trim()
+    if (format === "concepts") return gFc.concept_name.trim()
+    if (format === "questions") return gFc.the_question.trim()
+    if (format === "stories") return gFc.headline.trim()
+    if (format === "academy") return gFc.concept_name.trim()
+    return ""
+  }
+
   async function handleSubmit() {
+    if (selectedFormat !== "books") {
+      const errs = validateGeneric()
+      if (Object.keys(errs).length > 0) {
+        setErrors(errs)
+        const firstErrEl = document.querySelector("[data-err]")
+        if (firstErrEl) firstErrEl.scrollIntoView({ behavior: "smooth", block: "center" })
+        return
+      }
+      setSubmitting(true)
+      setServerError("")
+      try {
+        const title = genericTitle()
+        const payload = {
+          format: selectedFormat,
+          title,
+          feed_card: buildGenericFeedCard(selectedFormat as FormatId),
+          sections: buildGenericSections(),
+          interests: selectedInterests,
+        }
+        const res = await apiFetch("/api/posts", { method: "POST", body: JSON.stringify(payload) })
+        if (res.status === 201) { setStep("success") }
+        else { const data = await res.json(); setServerError(data.detail ?? "Something went wrong.") }
+      } catch { setServerError("Network error. Please try again.") }
+      finally { setSubmitting(false) }
+      return
+    }
+
+    // Books path (unchanged)
     const errs = validate()
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
@@ -417,6 +547,8 @@ export default function CreatePage() {
   }
 
   function resetForm() {
+    setGFc({ field: "", headline: "", name: "", role: "", born: "", died: "", nationality: "", concept_name: "", one_liner: "", the_question: "", framing: "empirical", era: "", location: "", authors_compact: "", venue: "", key_finding_one_line: "", published_year: "", essence: "", teaser1: "", teaser2: "", teaser3: "", reading_time: "", difficulty: "2" })
+    setGenericBody(""); setGenericQuizBadge("")
     setStep(1); setSelectedFormat(null); setSearchQuery(""); setSearchResults([])
     setFc({ cover_url: "", title: "", author: "", essence: "", teaser1: "", teaser2: "", teaser3: "", reading_time: "", difficulty: "2", year: "", genre: "" })
     setSEssence(""); setSQuizBadge(""); setSWhyEndures(""); setSHeart(""); setSWorldContext(""); setSCritique("")
@@ -494,15 +626,6 @@ export default function CreatePage() {
               <div className="grid grid-cols-2 gap-3 mb-6">
                 {FORMATS.map((fmt) => {
                   const selected = selectedFormat === fmt.id
-                  if (!fmt.enabled) {
-                    return (
-                      <div key={fmt.id} className="rounded-card p-5 border border-edge bg-surface-1/40 opacity-50 relative">
-                        <div className="font-semibold text-ink-dim text-sm">{fmt.name}</div>
-                        <div className="text-ink-faint text-xs mt-0.5">{fmt.description}</div>
-                        <span className="absolute top-2 right-2 text-[10px] text-ink-muted border border-edge-strong rounded px-1.5 py-0.5">Coming soon</span>
-                      </div>
-                    )
-                  }
                   return (
                     <button
                       key={fmt.id}
@@ -561,8 +684,237 @@ export default function CreatePage() {
             </>
           )}
 
+          {/* STEP 3: Generic form for non-Books formats */}
+          {step === 3 && selectedFormat && selectedFormat !== "books" && (() => {
+            const fmt = selectedFormat
+            const fmtLabel = FORMAT_STYLES[fmt]?.label ?? fmt
+            return (
+              <>
+                <h1 className="font-serif text-ink text-2xl font-medium mb-5">{fmtLabel} post</h1>
+
+                {/* Feed card */}
+                <div className="border border-lamp/30 rounded-card px-4 pb-4 pt-3 mb-3 bg-lamp/5">
+                  <p className="label-caps text-lamp mb-3">Feed Card</p>
+
+                  {fmt === "facts" && (
+                    <>
+                      <label className={labelCls}>Field *</label>
+                      <input type="text" value={gFc.field} onChange={e => setGFcField("field", e.target.value)} placeholder="Physics" className={inputCls} />
+                      <FieldError msg={errors.gfc_field} />
+                      <label className={labelCls}>Headline *</label>
+                      <input type="text" value={gFc.headline} onChange={e => setGFcField("headline", e.target.value)} placeholder="The mind-blowing fact in one line..." className={inputCls} />
+                      <FieldError msg={errors.gfc_headline} />
+                    </>
+                  )}
+
+                  {fmt === "people" && (
+                    <>
+                      <label className={labelCls}>Full name *</label>
+                      <input type="text" value={gFc.name} onChange={e => setGFcField("name", e.target.value)} placeholder="Marie Curie" className={inputCls} />
+                      <FieldError msg={errors.gfc_name} />
+                      <label className={labelCls}>Role *</label>
+                      <input type="text" value={gFc.role} onChange={e => setGFcField("role", e.target.value)} placeholder="Physicist & Chemist" className={inputCls} />
+                      <FieldError msg={errors.gfc_role} />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className={labelCls}>Born</label>
+                          <input type="text" value={gFc.born} onChange={e => setGFcField("born", e.target.value)} placeholder="1867" className={inputCls} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>Died</label>
+                          <input type="text" value={gFc.died} onChange={e => setGFcField("died", e.target.value)} placeholder="1934" className={inputCls} />
+                        </div>
+                      </div>
+                      <label className={labelCls}>Nationality</label>
+                      <input type="text" value={gFc.nationality} onChange={e => setGFcField("nationality", e.target.value)} placeholder="Polish-French" className={inputCls} />
+                    </>
+                  )}
+
+                  {fmt === "concepts" && (
+                    <>
+                      <label className={labelCls}>Concept name *</label>
+                      <input type="text" value={gFc.concept_name} onChange={e => setGFcField("concept_name", e.target.value)} placeholder="Confirmation Bias" className={inputCls} />
+                      <FieldError msg={errors.gfc_concept_name} />
+                      <label className={labelCls}>Field</label>
+                      <input type="text" value={gFc.field} onChange={e => setGFcField("field", e.target.value)} placeholder="Psychology" className={inputCls} />
+                      <label className={labelCls}>One-liner *</label>
+                      <input type="text" value={gFc.one_liner} onChange={e => setGFcField("one_liner", e.target.value)} placeholder="The concept in a single clear sentence..." className={inputCls} />
+                      <FieldError msg={errors.gfc_one_liner} />
+                    </>
+                  )}
+
+                  {fmt === "questions" && (
+                    <>
+                      <label className={labelCls}>The question *</label>
+                      <input type="text" value={gFc.the_question} onChange={e => setGFcField("the_question", e.target.value)} placeholder="Is free will an illusion?" className={inputCls} />
+                      <FieldError msg={errors.gfc_the_question} />
+                      <label className={labelCls}>Framing</label>
+                      <select value={gFc.framing} onChange={e => setGFcField("framing", e.target.value)} className={inputCls}>
+                        {["empirical", "ethical", "aesthetic", "practical", "metaphysical"].map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    </>
+                  )}
+
+                  {fmt === "stories" && (
+                    <>
+                      <label className={labelCls}>Headline *</label>
+                      <input type="text" value={gFc.headline} onChange={e => setGFcField("headline", e.target.value)} placeholder="The story in one compelling line..." className={inputCls} />
+                      <FieldError msg={errors.gfc_headline} />
+                      <label className={labelCls}>Era *</label>
+                      <input type="text" value={gFc.era} onChange={e => setGFcField("era", e.target.value)} placeholder="1940s" className={inputCls} />
+                      <FieldError msg={errors.gfc_era} />
+                      <label className={labelCls}>Location</label>
+                      <input type="text" value={gFc.location} onChange={e => setGFcField("location", e.target.value)} placeholder="Berlin, Germany" className={inputCls} />
+                    </>
+                  )}
+
+                  {fmt === "academy" && (
+                    <>
+                      <label className={labelCls}>Paper / Article title *</label>
+                      <input type="text" value={gFc.concept_name} onChange={e => setGFcField("concept_name", e.target.value)} placeholder="On the Origin of Species" className={inputCls} />
+                      <FieldError msg={errors.gfc_concept_name} />
+                      <label className={labelCls}>Field</label>
+                      <input type="text" value={gFc.field} onChange={e => setGFcField("field", e.target.value)} placeholder="Evolutionary Biology" className={inputCls} />
+                      <label className={labelCls}>Authors *</label>
+                      <input type="text" value={gFc.authors_compact} onChange={e => setGFcField("authors_compact", e.target.value)} placeholder="Darwin, C." className={inputCls} />
+                      <FieldError msg={errors.gfc_authors_compact} />
+                      <label className={labelCls}>Journal / Venue</label>
+                      <input type="text" value={gFc.venue} onChange={e => setGFcField("venue", e.target.value)} placeholder="Nature" className={inputCls} />
+                      <label className={labelCls}>Key finding (one line) *</label>
+                      <input type="text" value={gFc.key_finding_one_line} onChange={e => setGFcField("key_finding_one_line", e.target.value)} placeholder="Species evolve through natural selection..." className={inputCls} />
+                      <FieldError msg={errors.gfc_key_finding_one_line} />
+                      <label className={labelCls}>Published year</label>
+                      <input type="number" value={gFc.published_year} onChange={e => setGFcField("published_year", e.target.value)} placeholder="1859" className={inputCls} />
+                    </>
+                  )}
+
+                  {fmt !== "academy" && (
+                    <>
+                      <label className={labelCls}>Essence * <span className="normal-case text-ink-faint">(why this matters)</span></label>
+                      <textarea value={gFc.essence} onChange={e => setGFcField("essence", e.target.value)} maxLength={300} rows={3} placeholder="In one or two sentences..." className={`${inputCls} resize-none`} />
+                      <FieldError msg={errors.gfc_essence} />
+                    </>
+                  )}
+
+                  <label className={labelCls}>Teaser 1 *</label>
+                  <input type="text" value={gFc.teaser1} onChange={e => setGFcField("teaser1", e.target.value)} maxLength={80} placeholder="What you'll learn..." className={inputCls} />
+                  <FieldError msg={errors.gfc_teaser1} />
+                  <label className={labelCls}>Teaser 2 *</label>
+                  <input type="text" value={gFc.teaser2} onChange={e => setGFcField("teaser2", e.target.value)} maxLength={80} placeholder="Another insight..." className={inputCls} />
+                  <FieldError msg={errors.gfc_teaser2} />
+                  <label className={labelCls}>Teaser 3 *</label>
+                  <input type="text" value={gFc.teaser3} onChange={e => setGFcField("teaser3", e.target.value)} maxLength={80} placeholder="A third takeaway..." className={inputCls} />
+                  <FieldError msg={errors.gfc_teaser3} />
+
+                  <div className="grid grid-cols-2 gap-3 mt-1">
+                    <div>
+                      <label className={labelCls}>Read time (min) *</label>
+                      <input type="number" min={1} value={gFc.reading_time} onChange={e => setGFcField("reading_time", e.target.value)} placeholder="10" className={inputCls} />
+                      <FieldError msg={errors.gfc_reading_time} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Difficulty *</label>
+                      <select value={gFc.difficulty} onChange={e => setGFcField("difficulty", e.target.value as "1"|"2"|"3")} className={inputCls}>
+                        <option value="1">1 — Easy</option>
+                        <option value="2">2 — Medium</option>
+                        <option value="3">3 — Hard</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interests */}
+                <div className="card px-4 pb-4 pt-3 mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="label-caps text-lamp">Interests *</p>
+                    <span className="text-ink-muted text-xs font-mono">{selectedInterests.length}/5</span>
+                  </div>
+                  <FieldError msg={errors.interests} />
+                  {interestSections.map((sec) => (
+                    <div key={sec.label} className="mb-3">
+                      <p className="text-ink-faint text-xs mb-1.5">{sec.label}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {sec.items.map((interest) => {
+                          const isSelected = selectedInterests.includes(interest.slug)
+                          return (
+                            <button key={interest.slug} onClick={() => toggleInterest(interest.slug)}
+                              className={`rounded-full px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors duration-150 ${isSelected ? "bg-lamp text-surface-0" : "bg-surface-2 text-ink-dim"}`}>
+                              {interest.name}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Sections */}
+                <p className="label-caps mb-3 mt-5">Sections</p>
+
+                <Accordion title="Quiz Badge" required defaultOpen>
+                  <p className="text-ink-muted text-xs mb-2">Short pill text above the quiz (e.g. &ldquo;Test your knowledge&rdquo;)</p>
+                  <input type="text" value={genericQuizBadge} onChange={e => setGenericQuizBadge(e.target.value)} maxLength={60} placeholder="Test your knowledge" className={inputCls} />
+                </Accordion>
+
+                <Accordion title="Body" required defaultOpen>
+                  <p className="text-ink-muted text-xs mb-2">The main content — explain, describe, or narrate in full</p>
+                  <textarea value={genericBody} onChange={e => { setGenericBody(e.target.value); clearError("generic_body") }} rows={10} placeholder="Write the full content here..." className={`${inputCls} resize-none`} />
+                  <FieldError msg={errors.generic_body} />
+                </Accordion>
+
+                <Accordion title="Quiz (5–10 questions)" required defaultOpen>
+                  <FieldError msg={errors.s_quiz} />
+                  {quizItems.map((q, i) => (
+                    <div key={i} className="mb-4 border border-edge rounded-field p-3">
+                      <p className="text-ink-muted text-xs mb-2">Question {i + 1}</p>
+                      <label className="text-ink-faint text-xs mb-1 block">Question text *</label>
+                      <textarea value={q.question} onChange={e => { const n = [...quizItems]; n[i] = { ...n[i], question: e.target.value }; setQuizItems(n) }} rows={2} className={`${inputCls} resize-none mb-2`} />
+                      {(["A", "B", "C", "D"] as const).map((opt, j) => (
+                        <div key={j} className="flex items-center gap-2 mb-1.5">
+                          <input type="radio" name={`gquiz_answer_${i}`} checked={q.answer_index === String(j) as "0"|"1"|"2"|"3"} onChange={() => { const n = [...quizItems]; n[i] = { ...n[i], answer_index: String(j) as "0"|"1"|"2"|"3" }; setQuizItems(n) }} className="shrink-0 accent-lamp" />
+                          <input type="text" value={q.options[j]} onChange={e => { const n = [...quizItems]; const opts = [...n[i].options] as [string,string,string,string]; opts[j] = e.target.value; n[i] = { ...n[i], options: opts }; setQuizItems(n) }} placeholder={`Option ${opt}`} className={`${inputCls} flex-1`} />
+                        </div>
+                      ))}
+                      <label className="text-ink-faint text-xs mb-1 block mt-2">Explanation *</label>
+                      <textarea value={q.explanation} onChange={e => { const n = [...quizItems]; n[i] = { ...n[i], explanation: e.target.value }; setQuizItems(n) }} rows={2} placeholder="Why this is the correct answer..." className={`${inputCls} resize-none`} />
+                    </div>
+                  ))}
+                  <div className="flex gap-3">
+                    {quizItems.length < 10 && <button onClick={() => setQuizItems([...quizItems, emptyQuizItem()])} className="text-lamp text-xs font-semibold cursor-pointer">+ Add question</button>}
+                    {quizItems.length > 5 && <button onClick={() => setQuizItems(quizItems.slice(0, -1))} className="text-ink-muted text-xs cursor-pointer">Remove last</button>}
+                  </div>
+                </Accordion>
+
+                <Accordion title="Sources (1–10)" required defaultOpen>
+                  <FieldError msg={errors.s_sources} />
+                  {sources.map((s, i) => (
+                    <div key={i} className="mb-3 border border-edge rounded-field p-3">
+                      <label className="text-ink-faint text-xs mb-1 block">Label *</label>
+                      <input type="text" value={s.label} onChange={e => { const n = [...sources]; n[i] = { ...n[i], label: e.target.value }; setSources(n) }} placeholder="Source name..." className={`${inputCls} mb-2`} />
+                      <label className="text-ink-faint text-xs mb-1 block">URL *</label>
+                      <input type="url" value={s.url} onChange={e => { const n = [...sources]; n[i] = { ...n[i], url: e.target.value }; setSources(n) }} placeholder="https://..." className={`${inputCls} mb-2`} />
+                      <label className="text-ink-faint text-xs mb-1 block">Type</label>
+                      <select value={s.type} onChange={e => { const n = [...sources]; n[i] = { ...n[i], type: e.target.value }; setSources(n) }} className={inputCls}>
+                        {SOURCE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                  ))}
+                  <div className="flex gap-3">
+                    {sources.length < 10 && <button onClick={() => setSources([...sources, emptySource()])} className="text-lamp text-xs font-semibold cursor-pointer">+ Add source</button>}
+                    {sources.length > 1 && <button onClick={() => setSources(sources.slice(0, -1))} className="text-ink-muted text-xs cursor-pointer">Remove last</button>}
+                  </div>
+                </Accordion>
+
+                {serverError && <p className="text-bad text-sm mb-3">{serverError}</p>}
+                <button onClick={handleSubmit} disabled={submitting} className="btn btn-primary rounded-full h-12 w-full mt-4">
+                  {submitting ? "Submitting..." : "Submit post"}
+                </button>
+              </>
+            )
+          })()}
+
           {/* STEP 3: Books form */}
-          {step === 3 && (
+          {step === 3 && selectedFormat === "books" && (
             <>
               <h1 className="font-serif text-ink text-2xl font-medium mb-5">Books post</h1>
 
