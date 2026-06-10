@@ -7,8 +7,10 @@ import { type Post } from "@/app/components/PostCard"
 import { fcStr } from "@/types/post"
 import { FORMAT_IDS, FORMAT_STYLES, type FormatId } from "@/lib/formats"
 import { apiFetch } from "@/app/lib/api"
+import { useAuth } from "@/app/lib/auth"
 import BottomNav from "@/app/components/BottomNav"
 import VerifiedBadge from "@/components/VerifiedBadge"
+import Avatar from "@/components/Avatar"
 import Spinner from "@/components/Spinner"
 
 const FORMAT_CHIPS: { label: string; value: FormatId | "" }[] = [
@@ -17,6 +19,17 @@ const FORMAT_CHIPS: { label: string; value: FormatId | "" }[] = [
 ]
 
 type FormatValue = FormatId | ""
+type Scope = "posts" | "accounts"
+
+interface UserResult {
+  username: string
+  is_verified: boolean
+  is_private: boolean
+  bio: string | null
+  avatar_url: string | null
+  is_self: boolean
+  follow_status: string | null
+}
 
 function Snippet({ post }: { post: Post }) {
   const text = fcStr(post.feed_card, "essence") || fcStr(post.feed_card, "headline")
@@ -34,11 +47,73 @@ function FormatBadge({ format }: { format: string }) {
   )
 }
 
+function UserRow({ user, loggedIn }: { user: UserResult; loggedIn: boolean }) {
+  const router = useRouter()
+  const [followStatus, setFollowStatus] = useState(user.follow_status)
+  const [busy, setBusy] = useState(false)
+
+  async function toggleFollow(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (busy) return
+    setBusy(true)
+    try {
+      if (followStatus === "accepted" || followStatus === "pending") {
+        await apiFetch(`/api/users/${user.username}/follow`, { method: "DELETE" })
+        setFollowStatus("none")
+      } else {
+        const r = await apiFetch(`/api/users/${user.username}/follow`, { method: "POST" })
+        if (r.ok) {
+          const d = await r.json()
+          setFollowStatus(d.status)
+        }
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const following = followStatus === "accepted"
+  const requested = followStatus === "pending"
+
+  return (
+    <button
+      onClick={() => router.push(`/profile/${user.username}`)}
+      className="w-full text-left bg-surface-1 rounded-card px-4 py-3 flex items-center gap-3"
+    >
+      <Avatar username={user.username} avatarUrl={user.avatar_url} size={44} />
+      <div className="flex-1 min-w-0">
+        <p className="flex items-center gap-1.5 text-white text-sm font-semibold truncate">
+          @{user.username}
+          {user.is_verified && <VerifiedBadge size={14} />}
+        </p>
+        {user.bio && <p className="text-zinc-500 text-xs truncate">{user.bio}</p>}
+        {user.is_private && !user.bio && <p className="text-zinc-600 text-xs">Private account</p>}
+      </div>
+      {loggedIn && !user.is_self && (
+        <span
+          onClick={toggleFollow}
+          role="button"
+          className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-opacity ${busy ? "opacity-50" : ""} ${
+            following || requested
+              ? "border border-zinc-600 text-zinc-400"
+              : "bg-white text-zinc-950"
+          }`}
+        >
+          {following ? "Following" : requested ? "Requested" : "Follow"}
+        </span>
+      )}
+    </button>
+  )
+}
+
 export default function SearchPage() {
   const router = useRouter()
+  const { user: authUser } = useAuth()
   const [query, setQuery] = useState("")
+  const [scope, setScope] = useState<Scope>("posts")
   const [formatFilter, setFormatFilter] = useState<FormatValue>("")
   const [results, setResults] = useState<Post[] | null>(null)
+  const [userResults, setUserResults] = useState<UserResult[] | null>(null)
   const [loading, setLoading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -50,6 +125,7 @@ export default function SearchPage() {
     const trimmed = query.trim()
     if (!trimmed) {
       setResults(null)
+      setUserResults(null)
       setLoading(false)
       return
     }
@@ -57,18 +133,28 @@ export default function SearchPage() {
     setLoading(true)
     const timer = setTimeout(async () => {
       try {
-        const params = new URLSearchParams({ q: trimmed })
-        if (formatFilter) params.set("format", formatFilter)
-        const res = await apiFetch(`/api/search?${params}`)
-        const data: Post[] = await res.json()
-        setResults(data)
+        if (scope === "posts") {
+          const params = new URLSearchParams({ q: trimmed })
+          if (formatFilter) params.set("format", formatFilter)
+          const res = await apiFetch(`/api/search?${params}`)
+          const data: Post[] = await res.json()
+          setResults(data)
+        } else {
+          const res = await apiFetch(`/api/search/users?${new URLSearchParams({ q: trimmed })}`)
+          const data: UserResult[] = await res.json()
+          setUserResults(data)
+        }
       } finally {
         setLoading(false)
       }
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [query, formatFilter])
+  }, [query, formatFilter, scope])
+
+  const hasQuery = !!query.trim()
+  const emptyPosts = scope === "posts" && results !== null && results.length === 0
+  const emptyUsers = scope === "accounts" && userResults !== null && userResults.length === 0
 
   return (
     <div className="h-[100dvh] bg-zinc-950 flex justify-center">
@@ -98,7 +184,7 @@ export default function SearchPage() {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search posts, books, questions…"
+                placeholder={scope === "posts" ? "Search posts, books, questions…" : "Search accounts…"}
                 className="w-full bg-zinc-900 rounded-xl text-white placeholder:text-zinc-500 text-sm pl-9 pr-9 py-2.5 focus:outline-none"
               />
               {query && (
@@ -115,46 +201,73 @@ export default function SearchPage() {
             </div>
           </div>
 
-          {/* Format chips */}
-          <div className="flex gap-2 mt-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none] pb-1">
-            {FORMAT_CHIPS.map((chip) => {
-              const isActive = formatFilter === chip.value
-              const style = chip.value ? FORMAT_STYLES[chip.value] : null
-              return (
-                <button
-                  key={chip.value}
-                  onClick={() => setFormatFilter(chip.value)}
-                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    isActive
-                      ? style
-                        ? `bg-zinc-800 ${style.text}`
-                        : "bg-zinc-700 text-white"
-                      : "bg-zinc-800 text-zinc-400"
-                  }`}
-                >
-                  {chip.label}
-                </button>
-              )
-            })}
+          {/* Scope toggle: Posts | Accounts */}
+          <div className="flex gap-2 mt-2">
+            {(["posts", "accounts"] as Scope[]).map((s) => (
+              <button
+                key={s}
+                onClick={() => setScope(s)}
+                className={`flex-1 rounded-lg py-1.5 text-xs font-semibold capitalize transition-colors ${
+                  scope === s ? "bg-zinc-800 text-white" : "bg-zinc-900 text-zinc-500"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
           </div>
+
+          {/* Format chips (posts scope only) */}
+          {scope === "posts" && (
+            <div className="flex gap-2 mt-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none] pb-1">
+              {FORMAT_CHIPS.map((chip) => {
+                const isActive = formatFilter === chip.value
+                const style = chip.value ? FORMAT_STYLES[chip.value] : null
+                return (
+                  <button
+                    key={chip.value}
+                    onClick={() => setFormatFilter(chip.value)}
+                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                      isActive
+                        ? style
+                          ? `bg-zinc-800 ${style.text}`
+                          : "bg-zinc-700 text-white"
+                        : "bg-zinc-800 text-zinc-400"
+                    }`}
+                  >
+                    {chip.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Results area */}
-        <div className="absolute inset-0 top-[108px] overflow-y-auto pb-14 [&::-webkit-scrollbar]:hidden [scrollbar-width:none] px-3">
+        <div className={`absolute inset-0 ${scope === "posts" ? "top-[148px]" : "top-[112px]"} overflow-y-auto pb-14 [&::-webkit-scrollbar]:hidden [scrollbar-width:none] px-3`}>
           {loading ? (
             <div className="flex justify-center pt-16">
               <Spinner />
             </div>
-          ) : !query.trim() ? (
+          ) : !hasQuery ? (
             <div className="flex flex-col items-center justify-center pt-20 text-center px-6">
-              <p className="text-zinc-500 text-sm">Search posts, books, questions…</p>
+              <p className="text-zinc-500 text-sm">
+                {scope === "posts" ? "Search posts, books, questions…" : "Find people to follow"}
+              </p>
             </div>
-          ) : results !== null && results.length === 0 ? (
+          ) : emptyPosts || emptyUsers ? (
             <div className="flex flex-col items-center justify-center pt-20 text-center px-6 gap-2">
               <p className="text-white font-semibold text-sm">No results for &ldquo;{query}&rdquo;</p>
-              <p className="text-zinc-500 text-xs">Try a different word or format</p>
+              <p className="text-zinc-500 text-xs">
+                {scope === "posts" ? "Try a different word or format" : "Try a different username"}
+              </p>
             </div>
-          ) : results !== null ? (
+          ) : scope === "accounts" && userResults !== null ? (
+            <div className="flex flex-col gap-2 pt-2">
+              {userResults.map((u) => (
+                <UserRow key={u.username} user={u} loggedIn={!!authUser} />
+              ))}
+            </div>
+          ) : scope === "posts" && results !== null ? (
             <div className="flex flex-col gap-2 pt-2">
               {results.map((post) => (
                 <button
