@@ -56,6 +56,7 @@ SEED_USERNAME = "Marlo"
 FORMAT_INTEREST_SLUGS = {
     "books": ["psychology", "behavioral-economics", "decision-making", "neuroscience"],
     "facts": ["biology", "animals", "everyday-science"],
+    "people": ["physics", "history-of-science", "world-wars"],
     "concepts": ["mental-models", "critical-thinking", "epistemology"],
     "questions": ["philosophy", "ethics", "critical-thinking", "epistemology"],
     "stories": ["history", "crime", "forgotten-history"],
