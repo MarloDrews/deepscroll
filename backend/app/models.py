@@ -118,6 +118,46 @@ class QuizAnswer(Base):
     created_at     = Column(DateTime, default=datetime.utcnow)
 
 
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id         = Column(Integer, primary_key=True)
+    is_group   = Column(Boolean, nullable=False, default=False)
+    # Group display name; NULL for direct messages (name derived from the other user).
+    name       = Column(String, nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    participants = relationship("ConversationParticipant", back_populates="conversation")
+
+
+class ConversationParticipant(Base):
+    __tablename__ = "conversation_participants"
+    __table_args__ = (
+        UniqueConstraint("conversation_id", "user_id", name="uq_conversation_participant"),
+    )
+
+    id              = Column(Integer, primary_key=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False, index=True)
+    user_id         = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    joined_at       = Column(DateTime, default=datetime.utcnow)
+
+    conversation = relationship("Conversation", back_populates="participants")
+    user         = relationship("User")
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id              = Column(Integer, primary_key=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False, index=True)
+    sender_id       = Column(Integer, ForeignKey("users.id"), nullable=False)
+    body            = Column(Text, nullable=False)
+    created_at      = Column(DateTime, default=datetime.utcnow, index=True)
+
+    sender = relationship("User")
+
+
 class Comment(Base):
     __tablename__ = "comments"
 
