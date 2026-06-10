@@ -88,8 +88,8 @@ export default function EmptyState({ format, accentColor }: Props) {
     <div className="flex flex-col items-center gap-4 px-8 text-center">
       <FormatIcon format={format} color={accentColor} />
       <div className="flex flex-col gap-1.5">
-        <p className="text-white font-semibold">{label} coming soon</p>
-        <p className="text-zinc-500 text-sm leading-relaxed">
+        <p className="text-ink font-serif font-medium text-lg">{label} coming soon</p>
+        <p className="text-ink-muted text-sm leading-relaxed">
           We&apos;re curating quality {label.toLowerCase()} posts. Check back soon.
         </p>
       </div>

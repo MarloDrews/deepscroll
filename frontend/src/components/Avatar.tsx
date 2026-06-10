@@ -29,12 +29,13 @@ export default function Avatar({ username, avatarUrl, size, className = "" }: Pr
   }
   return (
     <div
-      className={`rounded-full bg-zinc-700 flex items-center justify-center shrink-0 ${className}`}
+      className={`rounded-full bg-surface-3 border border-edge flex items-center justify-center shrink-0 ${className}`}
       style={{ width: size, height: size }}
     >
+      {/* Serif initial, like a drop cap (Lamplight identity). */}
       <span
-        className="text-white font-bold uppercase"
-        style={{ fontSize: Math.max(12, Math.round(size * 0.4)) }}
+        className="text-ink-dim font-serif font-semibold uppercase"
+        style={{ fontSize: Math.max(12, Math.round(size * 0.44)) }}
       >
         {username.charAt(0)}
       </span>

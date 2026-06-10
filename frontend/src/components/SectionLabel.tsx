@@ -8,9 +8,9 @@ interface Props {
   className?: string
 }
 
-export default function SectionLabel({ children, color = "text-zinc-500", className = "" }: Props) {
+export default function SectionLabel({ children, color = "", className = "" }: Props) {
   return (
-    <h3 className={`text-xs font-semibold tracking-widest uppercase ${color} ${className}`}>
+    <h3 className={`label-caps ${color} ${className}`}>
       {children}
     </h3>
   )

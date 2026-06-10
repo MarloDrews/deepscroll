@@ -11,8 +11,9 @@ export default function BottomNav({ activeTab }: { activeTab: ActiveTab }) {
   const router = useRouter()
   const { user } = useAuth()
 
+  // Active item glows lamp-gold (the one brand accent); the rest stay muted.
   function icon(tab: ActiveTab) {
-    return activeTab === tab ? "text-white" : "text-zinc-500"
+    return activeTab === tab ? "text-lamp" : "text-ink-muted hover:text-ink-dim"
   }
 
   return (
@@ -24,7 +25,7 @@ export default function BottomNav({ activeTab }: { activeTab: ActiveTab }) {
         {/* Chat */}
         <button
           onClick={() => router.push("/chat")}
-          className={`flex-1 flex items-center justify-center h-full ${icon("chat")}`}
+          className={`flex-1 flex items-center justify-center h-full cursor-pointer transition-colors duration-150 ${icon("chat")}`}
           aria-label="Chat"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -35,7 +36,7 @@ export default function BottomNav({ activeTab }: { activeTab: ActiveTab }) {
         {/* Stats */}
         <button
           onClick={() => router.push("/stats")}
-          className={`flex-1 flex items-center justify-center h-full ${icon("stats")}`}
+          className={`flex-1 flex items-center justify-center h-full cursor-pointer transition-colors duration-150 ${icon("stats")}`}
           aria-label="Stats"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -48,7 +49,7 @@ export default function BottomNav({ activeTab }: { activeTab: ActiveTab }) {
         {/* Feed */}
         <button
           onClick={() => router.push("/")}
-          className={`flex-1 flex items-center justify-center h-full ${icon("feed")}`}
+          className={`flex-1 flex items-center justify-center h-full cursor-pointer transition-colors duration-150 ${icon("feed")}`}
           aria-label="Feed"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -56,10 +57,10 @@ export default function BottomNav({ activeTab }: { activeTab: ActiveTab }) {
           </svg>
         </button>
 
-        {/* Create — white when logged in, dimmed when logged out */}
+        {/* Create — bright ink when logged in, dimmed when logged out */}
         <button
           onClick={() => router.push("/create")}
-          className={`flex-1 flex items-center justify-center h-full ${user ? "text-white" : "text-zinc-500"}`}
+          className={`flex-1 flex items-center justify-center h-full cursor-pointer transition-colors duration-150 ${user ? "text-ink" : "text-ink-muted hover:text-ink-dim"}`}
           aria-label="Create"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -72,7 +73,7 @@ export default function BottomNav({ activeTab }: { activeTab: ActiveTab }) {
         {/* Profile */}
         <button
           onClick={() => router.push(user ? "/profile" : "/login")}
-          className={`flex-1 flex items-center justify-center h-full ${icon("profile")}`}
+          className={`flex-1 flex items-center justify-center h-full cursor-pointer transition-colors duration-150 ${icon("profile")}`}
           aria-label="Profile"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
