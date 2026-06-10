@@ -162,20 +162,20 @@ export default function InterestPicker() {
   const otherItems = interests.filter((i) => !categorisedSlugs.has(i.slug))
 
   return (
-    <div className="h-[100dvh] bg-zinc-950 flex justify-center">
+    <div className="h-[100dvh] bg-surface-0 flex justify-center">
     <div className="w-full max-w-[430px] h-[100dvh] flex flex-col">
       {/* Top bar — fixed height, does not scroll */}
       <div className="shrink-0 px-6 pt-10 pb-4">
-        <p className="text-zinc-500 text-xs font-semibold tracking-widest uppercase">
+        <p className="label-caps text-lamp">
           Deepscroll
         </p>
-        <h1 className="text-3xl font-bold text-white leading-tight mt-4">
+        <h1 className="font-serif text-3xl font-medium text-ink leading-tight mt-4">
           What are you into?
         </h1>
-        <p className="text-zinc-400 text-sm mt-2">
+        <p className="text-ink-dim text-sm mt-2">
           Pick topics to personalize your feed.
         </p>
-        <p className="text-zinc-500 text-sm mt-1">
+        <p className="text-ink-muted text-sm mt-1">
           {selected.size} selected
         </p>
       </div>
@@ -183,15 +183,15 @@ export default function InterestPicker() {
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-6 pb-4 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {loading ? (
-          <p className="text-zinc-600 text-sm mt-4">Loading...</p>
+          <p className="text-ink-faint text-sm mt-4">Loading...</p>
         ) : (
           <>
             {categorySections.map((section, index) => (
               <div key={section.label} className="mb-6">
                 {index > 0 && (
-                  <div className="border-t border-zinc-800 mb-3" />
+                  <div className="border-t border-edge mb-3" />
                 )}
-                <p className="text-zinc-200 font-semibold text-base uppercase tracking-wider mb-3">
+                <p className="label-caps text-ink-dim mb-3">
                   {section.label}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -201,10 +201,10 @@ export default function InterestPicker() {
                       <button
                         key={i.id}
                         onClick={() => toggle(i.slug)}
-                        className={`px-4 py-1.5 rounded-full text-sm transition-all duration-150 ${
+                        className={`chip ${
                           isSelected
-                            ? "bg-white text-zinc-950 font-semibold"
-                            : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200"
+                            ? "chip-on font-semibold"
+                            : "chip-off"
                         }`}
                       >
                         {i.name}
@@ -217,8 +217,8 @@ export default function InterestPicker() {
 
             {otherItems.length > 0 && (
               <div className="mb-6">
-                <div className="border-t border-zinc-800 mb-3" />
-                <p className="text-zinc-200 font-semibold text-base uppercase tracking-wider mb-3">
+                <div className="border-t border-edge mb-3" />
+                <p className="label-caps text-ink-dim mb-3">
                   Other
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -228,10 +228,10 @@ export default function InterestPicker() {
                       <button
                         key={i.id}
                         onClick={() => toggle(i.slug)}
-                        className={`px-4 py-1.5 rounded-full text-sm transition-all duration-150 ${
+                        className={`chip ${
                           isSelected
-                            ? "bg-white text-zinc-950 font-semibold"
-                            : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200"
+                            ? "chip-on font-semibold"
+                            : "chip-off"
                         }`}
                       >
                         {i.name}
@@ -247,16 +247,16 @@ export default function InterestPicker() {
 
       {/* Bottom bar — fixed height, does not scroll */}
       <div className="shrink-0 px-6 pt-4 pb-8 bg-surface-overlay backdrop-blur">
-        <p className="text-zinc-500 text-sm mb-3">
+        <p className="text-ink-muted text-sm mb-3">
           {selected.size} of {interests.length} selected
         </p>
         <button
           onClick={handleContinue}
           disabled={!canContinue}
-          className={`w-full h-12 rounded-full font-semibold text-sm transition-all ${
+          className={`btn w-full h-12 rounded-full ${
             canContinue
-              ? "bg-white text-zinc-950 hover:bg-zinc-100"
-              : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+              ? "btn-primary"
+              : "bg-surface-2 text-ink-faint cursor-not-allowed"
           }`}
         >
           Continue
