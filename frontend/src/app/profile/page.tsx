@@ -1,11 +1,19 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
 import BottomNav from "@/app/components/BottomNav"
 import VerifiedBadge from "@/components/VerifiedBadge"
+import Avatar from "@/components/Avatar"
+import { formatStyle } from "@/lib/formats"
+
+interface EloData {
+  global_rating: number | null
+  formats: Record<string, { rating: number; answered_count: number }>
+}
 
 export default function ProfilePage() {
   const { user, loading, logout, updateUser } = useAuth()
@@ -39,9 +47,17 @@ export default function ProfilePage() {
   const [privacyLoading, setPrivacyLoading] = useState(false)
 
   // Follow requests
-  const [pendingRequests, setPendingRequests] = useState<{ username: string; is_verified: boolean; created_at: string }[]>([])
+  const [pendingRequests, setPendingRequests] = useState<{ username: string; is_verified: boolean; avatar_url?: string | null; created_at: string }[]>([])
   const [showRequests, setShowRequests] = useState(false)
   const [requestActionLoading, setRequestActionLoading] = useState<string | null>(null)
+
+  // Avatar upload
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+  const [avatarLoading, setAvatarLoading] = useState(false)
+  const [avatarError, setAvatarError] = useState("")
+
+  // Knowledge score
+  const [elo, setElo] = useState<EloData | null>(null)
 
   // Redirect unauthenticated visitors to login.
   useEffect(() => {
@@ -62,7 +78,36 @@ export default function ProfilePage() {
       .catch(() => {})
   }, [user])
 
+  // Fetch knowledge score
+  useEffect(() => {
+    if (!user) return
+    apiFetch(`/api/users/${user.username}/elo`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setElo)
+      .catch(() => {})
+  }, [user])
+
   if (loading || !user) return null
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ""
+    if (!file) return
+    setAvatarError("")
+    setAvatarLoading(true)
+    try {
+      const form = new FormData()
+      form.append("file", file)
+      const r = await apiFetch("/api/auth/me/avatar", { method: "POST", body: form })
+      const data = await r.json()
+      if (!r.ok) throw new Error(data.detail ?? "Failed to upload picture.")
+      updateUser(data)
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : "Failed to upload picture.")
+    } finally {
+      setAvatarLoading(false)
+    }
+  }
 
   function togglePanel(panel: "username" | "password" | "delete") {
     setOpen((prev) => (prev === panel ? null : panel))
@@ -190,9 +235,6 @@ export default function ProfilePage() {
     }
   }
 
-  // Derive initials from username for the avatar.
-  const initial = user.username.charAt(0).toUpperCase()
-
   const inputClass =
     "w-full bg-surface-2 border border-edge-strong rounded-field text-white placeholder-zinc-500 px-4 py-3 text-sm focus:outline-none focus:border-zinc-500 transition-colors"
   const submitClass =
@@ -215,25 +257,98 @@ export default function ProfilePage() {
         </button>
 
         {/* Header — avatar + identity */}
-        <div className="flex flex-col items-center pt-16 pb-8 px-6">
-          <div className="w-20 h-20 rounded-full bg-violet-900/60 flex items-center justify-center mb-4">
-            <span className="text-violet-300 text-2xl font-bold">{initial}</span>
+        <div className="flex flex-col items-center pt-16 pb-6 px-6">
+          <div className="relative mb-4">
+            <Avatar username={user.username} avatarUrl={user.avatar_url} size={88} className={avatarLoading ? "opacity-50" : ""} />
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={avatarLoading}
+              className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-zinc-800 border-2 border-zinc-950 flex items-center justify-center text-zinc-300 hover:text-white transition-colors"
+              aria-label="Change profile picture"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              onChange={handleAvatarChange}
+              className="hidden"
+            />
           </div>
+          {avatarError && <p className="text-red-400 text-xs mb-2">{avatarError}</p>}
           <p className="flex items-center gap-1.5 text-white text-xl font-semibold">
             @{user.username}
             {user.is_verified && <VerifiedBadge size={20} />}
           </p>
           <p className="text-zinc-500 text-sm mt-1">{user.email}</p>
-          <button onClick={() => router.push("/my-posts")} className="text-zinc-400 text-sm mt-2">
-            My posts →
+          <Link href={`/profile/${user.username}`} className="text-zinc-400 text-sm mt-2 border border-zinc-700 rounded-lg px-3 py-1.5 hover:text-white transition-colors">
+            View public profile
+          </Link>
+        </div>
+
+        {/* Knowledge score */}
+        <div className="mx-6 mb-4 bg-surface-1 rounded-card px-5 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white text-sm">Knowledge score</p>
+              <p className="text-zinc-500 text-xs mt-0.5">Answer quizzes to raise it</p>
+            </div>
+            <p className="text-amber-400 text-2xl font-bold">
+              {elo?.global_rating ?? "—"}
+            </p>
+          </div>
+          {elo && Object.keys(elo.formats).length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {Object.entries(elo.formats).map(([fmt, data]) => {
+                const style = formatStyle(fmt)
+                return (
+                  <span key={fmt} className={`text-xs rounded-full px-2.5 py-1 bg-zinc-800 ${style.text}`}>
+                    {style.label} {Math.round(data.rating)}
+                  </span>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* My content */}
+        <div className="mx-6 mb-4 bg-surface-1 rounded-card overflow-hidden">
+          <button
+            onClick={() => router.push("/my-posts")}
+            className="w-full px-5 py-4 flex items-center justify-between text-left border-b border-edge"
+          >
+            <span className="flex items-center gap-3 text-white text-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-zinc-400">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+              </svg>
+              My posts
+            </span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-zinc-500">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
           </button>
-          <button onClick={() => router.push("/saved-posts")} className="text-zinc-400 text-sm mt-1">
-            Saved posts →
+          <button
+            onClick={() => router.push("/saved-posts")}
+            className="w-full px-5 py-4 flex items-center justify-between text-left"
+          >
+            <span className="flex items-center gap-3 text-white text-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-zinc-400">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+              </svg>
+              Saved posts
+            </span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-zinc-500">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
           </button>
         </div>
 
         {/* Bio */}
-        <div className="mx-6 mb-4">
+        <div className="mx-6 mb-4 bg-surface-1 rounded-card px-5 py-4">
           <label className="block text-zinc-400 text-xs mb-1.5">Bio</label>
           <textarea
             value={bio}
@@ -283,10 +398,11 @@ export default function ProfilePage() {
                 ) : (
                   pendingRequests.map((req) => (
                     <div key={req.username} className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-white text-sm font-medium">@{req.username}</span>
+                      <Link href={`/profile/${req.username}`} className="flex items-center gap-2 min-w-0">
+                        <Avatar username={req.username} avatarUrl={req.avatar_url} size={32} />
+                        <span className="text-white text-sm font-medium truncate">@{req.username}</span>
                         {req.is_verified && <VerifiedBadge size={14} />}
-                      </div>
+                      </Link>
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleAcceptRequest(req.username)}
