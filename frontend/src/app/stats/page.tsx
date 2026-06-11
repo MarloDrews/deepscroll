@@ -2827,15 +2827,16 @@ export default function StatsPage() {
       .finally(() => setGlobalLoading(false))
   }, [])
 
-  // Fetch personal stats when switching to My Stats tab
+  // Prefetch personal stats in parallel with the global fetch, so opening
+  // the Personal tab does not start a second full wait.
   useEffect(() => {
-    if (activeTab !== "my" || !user || myData) return
+    if (!user || myData) return
     setMyLoading(true)
     apiFetch("/api/stats/me")
       .then(r => r.json())
       .then(setMyData)
       .finally(() => setMyLoading(false))
-  }, [activeTab, user, myData])
+  }, [user, myData])
 
   // Read localStorage saved count client-side
   useEffect(() => {

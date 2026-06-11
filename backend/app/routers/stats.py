@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import and_, func, text
+from sqlalchemy import and_, case, func, text
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
@@ -66,12 +66,21 @@ def _milestone_date(dt) -> str | None:
 @router.get("/stats/global")
 def get_global_stats(db: Session = Depends(get_db)):
     # --- Overview ---
-    total_posts = db.query(func.count(Post.id)).scalar() or 0
-    total_users = db.query(func.count(User.id)).scalar() or 0
-    total_comments = db.query(func.count(Comment.id)).scalar() or 0
-    total_likes = (
-        db.query(func.count(Event.id)).filter(Event.event_type == "like").scalar() or 0
-    )
+    # One round trip instead of four scalar queries: the DB is remote, so
+    # every query costs a full network round trip regardless of data size.
+    overview_row = db.execute(
+        text(
+            "SELECT"
+            " (SELECT COUNT(*) FROM posts) AS total_posts,"
+            " (SELECT COUNT(*) FROM users) AS total_users,"
+            " (SELECT COUNT(*) FROM comments) AS total_comments,"
+            " (SELECT COUNT(*) FROM events WHERE event_type='like') AS total_likes"
+        )
+    ).one()
+    total_posts = overview_row.total_posts or 0
+    total_users = overview_row.total_users or 0
+    total_comments = overview_row.total_comments or 0
+    total_likes = overview_row.total_likes or 0
     avg_posts_per_user = round(total_posts / total_users, 2) if total_users > 0 else 0.0
 
     # --- Top creators by posts ---
@@ -128,18 +137,21 @@ def get_global_stats(db: Session = Depends(get_db)):
     ]
 
     # --- Top creators per format (top 3 per format) ---
-    top_creators_per_format = {}
-    for fmt in FORMATS:
-        top_creators_per_format[fmt] = [
-            {"username": r.username, "post_count": r.cnt}
-            for r in db.query(User.username, func.count(Post.id).label("cnt"))
-            .join(Post, Post.author_id == User.id)
-            .filter(Post.format == fmt, Post.status == "published")
-            .group_by(User.id)
-            .order_by(func.count(Post.id).desc())
-            .limit(3)
-            .all()
-        ]
+    # One grouped query instead of one query per format; the top-3 slice
+    # happens in Python (creator counts are small).
+    per_format_rows = (
+        db.query(Post.format, User.username, func.count(Post.id).label("cnt"))
+        .join(User, Post.author_id == User.id)
+        .filter(Post.status == "published")
+        .group_by(Post.format, User.id)
+        .order_by(Post.format, func.count(Post.id).desc())
+        .all()
+    )
+    top_creators_per_format = {fmt: [] for fmt in FORMATS}
+    for r in per_format_rows:
+        bucket = top_creators_per_format.get(r.format)
+        if bucket is not None and len(bucket) < 3:
+            bucket.append({"username": r.username, "post_count": r.cnt})
 
     # --- Top posts by likes ---
     top_posts_by_likes = [
@@ -224,34 +236,9 @@ def get_global_stats(db: Session = Depends(get_db)):
         .all()
     )
 
-    # --- Activity by weekday ---
-    wd_lookup = {
-        int(r.wd): r.cnt
-        for r in db.query(
-            _weekday(Post.created_at).label("wd"),
-            func.count(Post.id).label("cnt"),
-        )
-        .group_by(_weekday(Post.created_at))
-        .all()
-    }
-    activity_by_weekday = [
-        {"weekday": label, "count": wd_lookup.get(pg_wd, 0)}
-        for label, pg_wd in _WD_LABELS_ORDER
-    ]
-
-    # --- Activity by hour ---
-    hr_lookup = {
-        int(r.hr): r.cnt
-        for r in db.query(
-            _hour(Post.created_at).label("hr"),
-            func.count(Post.id).label("cnt"),
-        )
-        .group_by(_hour(Post.created_at))
-        .all()
-    }
-    activity_by_hour = [{"hour": h, "count": hr_lookup.get(h, 0)} for h in range(24)]
-
     # --- Activity heatmap (7 x 24 = 168 entries) ---
+    # The weekday and hour series below are marginals of this one query,
+    # so they are derived in Python instead of re-querying.
     hm_lookup = {
         (int(r.wd), int(r.hr)): r.cnt
         for r in db.query(
@@ -270,6 +257,21 @@ def get_global_stats(db: Session = Depends(get_db)):
         for sw in range(7)
         for hr in range(24)
     ]
+
+    # --- Activity by weekday (sum of heatmap rows) ---
+    wd_lookup = {}
+    for (sw, _hr), cnt in hm_lookup.items():
+        wd_lookup[sw] = wd_lookup.get(sw, 0) + cnt
+    activity_by_weekday = [
+        {"weekday": label, "count": wd_lookup.get(pg_wd, 0)}
+        for label, pg_wd in _WD_LABELS_ORDER
+    ]
+
+    # --- Activity by hour (sum of heatmap columns) ---
+    hr_lookup = {}
+    for (_sw, hr), cnt in hm_lookup.items():
+        hr_lookup[hr] = hr_lookup.get(hr, 0) + cnt
+    activity_by_hour = [{"hour": h, "count": hr_lookup.get(h, 0)} for h in range(24)]
 
     # --- Post quality over time ---
     # One query: likes grouped by the creation month of the liked post
@@ -294,13 +296,15 @@ def get_global_stats(db: Session = Depends(get_db)):
         for entry in posts_over_time
     ]
 
-    # --- Pending vs published ---
-    published_count = (
-        db.query(func.count(Post.id)).filter(Post.status == "published").scalar() or 0
-    )
-    pending_count = (
-        db.query(func.count(Post.id)).filter(Post.status == "pending").scalar() or 0
-    )
+    # --- Pending vs published (one grouped query) ---
+    status_lookup = {
+        r.status: r.cnt
+        for r in db.query(Post.status, func.count(Post.id).label("cnt"))
+        .group_by(Post.status)
+        .all()
+    }
+    published_count = status_lookup.get("published", 0)
+    pending_count = status_lookup.get("pending", 0)
 
     # --- Comment activity by user ---
     comment_activity_by_user = [
@@ -351,29 +355,29 @@ def get_my_stats(
     uid = current_user.id
 
     # --- Overview ---
-    posts_created = db.query(func.count(Post.id)).filter(Post.author_id == uid).scalar() or 0
-    posts_published = (
-        db.query(func.count(Post.id))
-        .filter(Post.author_id == uid, Post.status == "published")
-        .scalar() or 0
-    )
-    posts_pending = (
-        db.query(func.count(Post.id))
-        .filter(Post.author_id == uid, Post.status == "pending")
-        .scalar() or 0
-    )
-    likes_received = (
-        db.query(func.count(Event.id))
-        .join(Post, Post.id == Event.post_id)
-        .filter(Event.event_type == "like", Post.author_id == uid)
-        .scalar() or 0
-    )
-    comments_received = (
-        db.query(func.count(Comment.id))
-        .join(Post, Post.id == Comment.post_id)
-        .filter(Post.author_id == uid)
-        .scalar() or 0
-    )
+    # One round trip instead of seven scalar queries: the DB is remote, so
+    # every query costs a full network round trip regardless of data size.
+    me_row = db.execute(
+        text(
+            "SELECT"
+            " (SELECT COUNT(*) FROM posts WHERE author_id=:uid) AS posts_created,"
+            " (SELECT COUNT(*) FROM posts WHERE author_id=:uid AND status='published') AS posts_published,"
+            " (SELECT COUNT(*) FROM posts WHERE author_id=:uid AND status='pending') AS posts_pending,"
+            " (SELECT COUNT(*) FROM events e JOIN posts p ON p.id=e.post_id"
+            "   WHERE e.event_type='like' AND p.author_id=:uid) AS likes_received,"
+            " (SELECT COUNT(*) FROM comments c JOIN posts p ON p.id=c.post_id"
+            "   WHERE p.author_id=:uid) AS comments_received,"
+            " (SELECT COUNT(*) FROM comments WHERE user_id=:uid) AS my_comments_written,"
+            " (SELECT COUNT(DISTINCT post_id) FROM events"
+            "   WHERE event_type='like' AND user_id=:uid) AS posts_liked"
+        ),
+        {"uid": uid},
+    ).one()
+    posts_created = me_row.posts_created or 0
+    posts_published = me_row.posts_published or 0
+    posts_pending = me_row.posts_pending or 0
+    likes_received = me_row.likes_received or 0
+    comments_received = me_row.comments_received or 0
 
     # --- My posts over time (all time, not capped to 12 months) ---
     my_posts_over_time = sorted(
@@ -432,36 +436,9 @@ def get_my_stats(
     }
     my_posts_by_format = {fmt: my_format_lookup.get(fmt, 0) for fmt in FORMATS}
 
-    # --- My activity by weekday ---
-    my_wd_lookup = {
-        int(r.wd): r.cnt
-        for r in db.query(
-            _weekday(Post.created_at).label("wd"),
-            func.count(Post.id).label("cnt"),
-        )
-        .filter(Post.author_id == uid)
-        .group_by(_weekday(Post.created_at))
-        .all()
-    }
-    my_activity_by_weekday = [
-        {"weekday": label, "count": my_wd_lookup.get(pg_wd, 0)}
-        for label, pg_wd in _WD_LABELS_ORDER
-    ]
-
-    # --- My activity by hour ---
-    my_hr_lookup = {
-        int(r.hr): r.cnt
-        for r in db.query(
-            _hour(Post.created_at).label("hr"),
-            func.count(Post.id).label("cnt"),
-        )
-        .filter(Post.author_id == uid)
-        .group_by(_hour(Post.created_at))
-        .all()
-    }
-    my_activity_by_hour = [{"hour": h, "count": my_hr_lookup.get(h, 0)} for h in range(24)]
-
     # --- My activity heatmap ---
+    # Weekday and hour series are marginals of this one query, derived in
+    # Python instead of re-querying.
     my_hm_lookup = {
         (int(r.wd), int(r.hr)): r.cnt
         for r in db.query(
@@ -481,6 +458,17 @@ def get_my_stats(
         for sw in range(7)
         for hr in range(24)
     ]
+
+    my_wd_lookup = {}
+    my_hr_lookup = {}
+    for (sw, hr), cnt in my_hm_lookup.items():
+        my_wd_lookup[sw] = my_wd_lookup.get(sw, 0) + cnt
+        my_hr_lookup[hr] = my_hr_lookup.get(hr, 0) + cnt
+    my_activity_by_weekday = [
+        {"weekday": label, "count": my_wd_lookup.get(pg_wd, 0)}
+        for label, pg_wd in _WD_LABELS_ORDER
+    ]
+    my_activity_by_hour = [{"hour": h, "count": my_hr_lookup.get(h, 0)} for h in range(24)]
 
     # --- My top posts by likes ---
     my_top_posts_by_likes = [
@@ -536,17 +524,9 @@ def get_my_stats(
         key=lambda x: x["period"],
     )
 
-    # --- My comments written ---
-    my_comments_written = (
-        db.query(func.count(Comment.id)).filter(Comment.user_id == uid).scalar() or 0
-    )
-
-    # --- Posts I liked (saved posts live in localStorage, counted client-side) ---
-    posts_liked = (
-        db.query(func.count(func.distinct(Event.post_id)))
-        .filter(Event.event_type == "like", Event.user_id == uid)
-        .scalar() or 0
-    )
+    # --- My comments written / posts I liked (from the overview select) ---
+    my_comments_written = me_row.my_comments_written or 0
+    posts_liked = me_row.posts_liked or 0
 
     # --- My likes given by format ---
     my_likes_given_by_format = [
@@ -563,14 +543,12 @@ def get_my_stats(
         "global_rating": global_rating(db, uid),
         "formats": format_ratings(db, uid),
     }
-    quiz_answered = (
-        db.query(func.count(QuizAnswer.id)).filter(QuizAnswer.user_id == uid).scalar() or 0
-    )
-    quiz_correct = (
-        db.query(func.count(QuizAnswer.id))
-        .filter(QuizAnswer.user_id == uid, QuizAnswer.is_correct == True)
-        .scalar() or 0
-    )
+    quiz_row = db.query(
+        func.count(QuizAnswer.id).label("answered"),
+        func.coalesce(func.sum(case((QuizAnswer.is_correct == True, 1), else_=0)), 0).label("correct"),
+    ).filter(QuizAnswer.user_id == uid).one()
+    quiz_answered = quiz_row.answered or 0
+    quiz_correct = quiz_row.correct or 0
     my_quiz = {
         "answered": quiz_answered,
         "correct": quiz_correct,
