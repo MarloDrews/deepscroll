@@ -8,6 +8,7 @@ import { queueEvent, hasPendingLike, cancelPendingLike } from "@/app/lib/eventQu
 import { apiFetch } from "@/app/lib/api"
 import { savePost, unsavePost, isPostSaved } from "@/app/lib/savedPosts"
 import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCount, isLikeSent, markLikeSent, unmarkLikeSent } from "@/app/lib/likedPosts"
+import { updatePostInFeedCaches } from "@/app/lib/swr"
 import { fcNum, fcStr, type Post } from "@/types/post"
 import { formatStyle } from "@/lib/formats"
 
@@ -605,7 +606,12 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
         <CommentsBottomSheet
           postId={post.id}
           onClose={() => setShowComments(false)}
-          onCountChange={setCommentsCount}
+          onCountChange={(n) => {
+            setCommentsCount(n)
+            // Feed lists are cached for the session; without this the count
+            // would revert to the cached value when the user navigates back.
+            updatePostInFeedCaches(post.id, { comment_count: n })
+          }}
         />
       )}
 

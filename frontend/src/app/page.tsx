@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import useSWR from "swr"
 import PostCard from "@/app/components/PostCard"
 import BottomNav from "@/app/components/BottomNav"
 import EmptyState from "@/components/EmptyState"
@@ -10,9 +11,6 @@ import Spinner from "@/components/Spinner"
 import type { Post } from "@/types/post"
 import { FORMAT_IDS, FORMAT_STYLES, type FormatId } from "@/lib/formats"
 import { useAuth } from "@/app/lib/auth"
-import { apiFetch } from "@/app/lib/api"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 interface FeedTab {
   id: string
@@ -54,10 +52,29 @@ function TabPage({
   slugs: string[]
   isActivated: boolean
 }) {
-  const [posts, setPosts] = useState<Post[] | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const { user, loading: authLoading } = useAuth()
   const isFollowingTab = tab.id === "following"
+
+  // SWR key; null reproduces the old fetch gating (not activated yet, no
+  // interests, or following tab before auth resolves). revalidateIfStale:
+  // false serves a revisited tab from cache with no background refetch —
+  // feed order is jittered per request server-side, so a silent revalidate
+  // would visibly reshuffle posts under the user.
+  let key: string | null = null
+  if (isActivated) {
+    if (isFollowingTab) {
+      if (!authLoading && user) key = "/api/feed/following"
+    } else if (slugs.length > 0) {
+      const params = new URLSearchParams({ interests: slugs.join(",") })
+      if (tab.format) params.set("format", tab.format)
+      key = `/api/feed?${params}`
+    }
+  }
+  const { data, error } = useSWR<Post[]>(key, { revalidateIfStale: false })
+  // Error mapping preserves the old per-tab behavior: the following tab
+  // treated failures as an empty feed, the others kept showing the spinner.
+  const posts: Post[] | null = isFollowingTab ? (error ? [] : data ?? null) : data ?? null
 
   useEffect(() => {
     if (posts === null || !scrollRef.current) return
@@ -68,24 +85,6 @@ function TabPage({
     scrollRef.current.scrollTop = scrollTop
     sessionStorage.removeItem("feedScrollPosition")
   }, [posts, tab.id])
-
-  useEffect(() => {
-    if (!isActivated || posts !== null) return
-    if (isFollowingTab) {
-      if (authLoading || !user) return
-      apiFetch("/api/feed/following")
-        .then((r) => (r.ok ? r.json() : []))
-        .then((data: Post[]) => setPosts(data))
-        .catch(() => setPosts([]))
-      return
-    }
-    if (slugs.length === 0) return
-    const params = new URLSearchParams({ interests: slugs.join(",") })
-    if (tab.format) params.set("format", tab.format)
-    fetch(`${API_URL}/api/feed?${params}`)
-      .then((r) => r.json())
-      .then((data: Post[]) => setPosts(data))
-  }, [isActivated, posts, slugs, tab.format, isFollowingTab, user, authLoading]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div ref={scrollRef} className="w-full shrink-0 snap-start h-[100dvh] overflow-y-scroll snap-y snap-mandatory overscroll-y-contain [&::-webkit-scrollbar]:hidden [scrollbar-width:none] pb-14">

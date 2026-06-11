@@ -14,6 +14,7 @@ import { apiFetch } from "@/app/lib/api"
 import { queueEvent, hasPendingLike, cancelPendingLike } from "@/app/lib/eventQueue"
 import { savePost, unsavePost, isPostSaved } from "@/app/lib/savedPosts"
 import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCount, isLikeSent, markLikeSent, unmarkLikeSent } from "@/app/lib/likedPosts"
+import { updatePostInFeedCaches } from "@/app/lib/swr"
 
 export default function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -40,6 +41,14 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const stickyInputRef     = useRef<HTMLInputElement>(null)
   const isClosingRef       = useRef(false)
   const likeInteractedRef  = useRef(false)
+  const commentsLoadedRef  = useRef(false)
+
+  // Feed lists are cached for the session; keep the cached comment_count in
+  // sync whenever the comment list changes here (add, delete, initial load).
+  useEffect(() => {
+    if (!commentsLoadedRef.current) return
+    updatePostInFeedCaches(Number(id), { comment_count: comments.length })
+  }, [comments.length, id])
 
   useEffect(() => {
     apiFetch(`/api/posts/${id}`)
@@ -58,7 +67,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       .catch(() => setNotFound(true))
     apiFetch(`/api/posts/${id}/comments`)
       .then((r) => r.json())
-      .then(setComments)
+      .then((data: Comment[]) => {
+        setComments(data)
+        commentsLoadedRef.current = true
+      })
       .catch(() => {})
     apiFetch(`/api/posts/${id}/likes`)
       .then((r) => r.json())

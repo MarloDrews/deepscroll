@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
+import { invalidateFeedCaches } from "@/app/lib/swr"
 import { FORMAT_IDS, FORMAT_STYLES, type FormatId } from "@/lib/formats"
 import { fcStr, type Post } from "@/types/post"
 import { CATEGORIES } from "@/app/onboarding/InterestPicker"
@@ -496,7 +497,9 @@ export default function CreatePage() {
           interests: selectedInterests,
         }
         const res = await apiFetch("/api/posts", { method: "POST", body: JSON.stringify(payload) })
-        if (res.status === 201) { setStep("success") }
+        // Cached feed lists may now be missing the new post; drop them so the
+        // next feed visit fetches fresh.
+        if (res.status === 201) { invalidateFeedCaches(); setStep("success") }
         else { const data = await res.json(); setServerError(data.detail ?? "Something went wrong.") }
       } catch { setServerError("Network error. Please try again.") }
       finally { setSubmitting(false) }
@@ -534,6 +537,7 @@ export default function CreatePage() {
       }
       const res = await apiFetch("/api/posts", { method: "POST", body: JSON.stringify(payload) })
       if (res.status === 201) {
+        invalidateFeedCaches()
         setStep("success")
       } else {
         const data = await res.json()
