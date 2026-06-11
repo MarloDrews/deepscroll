@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import useSWR from "swr"
 import BottomNav from "@/app/components/BottomNav"
 import Avatar from "@/components/Avatar"
 import VerifiedBadge from "@/components/VerifiedBadge"
@@ -181,16 +182,15 @@ function NewChatOverlay({ onClose, onCreated }: { onClose: () => void; onCreated
 export default function ChatPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
-  const [conversations, setConversations] = useState<Conversation[] | null>(null)
   const [showNew, setShowNew] = useState(false)
 
-  useEffect(() => {
-    if (authLoading || !user) return
-    apiFetch("/api/chat/conversations")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data: Conversation[]) => setConversations(data))
-      .catch(() => setConversations([]))
-  }, [authLoading, user])
+  // Conversation list via SWR (key null until the session is restored, same
+  // gating as before). Revisits render the cached list instantly; the default
+  // revalidate-on-mount keeps new messages appearing on each visit.
+  const { data: convData, error: convError } = useSWR<Conversation[]>(
+    !authLoading && user ? "/api/chat/conversations" : null
+  )
+  const conversations: Conversation[] | null = convError ? [] : convData ?? null
 
   function preview(conv: Conversation): string {
     if (!conv.last_message) return "No messages yet"
