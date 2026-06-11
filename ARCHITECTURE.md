@@ -67,9 +67,9 @@ frontend/
     search/
       page.tsx                  search input + Posts|Accounts scope toggle; posts scope: format chips + compact result cards; accounts scope: /api/search/users rows with Avatar, verified badge, bio and follow/unfollow button; debounced 300ms; BottomNav (search active)
     create/
-      page.tsx                  3-step creation wizard for all 7 formats: step 1 — 7 format cards (all enabled); step 2 — duplicate check; step 3 — Books: full wizard with Feed Card block + 15 section accordions (9 required / 6 optional); all other formats: format-specific feed card fields + body textarea (stored as heart section) + shared quiz + sources; submits {format, title, feed_card, sections, interests} to POST /api/posts; on success invalidates the cached feed lists; success screen links to /my-posts; BottomNav (create active)
+      page.tsx                  3-step creation wizard for all 7 formats: step 1 — 7 format cards (all enabled); step 2 — duplicate check; step 3 — Books: full wizard with Feed Card block + 15 section accordions (9 required / 6 optional); all other formats: format-specific feed card fields + body textarea (stored as heart section) + shared quiz + sources; submits {format, title, feed_card, sections, interests} to POST /api/posts; on success invalidates the cached feed lists; /api/interests via useSWR (static list, cached across visits); success screen links to /my-posts; BottomNav (create active)
     chat/
-      page.tsx                  conversation list (avatar, name, last-message preview, relative time) + New chat overlay (user search via /api/search/users, multi-select chips, optional group name); login prompt when logged out; BottomNav (chat active)
+      page.tsx                  conversation list (avatar, name, last-message preview, relative time) via useSWR (revisits render cached instantly, background refetch keeps new messages appearing) + New chat overlay (user search via /api/search/users, multi-select chips, optional group name); login prompt when logged out; BottomNav (chat active)
       [id]/
         page.tsx                conversation view: history via GET messages, live updates over the websocket, own messages right/white, others left/zinc, sender labels in groups, textarea send (Enter sends, max 2000 chars), connection status in header
     my-posts/
