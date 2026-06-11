@@ -492,17 +492,14 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
         ))}
       </div>
 
-      {/* Action buttons. Each button is a 44x40 tap target around a 24px icon;
-          active states (liked, saved) light up in lamp gold. */}
-      <div className="absolute bottom-10 right-2 z-10 flex flex-col items-center">
+      {/* Action buttons — icon-only pill buttons per the Lamplight design spec. */}
+      <div className="absolute bottom-10 right-2 z-10 flex flex-col items-center gap-1">
         {/* Like */}
         <div className="flex flex-col items-center">
           <button
             onClick={(e) => { e.stopPropagation(); handleToggleLike() }}
             aria-label={liked ? "Unlike" : "Like"}
-            className={`w-11 h-10 flex items-center justify-center cursor-pointer transition-colors duration-150 ${
-              liked ? "text-lamp" : "text-ink-dim hover:text-ink"
-            }`}
+            className={`btn-action${liked ? " btn-action-active" : ""}`}
           >
             <svg
               viewBox="0 0 24 24"
@@ -525,7 +522,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           <button
             onClick={(e) => { e.stopPropagation(); setShowComments(true) }}
             aria-label="Comments"
-            className="w-11 h-10 flex items-center justify-center cursor-pointer text-ink-dim hover:text-ink transition-colors duration-150"
+            className="btn-action"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -548,9 +545,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           <button
             onClick={handleSaveClick}
             aria-label={saved ? "Unsave" : "Save"}
-            className={`w-11 h-10 flex items-center justify-center cursor-pointer transition-colors duration-150 ${
-              saved ? "text-lamp" : "text-ink-dim hover:text-ink"
-            }`}
+            className={`btn-action${saved ? " btn-action-active" : ""}`}
           >
             <svg
               viewBox="0 0 24 24"
@@ -573,7 +568,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           <button
             onClick={handleShare}
             aria-label="Share"
-            className="w-11 h-10 flex items-center justify-center cursor-pointer text-ink-dim hover:text-ink transition-colors duration-150"
+            className="btn-action"
           >
             <svg
               viewBox="0 0 24 24"

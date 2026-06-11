@@ -131,15 +131,13 @@ body::before {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    /* Shape baseline: field radius, sans at medium weight, room to breathe.
-       Call sites may override size with utilities; icon circles use
-       rounded-full + p-0 deliberately. Text buttons are never pills. */
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.25rem;
     font-family: var(--font-sans);
     font-weight: 500;
     font-size: 0.875rem;
     line-height: 1.25rem;
-    border-radius: var(--radius-field);
+    border-radius: 9999px;
+    border: 1.5px solid transparent;
     cursor: pointer;
     transition: background-color 150ms ease-out, color 150ms ease-out,
       border-color 150ms ease-out, opacity 150ms ease-out;
@@ -149,27 +147,93 @@ body::before {
     cursor: default;
   }
   .btn-primary {
-    background: var(--color-ink);
-    color: var(--color-surface-0);
+    border-color: rgb(168 158 142 / 0.35);
+    background: rgb(210 164 90 / 0.12);
+    color: #d2a45a;
   }
   .btn-primary:hover:not(:disabled) {
-    background: var(--color-ink-body);
+    border-color: rgb(210 164 90 / 0.6);
+    background: rgb(210 164 90 / 0.18);
   }
   .btn-ghost {
-    border: 1px solid var(--color-edge-strong);
-    color: var(--color-ink-body);
+    border-color: rgb(168 158 142 / 0.25);
     background: transparent;
+    color: var(--color-ink-body);
   }
   .btn-ghost:hover:not(:disabled) {
-    background: var(--color-surface-2);
-    color: var(--color-ink);
+    border-color: rgb(168 158 142 / 0.45);
+    background: rgb(168 158 142 / 0.06);
   }
   .btn-quiet {
-    color: var(--color-ink-dim);
+    border-color: rgb(168 158 142 / 0.25);
     background: transparent;
+    color: var(--color-ink-dim);
+    padding: 0.375rem 0.875rem;
+    font-size: 0.8125rem;
   }
   .btn-quiet:hover:not(:disabled) {
-    color: var(--color-ink);
+    border-color: rgb(168 158 142 / 0.45);
+    background: rgb(168 158 142 / 0.06);
+  }
+  .btn-destructive {
+    border-color: rgb(192 96 78 / 0.35);
+    background: transparent;
+    color: #c0604e;
+  }
+  .btn-destructive:hover:not(:disabled) {
+    border-color: rgb(192 96 78 / 0.6);
+    background: rgb(192 96 78 / 0.08);
+  }
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: 1.5px solid rgb(168 158 142 / 0.25);
+    background: transparent;
+    color: var(--color-ink-dim);
+    cursor: pointer;
+    transition: border-color 150ms ease-out, color 150ms ease-out,
+      background-color 150ms ease-out;
+  }
+  .btn-icon:hover:not(:disabled) {
+    border-color: rgb(168 158 142 / 0.45);
+    background: rgb(168 158 142 / 0.06);
+  }
+  .btn-icon:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .btn-icon-active {
+    border-color: rgb(210 164 90 / 0.5);
+    color: var(--color-lamp);
+  }
+
+  /* Social action icons (like, comment, save, share) — bare tap targets,
+     no border, no background. 44px fixed size for touch accessibility. */
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    border: none;
+    background: transparent;
+    color: var(--color-ink-dim);
+    cursor: pointer;
+    transition: color 150ms ease-out, opacity 150ms ease-out;
+  }
+  .btn-action:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .btn-action-active {
+    color: var(--color-lamp);
   }
 
   .field {
@@ -207,16 +271,19 @@ body::before {
       border-color 150ms ease-out;
   }
   .chip-off {
-    border-color: var(--color-edge-strong);
+    border-color: rgb(168 158 142 / 0.25);
     color: var(--color-ink-dim);
     background: transparent;
   }
   .chip-off:hover {
-    color: var(--color-ink);
+    border-color: rgb(168 158 142 / 0.45);
+    background: rgb(168 158 142 / 0.06);
+    color: var(--color-ink-body);
   }
   .chip-on {
-    background: var(--color-ink);
-    color: var(--color-surface-0);
+    border-color: rgb(210 164 90 / 0.5);
+    background: rgb(210 164 90 / 0.12);
+    color: #d2a45a;
   }
 
   .label-caps {

@@ -230,7 +230,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           {/* Back button */}
           <button
             onClick={close}
-            className="absolute top-4 left-4 z-10 w-11 h-11 flex items-center justify-center text-ink-dim hover:text-ink transition-colors cursor-pointer"
+            className="absolute top-4 left-4 z-10 btn-icon"
             aria-label="Go back"
           >
             <svg
@@ -355,11 +355,11 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             )}
           </div>
 
-          {/* Sticky comment bar. Safe-area padding keeps the send button above
-              the OS home-indicator bar on real phones (same as BottomNav). */}
+          {/* Sticky comment bar. 64px clears the bottom nav; safe-area adds
+              extra space on phones with a home indicator. */}
           <div
             className="flex-none border-t border-edge bg-surface-overlay backdrop-blur-md"
-            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 64px)" }}
           >
             <div className="flex items-center gap-2 px-3 py-2">
               <div className="flex-1 min-w-0">
@@ -377,7 +377,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       type="submit"
                       disabled={!stickyDraft.trim() || posting}
                       aria-label="Post comment"
-                      className="btn btn-primary shrink-0 w-9 h-9 rounded-full p-0"
+                      className={`btn-icon shrink-0${stickyDraft.trim() && !posting ? " btn-icon-active" : ""}`}
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                         <line x1="22" y1="2" x2="11" y2="13" />
@@ -403,9 +403,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-center gap-1">
                   <button
                     onClick={handleToggleLike}
-                    className={`w-10 h-10 flex items-center justify-center cursor-pointer transition-colors duration-150 ${
-                      liked ? "text-lamp" : "text-ink-dim hover:text-ink"
-                    }`}
+                    className={`btn-action${liked ? " btn-action-active" : ""}`}
                     aria-label={liked ? "Unlike" : "Like"}
                   >
                     <svg
@@ -423,9 +421,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
                   <button
                     onClick={handleSaveToggle}
-                    className={`w-10 h-10 flex items-center justify-center cursor-pointer transition-colors duration-150 ${
-                      saved ? "text-lamp" : "text-ink-dim hover:text-ink"
-                    }`}
+                    className={`btn-action${saved ? " btn-action-active" : ""}`}
                     aria-label={saved ? "Unsave" : "Save"}
                   >
                     <svg
@@ -444,7 +440,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
                   <button
                     onClick={handleShare}
-                    className="w-10 h-10 flex items-center justify-center cursor-pointer text-ink-dim hover:text-ink transition-colors duration-150"
+                    className="btn-action"
                     aria-label="Share"
                   >
                     <svg
