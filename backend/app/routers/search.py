@@ -8,7 +8,7 @@ from ..database import get_db
 from ..models import Follow, Post, User
 from ..post_counts import attach_counts
 from ..rate_limit import check_rate_limit
-from ..schemas import PostOut
+from ..schemas import PostListOut
 
 router = APIRouter()
 
@@ -53,7 +53,7 @@ def _post_matches(post: Post, q_lower: str) -> bool:
     return False
 
 
-@router.get("/search", response_model=List[PostOut])
+@router.get("/search", response_model=List[PostListOut])
 def search_posts(
     request: Request,
     q: str = "",

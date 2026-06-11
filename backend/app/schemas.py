@@ -433,6 +433,19 @@ class PostOut(BaseModel):
         return out
 
 
+class PostListOut(PostOut):
+    # List-endpoint serialization: the sections key stays in the response
+    # (schema unchanged for clients) but the body is dropped — no list view
+    # renders sections, and the detail page always refetches GET /api/posts/{id}.
+    # Distinct validator name so it composes with strip_quiz_answers in any
+    # order ([] is a fixed point for both).
+
+    @field_validator("sections", mode="before")
+    @classmethod
+    def drop_sections(cls, v):
+        return []
+
+
 class UploadResponse(BaseModel):
     url: str
 

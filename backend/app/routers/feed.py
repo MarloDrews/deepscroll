@@ -7,7 +7,7 @@ from ..auth import get_current_user, get_optional_user
 from ..database import get_db
 from ..models import Follow, Interest, Post, User
 from ..post_counts import attach_counts
-from ..schemas import PostOut
+from ..schemas import PostListOut
 from ..scoring import score_posts
 
 router = APIRouter()
@@ -26,7 +26,7 @@ def _fetch_posts(ids: Set[int], db: Session) -> List[Post]:
     )
 
 
-@router.get("/feed", response_model=List[PostOut])
+@router.get("/feed", response_model=List[PostListOut])
 def get_feed(
     format: Optional[str] = None,
     interests: Optional[str] = None,
@@ -97,7 +97,7 @@ def get_feed(
     return attach_counts(ranked, db)
 
 
-@router.get("/feed/following", response_model=List[PostOut])
+@router.get("/feed/following", response_model=List[PostListOut])
 def get_following_feed(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -122,7 +122,7 @@ def get_following_feed(
     return attach_counts(posts, db)
 
 
-@router.get("/feed/user/{username}", response_model=List[PostOut])
+@router.get("/feed/user/{username}", response_model=List[PostListOut])
 def get_user_feed(
     username: str,
     _current_user: Optional[User] = Depends(get_optional_user),
