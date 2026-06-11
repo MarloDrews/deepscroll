@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
 from ..database import engine, get_db
-from ..elo import format_ratings, global_rating
+from ..elo import elo_summary
 from ..models import Comment, Event, Post, QuizAnswer, User
 
 router = APIRouter(tags=["stats"])
@@ -563,9 +563,10 @@ def get_my_stats(
     ]
 
     # --- My knowledge score (Elo) ---
+    my_global_rating, my_format_ratings = elo_summary(db, uid)
     my_elo = {
-        "global_rating": global_rating(db, uid),
-        "formats": format_ratings(db, uid),
+        "global_rating": my_global_rating,
+        "formats": my_format_ratings,
     }
     quiz_row = db.query(
         func.count(QuizAnswer.id).label("answered"),
