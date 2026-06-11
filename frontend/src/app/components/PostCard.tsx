@@ -493,7 +493,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
       </div>
 
       {/* Action buttons — icon-only pill buttons per the Lamplight design spec. */}
-      <div className="absolute bottom-10 right-2 z-10 flex flex-col items-center gap-1">
+      <div className="absolute right-2 z-10 flex flex-col items-center gap-0" style={{ bottom: "calc(3.5rem + env(safe-area-inset-bottom) + 0.5rem)" }}>
         {/* Like */}
         <div className="flex flex-col items-center">
           <button

@@ -46,7 +46,7 @@ class Post(Base):
 
     @property
     def author_is_verified(self):
-        return self.author.is_verified if self.author else None
+        return bool(self.author.is_verified) if self.author else None
 
 
 class Event(Base):

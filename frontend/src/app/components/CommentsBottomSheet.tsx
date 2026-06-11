@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import Link from "next/link"
 import { useAuth } from "../lib/auth"
 import { apiFetch } from "../lib/api"
@@ -25,6 +26,9 @@ export default function CommentsBottomSheet({ postId, onClose, onCountChange }: 
   const inputRef = useRef<HTMLInputElement>(null)
   // Avoid reporting the pre-fetch empty list as a count of 0.
   const loadedRef = useRef(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     apiFetch(`/api/posts/${postId}/comments`)
@@ -98,7 +102,9 @@ export default function CommentsBottomSheet({ postId, onClose, onCountChange }: 
     }
   }
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className="fixed inset-0 z-50" onClick={onClose}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-surface-0/70" />
@@ -184,6 +190,7 @@ export default function CommentsBottomSheet({ postId, onClose, onCountChange }: 
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
