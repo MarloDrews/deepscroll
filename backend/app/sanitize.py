@@ -51,11 +51,15 @@ def _local(tag: object) -> str:
     return tag.split("}")[1] if "}" in tag else tag
 
 
-async def validate_image(file) -> tuple[bytes, str]:
+def validate_image(file) -> tuple[bytes, str]:
+    # Sync on purpose: callers are sync `def` endpoints running in the
+    # threadpool, so the chunked read, Pillow re-encode and the follow-up
+    # storage upload never block the event loop. file.file is the
+    # underlying SpooledTemporaryFile with a sync read().
     chunk_size = 8192
     total = 0
     chunks: list[bytes] = []
-    while chunk := await file.read(chunk_size):
+    while chunk := file.file.read(chunk_size):
         total += len(chunk)
         if total > MAX_IMAGE_SIZE_BYTES:
             raise ValueError("File too large")
