@@ -23,10 +23,10 @@ def _limit_search(request: Request, user: Optional[User], key: str) -> None:
 
 def _post_matches(post: Post, q_lower: str) -> bool:
     """
-    Python-side search across the new JSON schema.
-    SQLite JSON path queries are limited, so we fetch candidate posts
-    (filtered by title LIKE for a first pass) and verify the rest in Python.
-    Trade-off: full table scan for non-title matches at current small scale.
+    Python-side search across the JSON schema: all published posts are
+    fetched and matched in Python. Acceptable at current small scale;
+    revisit with PostgreSQL full-text search or JSON-path filters once the
+    post count makes the full fetch noticeable.
     """
     if q_lower in post.title.lower():
         return True
