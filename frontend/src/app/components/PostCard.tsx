@@ -229,7 +229,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="w-24 h-24 text-bad heart-boom"
+            className="w-24 h-24 text-lamp heart-boom"
             onAnimationEnd={() => setShowHeartAnim(false)}
           >
             <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.218l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
@@ -492,35 +492,40 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
         ))}
       </div>
 
-      {/* Action buttons */}
-      <div className="absolute bottom-10 right-3 z-10 flex flex-col items-center gap-1">
+      {/* Action buttons. Each button is a 44x40 tap target around a 24px icon;
+          active states (liked, saved) light up in lamp gold. */}
+      <div className="absolute bottom-10 right-2 z-10 flex flex-col items-center">
         {/* Like */}
-        <div className="flex flex-col items-center" style={{ height: "48px" }}>
+        <div className="flex flex-col items-center">
           <button
             onClick={(e) => { e.stopPropagation(); handleToggleLike() }}
             aria-label={liked ? "Unlike" : "Like"}
+            className={`w-11 h-10 flex items-center justify-center cursor-pointer transition-colors duration-150 ${
+              liked ? "text-lamp" : "text-ink-dim hover:text-ink"
+            }`}
           >
             <svg
               viewBox="0 0 24 24"
-              fill={liked ? "var(--color-bad)" : "none"}
-              stroke={liked ? "none" : "currentColor"}
+              fill={liked ? "currentColor" : "none"}
+              stroke="currentColor"
               strokeWidth={liked ? 0 : 2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={`w-6 h-6 text-ink-dim ${animatingLike ? "heart-pop" : ""}`}
+              className={`w-6 h-6 ${animatingLike ? "heart-pop" : ""}`}
               onAnimationEnd={() => setAnimatingLike(false)}
             >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
           </button>
-          <span className="text-xs text-ink-dim font-mono leading-none mt-1">{likesCount}</span>
+          <span className={`text-xs font-mono leading-none mb-2 transition-colors duration-150 ${liked ? "text-lamp" : "text-ink-dim"}`}>{likesCount}</span>
         </div>
 
         {/* Comment */}
-        <div className="flex flex-col items-center" style={{ height: "48px" }}>
+        <div className="flex flex-col items-center">
           <button
             onClick={(e) => { e.stopPropagation(); setShowComments(true) }}
             aria-label="Comments"
+            className="w-11 h-10 flex items-center justify-center cursor-pointer text-ink-dim hover:text-ink transition-colors duration-150"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -530,39 +535,46 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="w-6 h-6 text-ink-dim"
+              className="w-6 h-6"
             >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </button>
-          <span className="text-xs text-ink-dim font-mono leading-none mt-1">{commentsCount}</span>
+          <span className="text-xs text-ink-dim font-mono leading-none mb-2">{commentsCount}</span>
         </div>
 
         {/* Save */}
-        <div className="flex flex-col items-center" style={{ height: "48px" }}>
+        <div className="flex flex-col items-center">
           <button
             onClick={handleSaveClick}
             aria-label={saved ? "Unsave" : "Save"}
+            className={`w-11 h-10 flex items-center justify-center cursor-pointer transition-colors duration-150 ${
+              saved ? "text-lamp" : "text-ink-dim hover:text-ink"
+            }`}
           >
             <svg
               viewBox="0 0 24 24"
-              fill={saved ? "var(--color-lamp)" : "none"}
-              stroke={saved ? "none" : "currentColor"}
+              fill={saved ? "currentColor" : "none"}
+              stroke="currentColor"
               strokeWidth={saved ? 0 : 2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={`w-6 h-6 text-ink-dim ${animatingSave ? "heart-pop" : ""}`}
+              className={`w-6 h-6 ${animatingSave ? "heart-pop" : ""}`}
               onAnimationEnd={() => setAnimatingSave(false)}
             >
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
             </svg>
           </button>
-          <span className="text-xs text-ink-dim font-mono leading-none mt-1">{saveCount}</span>
+          <span className={`text-xs font-mono leading-none mb-2 transition-colors duration-150 ${saved ? "text-lamp" : "text-ink-dim"}`}>{saveCount}</span>
         </div>
 
         {/* Share */}
-        <div className="flex flex-col items-center" style={{ height: "48px" }}>
-          <button onClick={handleShare} aria-label="Share">
+        <div className="flex flex-col items-center">
+          <button
+            onClick={handleShare}
+            aria-label="Share"
+            className="w-11 h-10 flex items-center justify-center cursor-pointer text-ink-dim hover:text-ink transition-colors duration-150"
+          >
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -570,13 +582,12 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="w-6 h-6 text-ink-dim"
+              className="w-6 h-6"
             >
               <line x1="22" y1="2" x2="11" y2="13" />
               <polygon points="22 2 15 22 11 13 2 9 22 2" />
             </svg>
           </button>
-          <span className="text-xs opacity-0 select-none mt-1">0</span>
         </div>
       </div>
 

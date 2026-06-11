@@ -369,19 +369,17 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       maxLength={2000}
                       className="field rounded-full text-sm py-2"
                     />
-                    {stickyDraft.trim() && (
-                      <button
-                        type="submit"
-                        disabled={posting}
-                        aria-label="Post comment"
-                        className="btn btn-primary shrink-0 w-9 h-9 rounded-full p-0"
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                          <line x1="22" y1="2" x2="11" y2="13" />
-                          <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                        </svg>
-                      </button>
-                    )}
+                    <button
+                      type="submit"
+                      disabled={!stickyDraft.trim() || posting}
+                      aria-label="Post comment"
+                      className="btn btn-primary shrink-0 w-9 h-9 rounded-full p-0"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                        <line x1="22" y1="2" x2="11" y2="13" />
+                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                      </svg>
+                    </button>
                   </form>
                 ) : (
                   <p className="text-sm text-ink-muted py-1">
@@ -401,17 +399,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-center gap-1">
                   <button
                     onClick={handleToggleLike}
-                    className="w-10 h-10 flex items-center justify-center"
+                    className={`w-10 h-10 flex items-center justify-center cursor-pointer transition-colors duration-150 ${
+                      liked ? "text-lamp" : "text-ink-dim hover:text-ink"
+                    }`}
                     aria-label={liked ? "Unlike" : "Like"}
                   >
                     <svg
                       viewBox="0 0 24 24"
-                      fill={liked ? "var(--color-bad)" : "none"}
-                      stroke={liked ? "none" : "currentColor"}
+                      fill={liked ? "currentColor" : "none"}
+                      stroke="currentColor"
                       strokeWidth={liked ? 0 : 2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="w-5 h-5 text-ink-dim"
+                      className="w-5 h-5"
                     >
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
@@ -419,17 +419,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
                   <button
                     onClick={handleSaveToggle}
-                    className="w-10 h-10 flex items-center justify-center"
+                    className={`w-10 h-10 flex items-center justify-center cursor-pointer transition-colors duration-150 ${
+                      saved ? "text-lamp" : "text-ink-dim hover:text-ink"
+                    }`}
                     aria-label={saved ? "Unsave" : "Save"}
                   >
                     <svg
                       viewBox="0 0 24 24"
-                      fill={saved ? "var(--color-lamp)" : "none"}
-                      stroke={saved ? "none" : "currentColor"}
+                      fill={saved ? "currentColor" : "none"}
+                      stroke="currentColor"
                       strokeWidth={saved ? 0 : 2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className={`w-5 h-5 text-ink-dim ${animatingSave ? "heart-pop" : ""}`}
+                      className={`w-5 h-5 ${animatingSave ? "heart-pop" : ""}`}
                       onAnimationEnd={() => setAnimatingSave(false)}
                     >
                       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
@@ -438,7 +440,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
                   <button
                     onClick={handleShare}
-                    className="w-10 h-10 flex items-center justify-center"
+                    className="w-10 h-10 flex items-center justify-center cursor-pointer text-ink-dim hover:text-ink transition-colors duration-150"
                     aria-label="Share"
                   >
                     <svg
@@ -448,7 +450,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       strokeWidth={2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="w-5 h-5 text-ink-dim"
+                      className="w-5 h-5"
                     >
                       <line x1="22" y1="2" x2="11" y2="13" />
                       <polygon points="22 2 15 22 11 13 2 9 22 2" />
