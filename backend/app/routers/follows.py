@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, ConfigDict
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_user, get_optional_user
@@ -204,20 +205,23 @@ def get_profile(
 ):
     target = _get_target(username, db)
 
-    follower_count = db.query(Follow).filter(
-        Follow.following_id == target.id,
-        Follow.status == "accepted",
-    ).count()
-
-    following_count = db.query(Follow).filter(
-        Follow.follower_id == target.id,
-        Follow.status == "accepted",
-    ).count()
-
-    post_count = db.query(Post).filter(
-        Post.author_id == target.id,
-        Post.status == "published",
-    ).count()
+    # One round trip instead of three count queries: the DB is remote, so
+    # every query costs a full network round trip regardless of data size.
+    counts_row = db.execute(
+        text(
+            "SELECT"
+            " (SELECT COUNT(*) FROM follows"
+            "   WHERE following_id=:uid AND status='accepted') AS follower_count,"
+            " (SELECT COUNT(*) FROM follows"
+            "   WHERE follower_id=:uid AND status='accepted') AS following_count,"
+            " (SELECT COUNT(*) FROM posts"
+            "   WHERE author_id=:uid AND status='published') AS post_count"
+        ),
+        {"uid": target.id},
+    ).one()
+    follower_count = counts_row.follower_count or 0
+    following_count = counts_row.following_count or 0
+    post_count = counts_row.post_count or 0
 
     follow_status: Optional[str] = None
     if current_user is not None:
