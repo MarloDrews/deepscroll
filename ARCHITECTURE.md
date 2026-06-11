@@ -47,7 +47,7 @@ frontend/
   .env.local                    actual env vars (gitignored)
   src/app/
     layout.tsx                  root layout, Lamplight fonts (Newsreader serif + Source Sans 3 UI + Geist Mono data), title "Deepscroll"
-    globals.css                 Tailwind import, Lamplight design tokens (@theme: warm surface-0/1/2/3/overlay, edge/edge-strong, warm ink levels, lamp/good/bad, fmt-* format inks, radius-card/field/sheet), paper-grain body texture, focus-visible lamp ring, component vocabulary (.card/.btn/.field/.chip/.label-caps/.prose-post; .card carries a matte paper-edge shadow), heart-pop + heart-boom keyframes with reduced-motion guard
+    globals.css                 Tailwind import, Lamplight design tokens (@theme: warm surface-0/1/2/3/overlay with widened lightness steps, edge/edge-strong, warm ink levels, lamp/good/bad, fmt-* format inks, radius-card/field/sheet), paper-grain body texture, fixed lamp-light depth gradient (body::after), focus-visible lamp ring, component vocabulary (.card/.btn/.field/.chip/.label-caps/.prose-post; .card carries a matte paper-edge shadow), heart-pop + heart-boom keyframes with reduced-motion guard
     page.tsx                    home feed: 9-tab bar (For You + Following + 7 formats derived from lib/formats.ts), horizontal snap between tabs, vertical snap within each, real-time indicator; search button top-right above the tab strip (TikTok style, tabs fade under it); Following tab uses /api/feed/following with login/empty states; BottomNav (feed active)
     onboarding/
       page.tsx                  server component — renders InterestPicker (no props)

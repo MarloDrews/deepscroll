@@ -25,9 +25,9 @@
 @theme {
   /* Surfaces */
   --color-surface-0: #121110;             /* page base */
-  --color-surface-1: #1b1815;             /* cards, panels */
-  --color-surface-2: #23201b;             /* inputs, inner blocks */
-  --color-surface-3: #2b2721;             /* raised elements, hover fills */
+  --color-surface-1: #1e1b17;             /* cards, panels */
+  --color-surface-2: #282420;             /* inputs, inner blocks */
+  --color-surface-3: #332e28;             /* raised elements, hover fills */
   --color-surface-overlay: rgb(18 17 16 / 0.95); /* bars, sheets */
 
   /* Edges */
@@ -76,6 +76,22 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Lamp light: a barely-perceptible warm glow falling from the top of the
+   page, like a reading lamp over a desk. Painted as a fixed non-interactive
+   layer above the app so every screen inherits the same depth cue. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 65% at 50% -12%,
+    rgb(239 233 222 / 0.035),
+    transparent 62%
+  );
+}
+
 /* Barely-there paper grain on the page base; pure decoration, no events. */
 body::before {
   content: "";
@@ -104,9 +120,10 @@ body::before {
        dark drop below. Matte and directional like a sheet on a desk —
        deliberately not a glow (see docs/DESIGN_AUDIT.md). */
     box-shadow:
-      inset 0 1px 0 rgb(239 233 222 / 0.04),
-      0 1px 2px rgb(0 0 0 / 0.35),
-      0 2px 6px rgb(0 0 0 / 0.18);
+      inset 0 1px 0 rgb(239 233 222 / 0.05),
+      0 1px 2px rgb(0 0 0 / 0.5),
+      0 3px 8px rgb(0 0 0 / 0.35),
+      0 10px 28px rgb(0 0 0 / 0.3);
   }
 
   .btn {

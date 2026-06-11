@@ -16,6 +16,12 @@ used to doomscroll: in the evening, on the couch, in bed. The design is a
 - **Matte, not glossy.** No glows, no gradients-as-decoration, no glass
   blur. Surfaces separate by hairline edges and tone, like sheets of paper.
   A barely visible paper-grain texture sits on the page base.
+- **Depth comes from light, not from effects.** Three cues, all subtle:
+  a barely-perceptible warm "lamp light" falling from the top of every
+  screen (fixed overlay in globals.css), a matte paper-edge shadow under
+  cards (1px warm top highlight + soft dark drop), and surface lightness
+  steps wide enough to read as separate sheets. None of these are glows;
+  they model one light source above the page.
 - **The serif is the voice.** Post titles and long-form prose are set in
   Newsreader, a serif designed for on-screen reading. UI chrome (buttons,
   tabs, labels) is set in Source Sans 3 so it disappears behind the content.
@@ -37,10 +43,14 @@ reading.
 | token             | value                  | use                          |
 |-------------------|------------------------|------------------------------|
 | `surface-0`       | `#121110`              | page base                    |
-| `surface-1`       | `#1B1815`              | cards, panels                |
-| `surface-2`       | `#23201B`              | inputs, inner blocks         |
-| `surface-3`       | `#2B2721`              | raised elements, hover fills |
+| `surface-1`       | `#1E1B17`              | cards, panels                |
+| `surface-2`       | `#282420`              | inputs, inner blocks         |
+| `surface-3`       | `#332E28`              | raised elements, hover fills |
 | `surface-overlay` | `rgb(18 17 16 / 0.95)` | bars, sheets, modals         |
+
+Surface steps were widened in the polish pass (June 2026): the original
+`#1B1815`/`#23201B`/`#2B2721` ladder read as one black sheet at phone
+brightness. The hue stays warm; only the lightness steps grew.
 
 ### Edges
 
