@@ -109,8 +109,11 @@ were confirmed implemented. The rest of this pass:
     soft 28px ambient layer). Surface steps 1–3 widened
     (#1B1815→#1E1B17, #23201B→#282420, #2B2721→#332E28) because cards read
     as the same color as the base. A fixed "lamp light" gradient
-    (warm ink at 3.5% alpha, radial from top center) now falls over every
+    (warm ink, radial from top center) now falls over every
     screen — the page base no longer reads as one flat black sheet.
+    Follow-up: the initial 3.5% alpha measured only +3 RGB at the top of
+    the rendered page — below perception. Raised to 7%, which is visible
+    on screen without reading as a band.
 20. Honest re-verdict after the depth fixes: the identity holds. The warm
     cast, the serif voice, the restrained gold and the new top-light
     together read as "reading lamp over paper", not as a generic dark

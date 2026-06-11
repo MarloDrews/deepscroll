@@ -87,7 +87,7 @@ body::after {
   pointer-events: none;
   background: radial-gradient(
     120% 65% at 50% -12%,
-    rgb(239 233 222 / 0.035),
+    rgb(239 233 222 / 0.07),
     transparent 62%
   );
 }
