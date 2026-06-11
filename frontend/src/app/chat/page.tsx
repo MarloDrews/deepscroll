@@ -93,7 +93,7 @@ function NewChatOverlay({ onClose, onCreated }: { onClose: () => void; onCreated
     <div className="absolute inset-0 z-40 bg-surface-0 flex flex-col">
       <div className="px-3 pt-3 pb-2">
         <div className="flex items-center gap-2">
-          <button onClick={onClose} className="shrink-0 w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink transition-colors duration-150 cursor-pointer" aria-label="Close">
+          <button onClick={onClose} className="btn-icon shrink-0" aria-label="Close">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
@@ -211,7 +211,7 @@ export default function ChatPage() {
           {user && (
             <button
               onClick={() => setShowNew(true)}
-              className="w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink transition-colors duration-150 cursor-pointer"
+              className="btn-icon"
               aria-label="New chat"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">

@@ -63,7 +63,7 @@ export default function SavedPostsPage() {
             </p>
             <button
               onClick={() => router.back()}
-              className="text-ink-muted text-sm underline cursor-pointer"
+              className="btn btn-ghost text-sm"
             >
               Go back
             </button>
@@ -76,7 +76,7 @@ export default function SavedPostsPage() {
             {/* Floating back button overlaid on the snap feed */}
             <button
               onClick={() => router.back()}
-              className="absolute top-4 left-4 z-40 w-11 h-11 flex items-center justify-center text-ink-dim hover:text-ink transition-colors cursor-pointer"
+              className="btn-icon absolute top-4 left-4 z-40"
               aria-label="Go back"
             >
               <svg

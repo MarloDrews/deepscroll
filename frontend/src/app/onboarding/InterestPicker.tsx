@@ -253,11 +253,7 @@ export default function InterestPicker() {
         <button
           onClick={handleContinue}
           disabled={!canContinue}
-          className={`btn w-full h-12 rounded-full ${
-            canContinue
-              ? "btn-primary"
-              : "bg-surface-2 text-ink-faint cursor-not-allowed"
-          }`}
+          className="btn btn-primary w-full h-12"
         >
           Continue
         </button>

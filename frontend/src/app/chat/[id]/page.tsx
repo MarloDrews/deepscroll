@@ -92,7 +92,7 @@ export default function ConversationPage() {
         <div className="flex items-center gap-2 px-3 py-2.5 border-b border-edge">
           <button
             onClick={() => router.push("/chat")}
-            className="shrink-0 w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink transition-colors duration-150 cursor-pointer"
+            className="btn-icon shrink-0"
             aria-label="Back to chats"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -181,7 +181,7 @@ export default function ConversationPage() {
             <button
               onClick={handleSend}
               disabled={!draft.trim() || status !== "open" || notFound}
-              className="btn btn-primary shrink-0 w-10 h-10 rounded-full p-0"
+              className={`btn-icon shrink-0${draft.trim() && status === "open" && !notFound ? " btn-icon-active" : ""}`}
               aria-label="Send message"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">

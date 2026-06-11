@@ -165,7 +165,7 @@ export default function SearchPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.back()}
-              className="shrink-0 w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink transition-colors duration-150 cursor-pointer"
+              className="btn-icon shrink-0"
               aria-label="Go back"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">

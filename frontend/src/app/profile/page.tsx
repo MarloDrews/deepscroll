@@ -287,7 +287,7 @@ export default function ProfilePage() {
         {/* Back button */}
         <button
           onClick={() => router.back()}
-          className="absolute top-4 left-4 z-10 w-10 h-10 flex items-center justify-center text-ink-dim hover:text-ink transition-colors cursor-pointer"
+          className="btn-icon absolute top-4 left-4 z-10"
           aria-label="Go back"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
@@ -583,7 +583,7 @@ export default function ProfilePage() {
           <div className="border-b border-edge">
             <button
               onClick={() => { logout(); router.replace("/") }}
-              className="w-full px-5 py-4 text-left text-bad text-sm"
+              className="btn btn-destructive w-full py-4 text-left text-sm"
             >
               Sign out
             </button>
@@ -617,7 +617,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={deleteLoading}
-                  className="btn w-full py-3 bg-bad text-ink hover:opacity-90"
+                  className="btn btn-destructive w-full py-3"
                 >
                   {deleteLoading ? "Deleting..." : "Confirm delete"}
                 </button>
@@ -638,7 +638,7 @@ export default function ProfilePage() {
             >
               <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-edge">
                 <p className="text-ink text-sm font-semibold capitalize">{listOpen}</p>
-                <button onClick={() => setListOpen(null)} className="text-ink-dim hover:text-ink transition-colors cursor-pointer" aria-label="Close">
+                <button onClick={() => setListOpen(null)} className="btn-icon" aria-label="Close">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                     <path d="M18 6L6 18M6 6l12 12" />
                   </svg>

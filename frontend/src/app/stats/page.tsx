@@ -370,11 +370,7 @@ function CategorySection({ title, charts }: { title: string; charts: ChartOption
             <button
               key={c.label}
               onClick={() => setSelected(i)}
-              className={`flex-shrink-0 text-xs px-3 py-1 rounded-full transition-colors ${
-                selected === i
-                  ? "bg-surface-3 text-ink"
-                  : "bg-surface-1 text-ink-dim hover:text-ink-body"
-              }`}
+              className={`btn shrink-0 ${selected === i ? "btn-primary" : "btn-quiet"}`}
             >
               {c.label}
             </button>
@@ -2855,16 +2851,12 @@ export default function StatsPage() {
     <div className="relative max-w-[430px] mx-auto bg-surface-0 h-[100dvh] flex flex-col">
       {/* Tab bar */}
       <div className="sticky top-0 z-20 bg-surface-0 border-b border-edge px-4 pt-3 pb-0">
-        <div className="flex gap-1 bg-surface-1 rounded-full p-1">
+        <div className="flex gap-1.5">
           {tabs.map(t => (
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
-              className={`flex-1 py-1.5 text-sm font-medium rounded-full transition-colors ${
-                activeTab === t.key
-                  ? "bg-surface-3 text-ink"
-                  : "text-ink-dim hover:text-ink-body"
-              }`}
+              className={`btn flex-1 ${activeTab === t.key ? "btn-primary" : "btn-ghost"}`}
             >
               {t.label}
             </button>

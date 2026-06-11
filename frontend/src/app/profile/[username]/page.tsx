@@ -166,7 +166,7 @@ export default function PublicProfilePage() {
         <div className="flex items-center px-4 pt-4 pb-2">
           <button
             onClick={() => router.back()}
-            className="w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink transition-colors duration-150 cursor-pointer"
+            className="btn-icon"
             aria-label="Go back"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -177,7 +177,7 @@ export default function PublicProfilePage() {
           {isOwnProfile ? (
             <button
               onClick={() => router.push("/profile")}
-              className="w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink transition-colors duration-150 cursor-pointer"
+              className="btn-icon"
               aria-label="Settings"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -186,7 +186,7 @@ export default function PublicProfilePage() {
               </svg>
             </button>
           ) : (
-            <button className="w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink transition-colors duration-150 cursor-pointer" aria-label="More options">
+            <button className="btn-icon" aria-label="More options">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <circle cx="5" cy="12" r="1.5" />
                 <circle cx="12" cy="12" r="1.5" />
@@ -307,7 +307,7 @@ export default function PublicProfilePage() {
             >
               <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-edge">
                 <p className="text-ink text-sm font-semibold capitalize">{listOpen}</p>
-                <button onClick={() => setListOpen(null)} className="text-ink-dim hover:text-ink transition-colors cursor-pointer" aria-label="Close">
+                <button onClick={() => setListOpen(null)} className="btn-icon" aria-label="Close">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                     <path d="M18 6L6 18M6 6l12 12" />
                   </svg>

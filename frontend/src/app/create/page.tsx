@@ -612,7 +612,7 @@ export default function CreatePage() {
           </div>
 
           {step > 1 && (
-            <button onClick={() => setStep((prev) => (prev as number) - 1 as 1|2|3)} className="flex items-center gap-1 text-ink-dim hover:text-ink text-sm mb-4 cursor-pointer transition-colors duration-150">
+            <button onClick={() => setStep((prev) => (prev as number) - 1 as 1|2|3)} className="btn btn-ghost text-sm mb-4">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M15 18l-6-6 6-6" /></svg>
               Back
             </button>

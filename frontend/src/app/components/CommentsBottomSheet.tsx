@@ -131,7 +131,7 @@ export default function CommentsBottomSheet({ postId, onClose, onCountChange }: 
                     <button
                       onClick={() => handleDelete(comment.id)}
                       disabled={deletingId === comment.id}
-                      className="ml-auto text-xs text-ink-faint hover:text-bad disabled:opacity-40 transition-colors cursor-pointer"
+                      className="btn btn-destructive ml-auto px-2.5 py-1 text-xs"
                     >
                       {deletingId === comment.id ? "Deleting..." : "Delete"}
                     </button>
@@ -163,7 +163,7 @@ export default function CommentsBottomSheet({ postId, onClose, onCountChange }: 
                 type="submit"
                 disabled={!draft.trim() || posting}
                 aria-label="Post comment"
-                className="btn btn-primary shrink-0 w-9 h-9 rounded-full p-0"
+                className={`btn-icon shrink-0${draft.trim() && !posting ? " btn-icon-active" : ""}`}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                   <line x1="22" y1="2" x2="11" y2="13" />

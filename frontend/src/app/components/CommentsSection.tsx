@@ -34,7 +34,7 @@ export default function CommentsSection({ comments, currentUsername, onDelete, d
                 <button
                   onClick={() => onDelete(comment.id)}
                   disabled={deletingId === comment.id}
-                  className="ml-auto text-xs text-ink-faint hover:text-bad disabled:opacity-40 transition-colors cursor-pointer"
+                  className="btn btn-destructive ml-auto px-2.5 py-1 text-xs"
                 >
                   {deletingId === comment.id ? "Deleting..." : "Delete"}
                 </button>

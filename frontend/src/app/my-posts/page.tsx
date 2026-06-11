@@ -39,7 +39,7 @@ export default function MyPostsPage() {
           <div className="flex items-center gap-3 px-4 pt-4 pb-3">
             <button
               onClick={() => router.back()}
-              className="w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink transition-colors duration-150 cursor-pointer"
+              className="btn-icon"
               aria-label="Go back"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
