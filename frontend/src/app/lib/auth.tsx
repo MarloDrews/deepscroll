@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { clearApiCache } from "./swr"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -69,6 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
     const data = await r.json()
     if (!r.ok) throw new Error(detailToMessage(data.detail, "Login failed."))
+    // Drop all cached API data so nothing from a previous account survives.
+    clearApiCache()
     localStorage.setItem("deepscroll_token", data.access_token)
     setUser(data.user as AuthUser)
   }
@@ -81,11 +84,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
     const data = await r.json()
     if (!r.ok) throw new Error(detailToMessage(data.detail, "Registration failed."))
+    clearApiCache()
     localStorage.setItem("deepscroll_token", data.access_token)
     setUser(data.user as AuthUser)
   }
 
   function logout(): void {
+    clearApiCache()
     localStorage.removeItem("deepscroll_token")
     setUser(null)
   }
