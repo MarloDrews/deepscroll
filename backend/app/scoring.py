@@ -30,31 +30,28 @@ def score_posts(
     # events to that user so bonuses reflect individual rather than global engagement.
 
     cutoff = datetime.utcnow() - timedelta(days=30)
-    recent_events = db.query(Event).filter(Event.created_at >= cutoff).all()
-
-    # Build post_id -> format lookup for all posts referenced by recent events.
-    # We query the DB rather than relying on the caller's post list because
-    # engagement events may reference posts filtered out by ?format= or ?interests=.
-    event_post_ids = list({e.post_id for e in recent_events})
-    format_for_post: dict[int, str] = {}
-    if event_post_ids:
-        rows = db.query(Post.id, Post.format).filter(Post.id.in_(event_post_ids)).all()
-        format_for_post = {row.id: row.format for row in rows}
+    # One joined tuple query instead of loading full Event ORM objects and
+    # then re-querying posts for their formats (the join also covers events
+    # on posts filtered out by ?format= or ?interests=, like the old
+    # two-query version did).
+    recent_rows = (
+        db.query(Event.post_id, Event.event_type, Event.duration_ms, Post.format)
+        .join(Post, Post.id == Event.post_id)
+        .filter(Event.created_at >= cutoff)
+        .all()
+    )
 
     # Accumulate per-format engagement stats and per-post view counts.
     format_view_durations: dict[str, list[int]] = {}
     format_like_counts: dict[str, int] = {}
     post_view_counts: dict[int, int] = {}
 
-    for event in recent_events:
-        fmt = format_for_post.get(event.post_id)
-        if fmt is None:
-            continue
-        if event.event_type == "view":
-            if event.duration_ms is not None:
-                format_view_durations.setdefault(fmt, []).append(event.duration_ms)
-            post_view_counts[event.post_id] = post_view_counts.get(event.post_id, 0) + 1
-        elif event.event_type == "like":
+    for post_id, event_type, duration_ms, fmt in recent_rows:
+        if event_type == "view":
+            if duration_ms is not None:
+                format_view_durations.setdefault(fmt, []).append(duration_ms)
+            post_view_counts[post_id] = post_view_counts.get(post_id, 0) + 1
+        elif event_type == "like":
             format_like_counts[fmt] = format_like_counts.get(fmt, 0) + 1
 
     # Raw engagement score per format: avg view duration (ms) + like count.

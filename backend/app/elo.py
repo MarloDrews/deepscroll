@@ -63,17 +63,17 @@ def apply_answer(db: Session, user_id: int, fmt: str, post_difficulty, correct: 
     return row, delta
 
 
-def global_rating(db: Session, user_id: int) -> int | None:
-    """Average of per-format ratings; None until the user has answered a quiz."""
-    rows = db.query(UserElo).filter(UserElo.user_id == user_id).all()
-    if not rows:
-        return None
-    return round(sum(r.rating for r in rows) / len(rows))
+def elo_summary(db: Session, user_id: int) -> tuple[int | None, dict[str, dict]]:
+    """Global rating and per-format ratings from a single query.
 
-
-def format_ratings(db: Session, user_id: int) -> dict[str, dict]:
+    Global is the average of per-format ratings, None until the user has
+    answered a quiz. Every caller needs both values, so fetching them
+    together saves a round trip to the remote DB.
+    """
     rows = db.query(UserElo).filter(UserElo.user_id == user_id).all()
-    return {
+    formats = {
         r.format: {"rating": round(r.rating), "answered_count": r.answered_count}
         for r in rows
     }
+    global_rating = round(sum(r.rating for r in rows) / len(rows)) if rows else None
+    return global_rating, formats

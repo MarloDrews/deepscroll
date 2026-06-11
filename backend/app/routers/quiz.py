@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from ..auth import get_current_user, get_optional_user
 from ..database import get_db
-from ..elo import apply_answer, format_ratings, global_rating
+from ..elo import apply_answer, elo_summary
 from ..models import Post, QuizAnswer, User
 from ..rate_limit import check_rate_limit
 
@@ -27,12 +27,12 @@ def _get_quiz_items(post: Post) -> list[dict]:
 
 
 def _elo_payload(db: Session, user_id: int, fmt: str, delta: float) -> dict:
-    ratings = format_ratings(db, user_id)
+    global_rating, ratings = elo_summary(db, user_id)
     return {
         "format": fmt,
         "rating": ratings.get(fmt, {}).get("rating"),
         "delta": round(delta, 1),
-        "global_rating": global_rating(db, user_id),
+        "global_rating": global_rating,
     }
 
 
@@ -144,7 +144,8 @@ def get_user_elo(username: str, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == username, User.is_active == True).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    global_rating, formats = elo_summary(db, user.id)
     return {
-        "global_rating": global_rating(db, user.id),
-        "formats": format_ratings(db, user.id),
+        "global_rating": global_rating,
+        "formats": formats,
     }

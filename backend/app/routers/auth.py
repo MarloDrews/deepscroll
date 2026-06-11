@@ -192,15 +192,17 @@ def patch_me(
 
 
 @router.post("/me/avatar", response_model=UserOut)
-async def upload_avatar(
+def upload_avatar(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Same hardened pipeline as post images: magic-byte check + Pillow re-encode.
+    # Sync def: the image work and storage upload run in the threadpool
+    # like every other handler instead of blocking the event loop.
     check_rate_limit(current_user.id, "avatar_upload", 10, 3600)
     try:
-        data, media_type = await validate_image(file)
+        data, media_type = validate_image(file)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

@@ -62,10 +62,16 @@ def create_post(
 ):
     check_rate_limit(current_user.id, "create_post", 20, 86400)
 
-    # Validate every interest slug exists
+    # Validate every interest slug exists (one IN query instead of one
+    # query per slug; the first unknown slug in request order is reported,
+    # matching the old per-slug loop)
+    found = {
+        i.slug: i
+        for i in db.query(Interest).filter(Interest.slug.in_(data.interests)).all()
+    }
     interest_objects = []
     for slug in data.interests:
-        interest = db.query(Interest).filter(Interest.slug == slug).first()
+        interest = found.get(slug)
         if interest is None:
             raise HTTPException(status_code=400, detail=f"Unknown interest slug: {slug!r}")
         interest_objects.append(interest)

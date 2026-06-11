@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timedelta
 from typing import List
 
@@ -6,34 +7,41 @@ from sqlalchemy import and_, case, func, text
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
-from ..database import get_db
-from ..elo import format_ratings, global_rating
+from ..database import engine, get_db
+from ..elo import elo_summary
 from ..models import Comment, Event, Post, QuizAnswer, User
 
 router = APIRouter(tags=["stats"])
 
 FORMATS = ["books", "facts", "people", "concepts", "questions", "stories", "academy"]
 
-# PostgreSQL extract('dow'): 0=Sun, 1=Mon, ..., 6=Sat
+# PostgreSQL extract('dow') and SQLite strftime('%w') both use 0=Sun ... 6=Sat.
 # Remap to Mon=0, Tue=1, ..., Sun=6
 _WD_REMAP = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6}
 _WD_LABELS_ORDER = [("Mon", 1), ("Tue", 2), ("Wed", 3), ("Thu", 4), ("Fri", 5), ("Sat", 6), ("Sun", 0)]
 
+# Production runs on PostgreSQL; the test suites run on a throwaway SQLite
+# file, which has no to_char/extract. Both branches return identical string
+# or integer-castable values.
+_IS_SQLITE = engine.dialect.name == "sqlite"
+
 
 def _month(col):
+    if _IS_SQLITE:
+        return func.strftime("%Y-%m", col)
     return func.to_char(col, "YYYY-MM")
 
 
 def _weekday(col):
+    if _IS_SQLITE:
+        return func.strftime("%w", col)
     return func.extract("dow", col)
 
 
 def _hour(col):
+    if _IS_SQLITE:
+        return func.strftime("%H", col)
     return func.extract("hour", col)
-
-
-def _date(col):
-    return func.to_char(col, "YYYY-MM-DD")
 
 
 def _last_n_months(n: int) -> List[str]:
@@ -63,8 +71,22 @@ def _milestone_date(dt) -> str | None:
     return dt.strftime("%Y-%m-%d")
 
 
+# The global stats payload is identical for every caller, so one in-process
+# snapshot serves all requests for its lifetime (the data lives in a remote
+# DB and the endpoint costs ~16 round trips). Cache reads and the swap below
+# are single assignments of one tuple, safe under FastAPI's threadpool
+# without a lock.
+_GLOBAL_STATS_TTL_SECONDS = 60
+_global_stats_cache: tuple | None = None  # (monotonic_timestamp, payload)
+
+
 @router.get("/stats/global")
 def get_global_stats(db: Session = Depends(get_db)):
+    global _global_stats_cache
+    cached = _global_stats_cache
+    if cached is not None and time.monotonic() - cached[0] < _GLOBAL_STATS_TTL_SECONDS:
+        return cached[1]
+
     # --- Overview ---
     # One round trip instead of four scalar queries: the DB is remote, so
     # every query costs a full network round trip regardless of data size.
@@ -317,7 +339,7 @@ def get_global_stats(db: Session = Depends(get_db)):
         .all()
     ]
 
-    return {
+    payload = {
         "overview": {
             "total_posts": total_posts,
             "total_users": total_users,
@@ -345,6 +367,8 @@ def get_global_stats(db: Session = Depends(get_db)):
         "pending_vs_published": {"published": published_count, "pending": pending_count},
         "comment_activity_by_user": comment_activity_by_user,
     }
+    _global_stats_cache = (time.monotonic(), payload)
+    return payload
 
 
 @router.get("/stats/me")
@@ -539,9 +563,10 @@ def get_my_stats(
     ]
 
     # --- My knowledge score (Elo) ---
+    my_global_rating, my_format_ratings = elo_summary(db, uid)
     my_elo = {
-        "global_rating": global_rating(db, uid),
-        "formats": format_ratings(db, uid),
+        "global_rating": my_global_rating,
+        "formats": my_format_ratings,
     }
     quiz_row = db.query(
         func.count(QuizAnswer.id).label("answered"),
@@ -565,70 +590,66 @@ def get_my_stats(
         .all()
     ]
 
-    # --- My ranking (raw SQL for grouped subqueries) ---
-    rank_by_posts = (
-        db.execute(
-            text(
-                "SELECT COUNT(*) FROM ("
-                "  SELECT author_id, COUNT(*) as cnt FROM posts"
-                "  WHERE status='published' AND author_id IS NOT NULL"
-                "  GROUP BY author_id HAVING COUNT(*) > :my_count"
-                ") AS sub"
-            ),
-            {"my_count": posts_published},
-        ).scalar() or 0
-    ) + 1
-
-    rank_by_likes = (
-        db.execute(
-            text(
-                "SELECT COUNT(*) FROM ("
-                "  SELECT p.author_id, COUNT(e.id) as cnt FROM events e"
-                "  JOIN posts p ON p.id = e.post_id"
-                "  WHERE e.event_type='like' AND p.author_id IS NOT NULL"
-                "  GROUP BY p.author_id HAVING COUNT(e.id) > :my_count"
-                ") AS sub"
-            ),
-            {"my_count": likes_received},
-        ).scalar() or 0
-    ) + 1
-
-    total_users_count = db.query(func.count(User.id)).scalar() or 0
+    # --- My ranking, engagement ceiling and first-interaction milestones ---
+    # One round trip instead of six scalar queries (ranks, user count, max
+    # engagement score, first like, first comment): the DB is remote, so
+    # every query costs a full network round trip regardless of data size.
+    extras_row = db.execute(
+        text(
+            "SELECT"
+            " (SELECT COUNT(*) FROM ("
+            "    SELECT author_id FROM posts"
+            "    WHERE status='published' AND author_id IS NOT NULL"
+            "    GROUP BY author_id HAVING COUNT(*) > :my_posts"
+            " ) AS rp) AS ranked_above_by_posts,"
+            " (SELECT COUNT(*) FROM ("
+            "    SELECT p.author_id FROM events e JOIN posts p ON p.id = e.post_id"
+            "    WHERE e.event_type='like' AND p.author_id IS NOT NULL"
+            "    GROUP BY p.author_id HAVING COUNT(e.id) > :my_likes"
+            " ) AS rl) AS ranked_above_by_likes,"
+            " (SELECT COUNT(*) FROM users) AS total_users,"
+            " (SELECT MAX(score) FROM ("
+            "    SELECT u.id,"
+            "      (COALESCE(lc.cnt,0)*3 + COALESCE(cc.cnt,0)*2 + COALESCE(pc.cnt,0)*5) AS score"
+            "    FROM users u"
+            "    LEFT JOIN (SELECT p.author_id, COUNT(e.id) AS cnt FROM events e"
+            "      JOIN posts p ON p.id=e.post_id WHERE e.event_type='like'"
+            "      GROUP BY p.author_id) lc ON lc.author_id=u.id"
+            "    LEFT JOIN (SELECT p.author_id, COUNT(c.id) AS cnt FROM comments c"
+            "      JOIN posts p ON p.id=c.post_id GROUP BY p.author_id) cc ON cc.author_id=u.id"
+            "    LEFT JOIN (SELECT author_id, COUNT(id) AS cnt FROM posts"
+            "      WHERE status='published' GROUP BY author_id) pc ON pc.author_id=u.id"
+            " ) AS ms) AS max_engagement_score,"
+            " (SELECT MIN(e.created_at) FROM events e JOIN posts p ON p.id=e.post_id"
+            "   WHERE e.event_type='like' AND p.author_id=:uid) AS first_like_at,"
+            " (SELECT MIN(c.created_at) FROM comments c JOIN posts p ON p.id=c.post_id"
+            "   WHERE p.author_id=:uid) AS first_comment_at"
+        ),
+        {"my_posts": posts_published, "my_likes": likes_received, "uid": uid},
+    ).one()
+    rank_by_posts = (extras_row.ranked_above_by_posts or 0) + 1
+    rank_by_likes = (extras_row.ranked_above_by_likes or 0) + 1
+    total_users_count = extras_row.total_users or 0
 
     # --- Engagement score: (likes*3 + comments*2 + posts*5), normalized 0-100 ---
     my_raw = (likes_received * 3) + (comments_received * 2) + (posts_published * 5)
-    max_score = (
-        db.execute(
-            text(
-                "SELECT MAX(score) FROM ("
-                "  SELECT u.id,"
-                "    (COALESCE(lc.cnt,0)*3 + COALESCE(cc.cnt,0)*2 + COALESCE(pc.cnt,0)*5) as score"
-                "  FROM users u"
-                "  LEFT JOIN (SELECT p.author_id, COUNT(e.id) as cnt FROM events e"
-                "    JOIN posts p ON p.id=e.post_id WHERE e.event_type='like'"
-                "    GROUP BY p.author_id) lc ON lc.author_id=u.id"
-                "  LEFT JOIN (SELECT p.author_id, COUNT(c.id) as cnt FROM comments c"
-                "    JOIN posts p ON p.id=c.post_id GROUP BY p.author_id) cc ON cc.author_id=u.id"
-                "  LEFT JOIN (SELECT author_id, COUNT(id) as cnt FROM posts"
-                "    WHERE status='published' GROUP BY author_id) pc ON pc.author_id=u.id"
-                ") AS sub"
-            )
-        ).scalar()
-        or 0
-    )
+    max_score = extras_row.max_engagement_score or 0
     my_engagement_score = (
         round(min((my_raw / max_score) * 100, 100.0), 1) if max_score > 0 else 0.0
     )
 
-    # --- My streak ---
-    date_rows = (
-        db.query(_date(Post.created_at).label("d"))
+    # --- My published-post dates (feeds both the streak and the milestones) ---
+    pub_dates = (
+        db.query(Post.created_at)
         .filter(Post.author_id == uid, Post.status == "published")
-        .distinct()
-        .order_by(_date(Post.created_at))
+        .order_by(Post.created_at)
         .all()
     )
-    date_list = sorted({r.d for r in date_rows})
+    pub_list = [r.created_at for r in pub_dates]
+
+    # --- My streak (distinct post dates derived in Python from pub_list,
+    # which used to be a separate round trip) ---
+    date_list = sorted({dt.strftime("%Y-%m-%d") for dt in pub_list})
     current_streak = 0
     best_streak = 0
 
@@ -654,29 +675,6 @@ def get_my_stats(
                     break
 
     # --- My milestones ---
-    pub_dates = (
-        db.query(Post.created_at)
-        .filter(Post.author_id == uid, Post.status == "published")
-        .order_by(Post.created_at)
-        .all()
-    )
-    pub_list = [r.created_at for r in pub_dates]
-
-    first_like_row = (
-        db.query(Event.created_at)
-        .join(Post, Post.id == Event.post_id)
-        .filter(Event.event_type == "like", Post.author_id == uid)
-        .order_by(Event.created_at)
-        .first()
-    )
-    first_comment_row = (
-        db.query(Comment.created_at)
-        .join(Post, Post.id == Comment.post_id)
-        .filter(Post.author_id == uid)
-        .order_by(Comment.created_at)
-        .first()
-    )
-
     milestones = [
         {
             "label": "First Post",
@@ -705,13 +703,13 @@ def get_my_stats(
         },
         {
             "label": "First Like Received",
-            "achieved": first_like_row is not None,
-            "achieved_at": _milestone_date(first_like_row.created_at) if first_like_row else None,
+            "achieved": extras_row.first_like_at is not None,
+            "achieved_at": _milestone_date(extras_row.first_like_at),
         },
         {
             "label": "First Comment Received",
-            "achieved": first_comment_row is not None,
-            "achieved_at": _milestone_date(first_comment_row.created_at) if first_comment_row else None,
+            "achieved": extras_row.first_comment_at is not None,
+            "achieved_at": _milestone_date(extras_row.first_comment_at),
         },
         {
             "label": "Verified",

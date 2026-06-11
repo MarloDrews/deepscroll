@@ -12,13 +12,14 @@ router = APIRouter()
 
 
 @router.post("/upload/image", response_model=UploadResponse, status_code=201)
-async def upload_image(
+def upload_image(
     file: UploadFile = File(...),
     current_user=Depends(get_current_user),
 ):
+    # Sync def: validate_image and the storage upload run in the threadpool.
     check_rate_limit(current_user.id, "upload_image", 10, 3600)
     try:
-        data, media_type = await validate_image(file)
+        data, media_type = validate_image(file)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
