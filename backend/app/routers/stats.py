@@ -6,7 +6,7 @@ from sqlalchemy import and_, case, func, text
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
-from ..database import get_db
+from ..database import engine, get_db
 from ..elo import format_ratings, global_rating
 from ..models import Comment, Event, Post, QuizAnswer, User
 
@@ -14,25 +14,38 @@ router = APIRouter(tags=["stats"])
 
 FORMATS = ["books", "facts", "people", "concepts", "questions", "stories", "academy"]
 
-# PostgreSQL extract('dow'): 0=Sun, 1=Mon, ..., 6=Sat
+# PostgreSQL extract('dow') and SQLite strftime('%w') both use 0=Sun ... 6=Sat.
 # Remap to Mon=0, Tue=1, ..., Sun=6
 _WD_REMAP = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6}
 _WD_LABELS_ORDER = [("Mon", 1), ("Tue", 2), ("Wed", 3), ("Thu", 4), ("Fri", 5), ("Sat", 6), ("Sun", 0)]
 
+# Production runs on PostgreSQL; the test suites run on a throwaway SQLite
+# file, which has no to_char/extract. Both branches return identical string
+# or integer-castable values.
+_IS_SQLITE = engine.dialect.name == "sqlite"
+
 
 def _month(col):
+    if _IS_SQLITE:
+        return func.strftime("%Y-%m", col)
     return func.to_char(col, "YYYY-MM")
 
 
 def _weekday(col):
+    if _IS_SQLITE:
+        return func.strftime("%w", col)
     return func.extract("dow", col)
 
 
 def _hour(col):
+    if _IS_SQLITE:
+        return func.strftime("%H", col)
     return func.extract("hour", col)
 
 
 def _date(col):
+    if _IS_SQLITE:
+        return func.strftime("%Y-%m-%d", col)
     return func.to_char(col, "YYYY-MM-DD")
 
 

@@ -3,25 +3,18 @@
 Run from anywhere:
     .venv\\Scripts\\python.exe tests\\smoke_test.py
 
-The app's SQLite URL is relative to the working directory, so this script
-chdirs into a temp directory BEFORE importing the app — the real
-backend/deepscroll.db is never touched. Plain asserts, no pytest needed
-(requires httpx for the TestClient).
+_throwaway_db pins DATABASE_URL to a temp SQLite file BEFORE the app is
+imported, so the real database is never touched. Plain asserts, no pytest
+needed (requires httpx for the TestClient).
 """
 
 import os
 import sys
-import tempfile
 
-BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, BACKEND_DIR)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _throwaway_db  # noqa: F401 — must run before any app import
 
 os.environ.setdefault("JWT_SECRET", "smoke-test-secret")
-
-_tmp = tempfile.mkdtemp(prefix="deepscroll_smoke_")
-os.chdir(_tmp)
-
-from pathlib import Path  # noqa: E402
 
 from fastapi.testclient import TestClient  # noqa: E402
 
@@ -30,10 +23,27 @@ from app.main import app  # noqa: E402
 from app.models import Post  # noqa: E402
 from app.routers import auth as auth_router  # noqa: E402
 
-# Redirect avatar uploads into the temp dir so the real user_uploads/ stays clean.
-_upload_dir = Path(_tmp) / "user_uploads"
-(_upload_dir / "images").mkdir(parents=True)
-auth_router.UPLOAD_DIR = _upload_dir
+
+class _FakeStorage:
+    """Stand-in for the Supabase storage client: accepts uploads, returns a
+    URL with the real public-URL shape. Keeps the avatar pipeline testable
+    without network access or a real bucket."""
+
+    def from_(self, bucket):
+        return self
+
+    def upload(self, path, file, file_options=None):
+        return None
+
+    def get_public_url(self, path):
+        return f"https://fake.supabase.co/storage/v1/object/public/uploads/{path}"
+
+
+class _FakeSupabase:
+    storage = _FakeStorage()
+
+
+auth_router.supabase_client = _FakeSupabase()
 
 Base.metadata.create_all(bind=engine)
 client = TestClient(app)
@@ -182,7 +192,9 @@ def main():
                     files={"file": ("me.png", buf.getvalue(), "image/png")})
     check("avatar upload", r.status_code == 200, r.text)
     avatar_url = r.json()["avatar_url"]
-    check("avatar url shape", avatar_url is not None and avatar_url.startswith("/uploads/images/"))
+    check("avatar url shape", avatar_url is not None
+          and avatar_url.startswith("https://")
+          and "/storage/v1/object/public/uploads/images/" in avatar_url)
     r = client.post("/api/auth/me/avatar", headers=a_h,
                     files={"file": ("evil.png", b"#!/bin/sh\necho pwned", "image/png")})
     check("non-image avatar rejected", r.status_code == 400, r.text)

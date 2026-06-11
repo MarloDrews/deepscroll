@@ -11,15 +11,11 @@ Same throwaway-DB pattern as smoke_test.py.
 
 import os
 import sys
-import tempfile
 
-BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, BACKEND_DIR)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _throwaway_db  # noqa: F401 — must run before any app import
 
 os.environ.setdefault("JWT_SECRET", "security-test-secret")
-
-_tmp = tempfile.mkdtemp(prefix="deepscroll_sec_")
-os.chdir(_tmp)
 
 from fastapi.testclient import TestClient  # noqa: E402
 
