@@ -57,10 +57,9 @@
   --color-fmt-academy: #5ba8e0;
   --color-fmt-neutral: #7888a8;
 
-  /* Radii */
-  --radius-card: 0.875rem;                /* cards and panels */
-  --radius-field: 0.625rem;               /* inputs and buttons */
-  --radius-sheet: 1.25rem;                /* bottom sheets (top corners) */
+  /* Radii (in-content blocks; chrome surfaces use rounded-2xl/3xl/full) */
+  --radius-card: 0.875rem;                /* section-body cards */
+  --radius-field: 0.625rem;               /* small in-content boxes */
 }
 
 /* Dark-only app; fixed to avoid a white flash on light-mode devices.
@@ -193,36 +192,6 @@ body::before {
   .btn-icon-active {
     background: rgb(255 255 255 / 0.12);
     color: var(--color-ink);
-  }
-
-  /* Social action icons (like, comment, save, share) — bare tap targets,
-     no border, no background. 44px fixed size for touch accessibility. */
-  .btn-action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 9999px;
-    border: none;
-    background: transparent;
-    color: var(--color-ink-dim);
-    cursor: pointer;
-    transition: color 150ms ease-out, opacity 150ms ease-out;
-  }
-  .btn-action:disabled {
-    opacity: 0.45;
-    cursor: default;
-  }
-  .btn-action-active {
-    color: var(--color-lamp);
-  }
-  .btn-action-liked {
-    color: var(--color-like);
-  }
-  .btn-action-saved {
-    color: var(--color-save);
   }
 
   .field {
