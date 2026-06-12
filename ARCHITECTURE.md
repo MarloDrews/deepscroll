@@ -131,6 +131,22 @@ frontend/
       CastSection.tsx           stories: array of character cards (name/role/one_line/lifespan)
       HistoricalContextSection.tsx stories: broader historical setting
 
+mobile/                         React Native app (Expo SDK 56, TypeScript, expo-router, NativeWind 4 + tailwindcss 3.4); phase 1 = For You feed only
+  package.json                  main: expo-router/entry; deps incl. reanimated 4, gesture-handler, react-native-svg, expo-image, async-storage, @expo-google-fonts/{newsreader,source-sans-3,geist-mono}
+  babel.config.js               babel-preset-expo (jsxImportSource nativewind) + nativewind/babel
+  metro.config.js               expo/metro-config wrapped in withNativeWind (input global.css)
+  tailwind.config.js            NativeWind preset; colors/radii/fontFamily generated from src/theme/tokens.ts so web class vocabulary (bg-surface-1, text-ink-dim, rounded-card) works
+  src/config.ts                 BASE_URL/WS_URL from EXPO_PUBLIC_API_URL; dev default http://10.0.2.2:8000 (emulator-to-host); comments document emulator / device-on-WLAN / HTTPS cases
+  src/theme/tokens.ts           Circuit tokens (surfaces, edges, ink, lamp/like/save/good/bad, fmt-*) + radii px + expo-font family names; mirrors frontend globals.css @theme
+  src/lib/api.ts                apiFetch port; module-level cachedToken filled from AsyncStorage by initAuthToken() at startup so apiFetch reads it synchronously; setAuthToken keeps cache+storage in sync; skips Content-Type for FormData
+  src/lib/formats.ts            FORMAT_IDS/FORMAT_STYLES/formatStyle/LEGACY_SVG_ACCENT_MAP port (web Tailwind class strings dropped, accent hex kept)
+  src/lib/relativeTime.ts       relativeTime(iso) port, unchanged
+  src/types/post.ts             Post/Section/SectionType/feed-card types + fcStr/fcNum, identical to frontend/src/types/post.ts
+  src/app/_layout.tsx           root layout: loads Newsreader/Source Sans 3/Geist Mono via useFonts, awaits initAuthToken, holds splash until ready, dark Stack on surface-0, GestureHandlerRootView
+  src/app/index.tsx             For You feed: GET /api/feed -> FlatList of full-screen PostCards; pagingEnabled + decelerationRate fast + getItemLayout (item height = measured container height) + windowSize 5 / maxToRenderPerBatch 2 / removeClippedSubviews; loading spinner + retry error state
+  src/components/PostCard.tsx   memoized full-screen card; per-format layouts (books/people/facts/concepts/questions/stories/academy + fallback) mirroring web PostCard core elements; expo-linear-gradient card surface, accent left border, badge glow via textShadow/boxShadow, interest tags, author initial; no actions/navigation this phase
+  src/components/SafeSvg.tsx    SvgBlock counterpart: seed -> inline SvgXml with legacy-hex re-palette; user content -> expo-image with svg+xml data URI (no script execution)
+
 docs/REVIEW.md                  full-pass audit (June 2026): categorized findings + design direction and token set
 docs/DESIGN.md                  "Lamplight" design identity (June 2026 redesign): rationale, full token set, format ink palette, type system, component vocabulary
 docs/SERVER.md                  Raspberry Pi deployment reference: systemd units, env vars, Tailscale IPs, update routine, debugging playbook, known pitfalls
@@ -432,6 +448,8 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 - Real-time chat: DMs + group chats over WebSocket (see CHAT / WEBSOCKET DESIGN), conversation list + chat view, chat in bottom nav (search moved top-right)
 - Security hardening pass (June 2026, see SECURITY_REVIEW.md)
 - "Lamplight" visual redesign (June 2026, see docs/DESIGN.md): warm dark token system in globals.css drives every screen; Newsreader serif + Source Sans 3 + Geist Mono type system; muted book-spine format inks; per-post --accent CSS variable replaces hardcoded section colors; seed SVGs re-paletted at render time in SvgBlock (content JSON untouched); shared component vocabulary (.card/.btn/.field/.chip/.label-caps)
+
+- Mobile app phase 1 (mobile/): Expo/React Native For You feed with TikTok-style vertical paging, Circuit tokens + web fonts, all 7 format card layouts
 
 **Next**
 - Content for academy format
