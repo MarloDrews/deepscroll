@@ -8,9 +8,9 @@ import { Frosted } from "./stage"
 
 // Port of frontend/src/app/components/BottomNav.tsx (Stage): a frosted pill
 // dock floating inset from every edge; the active item is a filled neutral
-// circle — functional, never glow. This phase only the feed exists, so Feed
-// is always the active item; Chat/Stats/Create (and Profile while logged in)
-// report "coming soon" instead of navigating.
+// circle — functional, never glow. Feed/Profile navigate like the web
+// (Profile goes to the own public profile, settings live behind its gear);
+// Chat/Stats/Create still report "coming soon" until those screens exist.
 
 const ICON_PROPS = {
   width: 20,
@@ -21,6 +21,8 @@ const ICON_PROPS = {
   strokeLinecap: "round",
   strokeLinejoin: "round",
 } as const
+
+type ActiveTab = "feed" | "stats" | "profile"
 
 function NavButton({
   onPress,
@@ -49,12 +51,19 @@ function NavButton({
   )
 }
 
-export default function BottomNav({ onComingSoon }: { onComingSoon: () => void }) {
+export default function BottomNav({
+  active,
+  onComingSoon,
+}: {
+  active?: ActiveTab
+  onComingSoon: () => void
+}) {
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { user } = useAuth()
 
   const inactive = colors["ink-muted"]
+  const iconColor = (tab: ActiveTab) => (active === tab ? colors.ink : inactive)
 
   return (
     <View
@@ -84,16 +93,19 @@ export default function BottomNav({ onComingSoon }: { onComingSoon: () => void }
           </NavButton>
 
           {/* Stats — line chart (axes + rising trend), matching the web glyph */}
-          <NavButton onPress={onComingSoon}>
-            <Svg {...ICON_PROPS} stroke={inactive}>
+          <NavButton onPress={active === "stats" ? () => {} : onComingSoon} active={active === "stats"}>
+            <Svg {...ICON_PROPS} stroke={iconColor("stats")}>
               <Path d="M3 3v18h18" />
               <Path d="m7 14 4-4 3 3 5-6" />
             </Svg>
           </NavButton>
 
-          {/* Feed — always the active tab this phase */}
-          <NavButton onPress={() => {}} active>
-            <Svg {...ICON_PROPS} stroke={colors.ink}>
+          {/* Feed */}
+          <NavButton
+            onPress={active === "feed" ? () => {} : () => router.replace("/")}
+            active={active === "feed"}
+          >
+            <Svg {...ICON_PROPS} stroke={iconColor("feed")}>
               <Path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z" />
             </Svg>
           </NavButton>
@@ -107,9 +119,16 @@ export default function BottomNav({ onComingSoon }: { onComingSoon: () => void }
             </Svg>
           </NavButton>
 
-          {/* Profile */}
-          <NavButton onPress={() => (user ? onComingSoon() : router.push("/login"))}>
-            <Svg {...ICON_PROPS} stroke={inactive}>
+          {/* Profile — own public profile when logged in (web behavior) */}
+          <NavButton
+            onPress={
+              active === "profile"
+                ? () => {}
+                : () => (user ? router.push(`/profile/${user.username}`) : router.push("/login"))
+            }
+            active={active === "profile"}
+          >
+            <Svg {...ICON_PROPS} stroke={iconColor("profile")}>
               <Circle cx={12} cy={8} r={4} />
               <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </Svg>

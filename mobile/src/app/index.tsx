@@ -118,7 +118,7 @@ export default function HomeScreen() {
         onTabPress={goToTab}
         onSearchPress={onComingSoon}
       />
-      <BottomNav onComingSoon={onComingSoon} />
+      <BottomNav active="feed" onComingSoon={onComingSoon} />
       <Toast message={message} />
     </View>
   )
