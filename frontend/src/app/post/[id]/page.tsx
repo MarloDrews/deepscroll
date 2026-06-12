@@ -7,7 +7,7 @@ import { formatStyle } from "@/lib/formats"
 import { fcStr, type Post } from "@/types/post"
 import SectionRenderer from "@/components/SectionRenderer"
 import CommentsSection, { type Comment } from "@/app/components/CommentsSection"
-import { SlabAccent } from "@/app/components/PostCard"
+import { SlabAccent, SlabGlow } from "@/app/components/PostCard"
 import VerifiedBadge from "@/components/VerifiedBadge"
 import { ArrowUpIcon, HeartIcon } from "@/app/components/icons"
 import { useAuth } from "@/app/lib/auth"
@@ -234,74 +234,82 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           >
             {post && style ? (
               <>
-                {/* Header — frosted slab inset from the edges */}
-                <div className="mx-3 mb-3 card relative overflow-hidden px-5 py-6">
-                  <SlabAccent />
-                  {/* Format marker — dot and label carry the accent */}
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-(--accent)" />
-                    <span className="text-xs font-mono lowercase tracking-widest text-(--accent)">
-                      {style.badge.toLowerCase()}
-                    </span>
-                  </div>
-
-                  {/* Books cover */}
-                  {post.format === "books" && fcStr(post.feed_card, "cover_url") && (
-                    <div className="flex justify-center mb-5">
-                      <div className="rounded-xl overflow-hidden w-32 h-48 bg-white/[0.06]">
-                        <img
-                          src={fcStr(post.feed_card, "cover_url")}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Title */}
-                  <h1 className="font-serif text-3xl font-medium text-ink leading-snug mb-1">
-                    {post.title}
-                  </h1>
-
-                  {/* Author (Books) */}
-                  {post.format === "books" && fcStr(post.feed_card, "author") && (
-                    <p className="text-ink-dim text-sm font-medium mb-3">
-                      {fcStr(post.feed_card, "author")}
-                    </p>
-                  )}
-
-                  {/* Attribution */}
-                  <div className="flex items-center gap-1 mb-4">
-                    {post.is_user_content && post.author_username ? (
-                      <span className="flex items-center gap-1 text-ink-muted text-xs">
-                        Submitted by{" "}
-                        <Link href={`/profile/${post.author_username}`} className="hover:text-ink-body transition-colors">
-                          @{post.author_username}
-                        </Link>
-                        {post.author_is_verified != null && post.author_is_verified > 0 && <VerifiedBadge size={16} level={post.author_is_verified} />}
+                {/* Header — frosted slab inset from the edges, with the same
+                    format glow as the feed card behind it. The glow box stays
+                    at container width (a wider box would make the vertical
+                    scroller horizontally scrollable) and bleeds only a little
+                    vertically, so the floating back circle keeps a near-black
+                    backdrop. */}
+                <div className="relative">
+                  <SlabGlow className="absolute inset-x-0 -inset-y-14" />
+                  <div className="mx-3 mb-3 card relative overflow-hidden px-5 py-6">
+                    <SlabAccent />
+                    {/* Format marker — dot and label carry the accent */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-(--accent)" />
+                      <span className="text-xs font-mono lowercase tracking-widest text-(--accent)">
+                        {style.badge.toLowerCase()}
                       </span>
-                    ) : !post.is_user_content ? (
-                      <>
-                        <span className="text-ink-muted text-xs">Deepscroll</span>
-                        <VerifiedBadge size={12} variant="official" />
-                      </>
-                    ) : null}
-                  </div>
-
-                  {/* Interest tags as floating pills */}
-                  {post.interests.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {post.interests.map((name) => (
-                        <span
-                          key={name}
-                          className="px-3 py-1 rounded-full text-xs bg-white/[0.06] text-ink-dim"
-                        >
-                          {name}
-                        </span>
-                      ))}
                     </div>
-                  )}
+
+                    {/* Books cover */}
+                    {post.format === "books" && fcStr(post.feed_card, "cover_url") && (
+                      <div className="flex justify-center mb-5">
+                        <div className="rounded-xl overflow-hidden w-32 h-48 bg-white/[0.06]">
+                          <img
+                            src={fcStr(post.feed_card, "cover_url")}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Title */}
+                    <h1 className="font-serif text-3xl font-medium text-ink leading-snug mb-1">
+                      {post.title}
+                    </h1>
+
+                    {/* Author (Books) */}
+                    {post.format === "books" && fcStr(post.feed_card, "author") && (
+                      <p className="text-ink-dim text-sm font-medium mb-3">
+                        {fcStr(post.feed_card, "author")}
+                      </p>
+                    )}
+
+                    {/* Attribution */}
+                    <div className="flex items-center gap-1 mb-4">
+                      {post.is_user_content && post.author_username ? (
+                        <span className="flex items-center gap-1 text-ink-muted text-xs">
+                          Submitted by{" "}
+                          <Link href={`/profile/${post.author_username}`} className="hover:text-ink-body transition-colors">
+                            @{post.author_username}
+                          </Link>
+                          {post.author_is_verified != null && post.author_is_verified > 0 && <VerifiedBadge size={16} level={post.author_is_verified} />}
+                        </span>
+                      ) : !post.is_user_content ? (
+                        <>
+                          <span className="text-ink-muted text-xs">Deepscroll</span>
+                          <VerifiedBadge size={12} variant="official" />
+                        </>
+                      ) : null}
+                    </div>
+
+                    {/* Interest tags as floating pills */}
+                    {post.interests.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {post.interests.map((name) => (
+                          <span
+                            key={name}
+                            className="px-3 py-1 rounded-full text-xs bg-white/[0.06] text-ink-dim"
+                          >
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Sections */}
