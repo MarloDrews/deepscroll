@@ -50,7 +50,7 @@ frontend/
   .env.example                  NEXT_PUBLIC_API_URL template
   .env.local                    actual env vars (gitignored)
   src/app/
-    layout.tsx                  root layout, Lamplight fonts (Newsreader serif + Source Sans 3 UI + Geist Mono data), title "Deepscroll"
+    layout.tsx                  root layout, app fonts (Newsreader serif + Source Sans 3 UI + Geist Mono data), title "Deepscroll"
     globals.css                 Tailwind import, Circuit design tokens (@theme: neutral black surface-0/1/2/3/overlay, neutral gray edge/edge-strong, neutral ink levels, lamp/like/good/bad/save accents, fmt-* format inks, radius-card/field/sheet); neutral dot-grid body texture (body::before, no colored background glow); focus-visible lamp ring; Stage component vocabulary (.card = borderless frosted slab bg-white/4% + blur, .btn* = borderless pills with springy press scale, .btn-icon = frosted circle, .field = frosted fill with soft radius (single-line inputs add rounded-full at call site), .chip = frosted pill with neutral active fill, .label-caps/.prose-post unchanged; .btn-action-liked sets color to --color-like red; .btn-action-saved sets color to --color-save yellow); heart-pop + heart-boom + stage-pulse + stage-sheet-in keyframes with reduced-motion guards
     page.tsx                    home feed: 9-tab bar (For You + Following + 7 formats derived from lib/formats.ts) rendered by FeedHeader, horizontal snap between tabs, vertical snap within each; real-time indicator JS interpolates the neutral pill's left+width between tab buttons mid-swipe (no color interpolation — accents live on the cards and switch hard on snap-settle); tabs read via useSWR cache-first (revalidateIfStale false — server jitters feed order, a background refetch would reshuffle visibly), so revisiting the feed renders instantly from cache; tab alignment: first tab snaps left, last tab snaps right, middle tabs center; Stage states per tab (stage-pulse slab loading, slab empty/login states); TabPage pb-24 clears the floating dock; BottomNav (feed active)
     onboarding/
@@ -138,7 +138,7 @@ frontend/
       HistoricalContextSection.tsx stories: broader historical setting
 
 docs/REVIEW.md                  full-pass audit (June 2026): categorized findings + design direction and token set
-docs/DESIGN.md                  "Lamplight" design identity (June 2026 redesign): rationale, full token set, format ink palette, type system, component vocabulary
+docs/DESIGN.md                  "Stage" design identity (June 2026, post-exploration consolidation): content floating in dark space, frosted slab + pill chrome rules, accent policy, motion, component vocabulary
 docs/SERVER.md                  Raspberry Pi deployment reference: systemd units, env vars, Tailscale IPs, update routine, debugging playbook, known pitfalls
 .claude/skills/commit.md        conventional commit format rules for this project
 ```
@@ -437,7 +437,7 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 - Stats page, verification system, saved posts
 - Real-time chat: DMs + group chats over WebSocket (see CHAT / WEBSOCKET DESIGN), conversation list + chat view, chat in bottom nav (search moved top-right)
 - Security hardening pass (June 2026, see SECURITY_REVIEW.md)
-- "Lamplight" visual redesign (June 2026, see docs/DESIGN.md): warm dark token system in globals.css drives every screen; Newsreader serif + Source Sans 3 + Geist Mono type system; muted book-spine format inks; per-post --accent CSS variable replaces hardcoded section colors; seed SVGs re-paletted at render time in SvgBlock (content JSON untouched); shared component vocabulary (.card/.btn/.field/.chip/.label-caps)
+- "Stage" visual identity (June 2026, see docs/DESIGN.md): single design consolidated from the three-way exploration; Circuit neutral tokens in globals.css unchanged, component vocabulary redefined as borderless frosted slabs + detached pill chrome + springy press feedback; accents only on small post-owned elements (format dot, teaser bullets, tab dot, in-body --accent), hard accent switch on snap-settle in mixed feeds; per-post --accent CSS variable replaces hardcoded section colors; seed SVGs re-paletted at render time in SvgBlock (content JSON untouched); shared component vocabulary (.card/.btn/.btn-icon/.field/.chip/.label-caps); read-aloud placeholder reserved in the feed action rail (disabled, no functionality yet)
 
 **Next**
 - Content for academy format

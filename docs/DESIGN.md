@@ -1,147 +1,109 @@
-# Deepscroll Design Identity: "Lamplight"
+# Deepscroll Design Identity: "Stage"
 
-The visual identity of Deepscroll. Decided June 2026 during the full redesign,
-synthesized from the ui-ux-pro-max design-system generator (strongest matches:
-E-Ink/Paper reading style, OLED dark mode, Editorial Grid typography) and
-adapted to Deepscroll's purpose.
+The visual identity of Deepscroll. Decided June 2026 after a three-way design
+exploration (Folio / Console / Stage on branch `redesign/explore-3`); Stage
+won and was consolidated across the entire app on
+`redesign/consolidate-stage`. It builds on the neutral "Circuit" token palette
+introduced earlier (tokens unchanged; the component vocabulary changed).
 
 ## The idea
 
-Deepscroll replaces doomscrolling with substance. People open it where they
-used to doomscroll: in the evening, on the couch, in bed. The design is a
-**quiet library at night** — warm dark paper lit by a reading lamp.
+Content floats in dark space. One post fills the stage; everything else is
+quiet, detached chrome around it.
 
-- **Warm dark, not cold dark.** Surfaces are near-black with a warm paper
-  cast, never blue-gray zinc. Text is warm off-white ink, never pure white.
-- **Matte, not glossy.** No glows, no gradients-as-decoration, no glass
-  blur. Surfaces separate by hairline edges and tone, like sheets of paper.
-  A barely visible paper-grain texture sits on the page base.
-- **Depth comes from light, not from effects.** Three cues, all subtle:
-  a barely-perceptible warm "lamp light" falling from the top of every
-  screen (fixed overlay in globals.css), a matte paper-edge shadow under
-  cards (1px warm top highlight + soft dark drop), and surface lightness
-  steps wide enough to read as separate sheets. None of these are glows;
-  they model one light source above the page.
-- **The serif is the voice.** Post titles and long-form prose are set in
-  Newsreader, a serif designed for on-screen reading. UI chrome (buttons,
-  tabs, labels) is set in Source Sans 3 so it disappears behind the content.
-  Numbers and data are Geist Mono.
-- **Color belongs to knowledge, not to chrome.** The UI itself is almost
-  monochrome. The only colors on screen are the format inks (below) and the
-  lamp-gold brand accent — used sparingly for links, focus and active states.
-- **Calm motion.** 150 ms for state changes, 300 ms for surfaces. Nothing
-  pulses, bounces or autoplays. `prefers-reduced-motion` is respected.
+- **Frosted slabs, not bordered cards.** Surfaces are borderless translucent
+  white fills (`rgb(255 255 255 / 0.04)`) with backdrop blur and large radii
+  (`rounded-3xl`). Depth comes from blur and fill only — no borders, no
+  drop-shadow stacks.
+- **Detached pill chrome.** Persistent chrome never touches the screen edges:
+  the feed tab strip is a floating frosted capsule, the bottom nav is a
+  floating frosted pill dock inset 12px above the safe-area bottom, sheets
+  float detached from every edge with rounded corners all around.
+- **Springy, gesture-led motion.** Press feedback is a quick scale-down
+  (`active:scale-95`, transition 150ms). Sheets spring in with a slight
+  overshoot (`stage-sheet-in`). Loading states pulse as slabs
+  (`stage-pulse`). All guarded for `prefers-reduced-motion`.
+- **The dark neutral background is constant.** Every post in every category
+  sits on the same near-black base with the dot-grid texture. Backgrounds
+  never take on a post's color.
+- **Accents are information, not decoration.** The per-format inks appear
+  ONLY on small post-owned elements: the format marker dot above the slab,
+  the teaser bullet markers, the active-tab dot in the capsule, and accent
+  details inside post bodies (via `--accent`). Never as a slab fill, never
+  as a background, never on persistent chrome. In mixed feeds (For You /
+  Following) the accent switches hard with the settled card — nothing
+  interpolates colors mid-swipe.
+- **Glow only when functional.** Focus rings (lamp), achieved/active states.
+  No ambient or decorative glow anywhere.
+- **Reading comes first.** The serif (Newsreader) is the voice of the
+  content; the sans (Source Sans 3) is invisible chrome; Geist Mono carries
+  numbers and metadata. Nothing competes with the post.
 
-What this rules out: neon accents, glow effects, attention-grabbing badges,
-pure black/white contrast, decorative animation, anything that competes with
-reading.
+What this rules out: borders as decoration, edge-to-edge bars, colored
+backgrounds, gradient fills, neon or ambient glow, anything that makes a
+teaser or label look tappable when it is not.
 
 ## Tokens (single source of truth: `frontend/src/app/globals.css`)
 
-### Surfaces
+The Circuit palette is unchanged by the Stage consolidation: neutral black
+surfaces (`surface-0..3`, `surface-overlay`), neutral gray edges
+(`edge`, `edge-strong` — now used mainly for in-content hairlines like table
+rows), neutral ink levels (`ink`, `ink-body`, `ink-dim`, `ink-muted`,
+`ink-faint`), brand + semantic accents (`lamp` #7c6fff, `like` #ff3a5c,
+`save` #f5c542, `good`, `bad`) and the seven `fmt-*` format inks (hexes
+mirrored in `frontend/src/lib/formats.ts`). Inside post rendering the active
+format ink is exposed as the CSS variable `--accent` (set once on the post
+container); sections style with `text-(--accent)`, `bg-(--accent)/10` etc.
+and never hardcode a color. Seed SVGs are re-paletted at render time in
+`SvgBlock`; content JSON is never edited.
 
-| token             | value                  | use                          |
-|-------------------|------------------------|------------------------------|
-| `surface-0`       | `#121110`              | page base                    |
-| `surface-1`       | `#1E1B17`              | cards, panels                |
-| `surface-2`       | `#282420`              | inputs, inner blocks         |
-| `surface-3`       | `#332E28`              | raised elements, hover fills |
-| `surface-overlay` | `rgb(18 17 16 / 0.95)` | bars, sheets, modals         |
+Stage layers its surfaces as translucent white fills on top of these tokens
+instead of opaque surface steps:
 
-Surface steps were widened in the polish pass (June 2026): the original
-`#1B1815`/`#23201B`/`#2B2721` ladder read as one black sheet at phone
-brightness. The hue stays warm; only the lightness steps grew.
+| fill                      | use                                        |
+|---------------------------|--------------------------------------------|
+| `bg-white/[0.04]` + blur  | slabs (.card), inner blocks, loading slabs |
+| `bg-white/[0.06]` + blur  | chrome pills (nav dock, capsule, inputs, icon circles) |
+| `bg-white/[0.10]`–`[0.12]`| active fills (selected segment, send button, indicator pill) |
 
-### Edges
-
-| token         | value                     | use                       |
-|---------------|---------------------------|---------------------------|
-| `edge`        | `rgb(168 158 142 / 0.14)` | hairline dividers         |
-| `edge-strong` | `rgb(168 158 142 / 0.30)` | inputs, outlined buttons  |
-
-### Ink (text)
-
-| token       | value     | use                  |
-|-------------|-----------|----------------------|
-| `ink`       | `#EFE9DE` | headings, primary    |
-| `ink-body`  | `#CFC7B8` | body prose           |
-| `ink-dim`   | `#A39B8B` | secondary            |
-| `ink-muted` | `#7D7567` | labels, meta         |
-| `ink-faint` | `#5B5448` | fine print           |
-
-### Brand + semantic
-
-| token  | value     | use                                        |
-|--------|-----------|--------------------------------------------|
-| `lamp` | `#D2A45A` | brand accent: links, focus, active states  |
-| `good` | `#7DA869` | success, correct quiz answers              |
-| `bad`  | `#C0604E` | errors, wrong quiz answers, destructive    |
-
-### Format inks (in `frontend/src/lib/formats.ts` + `@theme` as `fmt-*`)
-
-Muted book-spine colors at matched lightness so the feed reads as one shelf.
-
-| format    | name       | value     |
-|-----------|------------|-----------|
-| books     | gold leaf  | `#D2A45A` (same as `lamp` — the founding format carries the brand accent) |
-| facts     | verdigris  | `#76ADA0` |
-| people    | dusty rose | `#C5848F` |
-| concepts  | heliotrope | `#A08FC9` |
-| questions | moss       | `#93AF7C` |
-| stories   | terracotta | `#C98A62` |
-| academy   | slate ink  | `#8398C9` |
-| fallback  | warm gray  | `#A59C8D` |
-
-Inside post rendering the active format ink is exposed as the CSS variable
-`--accent` (set once on the post container); sections style with
-`text-(--accent)`, `bg-(--accent)/10` etc. and never hardcode a color.
-Seed SVGs are re-paletted at render time in `SvgBlock` (old accent hex →
-format ink); content JSON is never edited.
-
-### Typography
+## Typography
 
 | token        | font          | use                                   |
 |--------------|---------------|---------------------------------------|
 | `font-serif` | Newsreader    | post titles, prose, quotes, headings  |
 | `font-sans`  | Source Sans 3 | UI chrome, buttons, labels, chat      |
-| `font-mono`  | Geist Mono    | numbers, Elo, stats, formulas         |
+| `font-mono`  | Geist Mono    | numbers, metadata lines, Elo, stats   |
 
 Long-form prose: 17px / 1.7 line-height, serif. UI text: 14–16px sans.
-Section labels: 11px uppercase, 0.18em tracking, `ink-muted`.
+Card metadata: 11px mono, `ink-muted`, values joined with `·`.
 
-### Radii
+## Motion
 
-| token          | value | use                         |
-|----------------|-------|-----------------------------|
-| `radius-card`  | 14px  | cards, panels               |
-| `radius-field` | 10px  | inputs, buttons             |
-| `radius-sheet` | 20px  | bottom sheets (top corners) |
-
-Chips, badges and avatars are full pills/circles.
-
-### Motion
-
-- `duration-150` state changes (hover, toggle, focus)
+- `duration-150` state changes (hover, toggle, press scale)
 - `duration-300` surface transitions (sheets, page slides)
-- easing: `ease-out`; `prefers-reduced-motion: reduce` disables nonessential animation
+- `stage-pulse` for loading slabs, `stage-sheet-in` for floating sheets
+- easing: `ease-out` (sheets: a gentle overshoot cubic-bezier)
+- `prefers-reduced-motion: reduce` disables nonessential animation
 
 ## Component vocabulary (utility classes in globals.css)
 
-| class                       | role                                        |
-|-----------------------------|---------------------------------------------|
-| `.card`                     | surface-1 panel with edge hairline          |
-| `.btn` + `.btn-primary`     | paper button: ink fill, dark text           |
-| `.btn` + `.btn-ghost`       | outlined quiet button                       |
-| `.btn` + `.btn-quiet`       | text-only button                            |
-| `.field`                    | input/textarea/select                       |
-| `.chip` + `.chip-on/off`    | selectable pill (filters, interests, tabs)  |
-| `.label-caps`               | uppercase section/meta label                |
+| class                       | role                                              |
+|-----------------------------|---------------------------------------------------|
+| `.card`                     | borderless frosted slab (white/4% + blur, 24px radius) |
+| `.btn` + `.btn-primary`     | lamp-tinted pill (functional CTA accent)          |
+| `.btn` + `.btn-ghost/quiet` | neutral frosted pills                             |
+| `.btn` + `.btn-destructive` | bad-tinted pill                                   |
+| `.btn-icon`                 | frosted circle, 44px tap target                   |
+| `.field`                    | frosted fill input; single-line inputs add `rounded-full` |
+| `.chip` + `.chip-on/off`    | frosted pill; active = neutral white/12% fill     |
+| `.label-caps`               | uppercase section/meta label                      |
+| `.prose-post`               | long-form reading voice                           |
 
-`.btn` shape baseline: field radius (10px), Source Sans 3 at weight 500
-(medium — never bold, never thin), 8/16px default padding so unsized
-buttons still breathe. Call sites may size with utilities. Icon-only send
-buttons are circles (`rounded-full p-0`); text-label buttons are never
-pills. Ghost buttons always border with `edge-strong`.
+Segmented controls (stats tabs, profile tabs, search scope) are frosted
+capsules with a neutral filled active segment. Feed action rails are bare
+glyphs with mono counts underneath — no containers. Charts use the Stage
+chart theme in `stats/page.tsx` (frosted dark tooltip, `#8a8a8a` axes,
+hairline grids, format-ink series colors).
 
 Every screen must be expressible in tokens + vocabulary. If a screen needs a
 new pattern, add it here and to globals.css first, then use it.
