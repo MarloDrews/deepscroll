@@ -525,10 +525,13 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
       )}
 
       {/* Action rail — bare glyphs floating at the right edge, no borders or
-          containers, each count rendered underneath its button. Press
+          containers. Every item is button + a fixed-height count slot (h-3,
+          empty/invisible when there is no number) so button centers sit at
+          one uniform interval whether or not an action has a count. Press
           feedback is a springy scale-down. The send button's bottom edge
-          sits flush at bottom-24, level with the first row of interest tags. */}
-      <div className="absolute right-2 bottom-24 z-10 flex flex-col items-center gap-1">
+          sits flush above bottom-24, level with the first row of interest
+          tags. */}
+      <div className="absolute right-2 bottom-24 z-10 flex flex-col items-center">
         {/* Like */}
         <div className="flex flex-col items-center">
           <button
@@ -538,11 +541,11 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           >
             <HeartIcon
               filled={liked}
-              className={`w-6 h-6 ${animatingLike ? "heart-pop" : ""}`}
+              className={`w-7 h-7 ${animatingLike ? "heart-pop" : ""}`}
               onAnimationEnd={() => setAnimatingLike(false)}
             />
           </button>
-          <span className={`text-[11px] font-mono leading-none transition-colors duration-150 ${liked ? "text-like" : "text-ink-dim"} ${likesCount === 0 && !liked ? "invisible" : ""}`}>{likesCount}</span>
+          <span className={`h-3 text-[11px] font-mono leading-none transition-colors duration-150 ${liked ? "text-like" : "text-ink-dim"} ${likesCount === 0 && !liked ? "invisible" : ""}`}>{likesCount}</span>
         </div>
 
         {/* Comment */}
@@ -552,9 +555,9 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
             aria-label="Comments"
             className="w-11 h-11 flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-90 text-ink-dim"
           >
-            <CommentIcon className="w-6 h-6" />
+            <CommentIcon className="w-7 h-7" />
           </button>
-          <span className={`text-[11px] font-mono text-ink-dim leading-none ${commentsCount === 0 ? "invisible" : ""}`}>{commentsCount}</span>
+          <span className={`h-3 text-[11px] font-mono text-ink-dim leading-none ${commentsCount === 0 ? "invisible" : ""}`}>{commentsCount}</span>
         </div>
 
         {/* Save */}
@@ -566,11 +569,11 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           >
             <BookmarkIcon
               filled={saved}
-              className={`w-6 h-6 ${animatingSave ? "heart-pop" : ""}`}
+              className={`w-7 h-7 ${animatingSave ? "heart-pop" : ""}`}
               onAnimationEnd={() => setAnimatingSave(false)}
             />
           </button>
-          <span className={`text-[11px] font-mono leading-none transition-colors duration-150 ${saved ? "text-save" : "text-ink-dim"} ${saveCount === 0 && !saved ? "invisible" : ""}`}>{saveCount}</span>
+          <span className={`h-3 text-[11px] font-mono leading-none transition-colors duration-150 ${saved ? "text-save" : "text-ink-dim"} ${saveCount === 0 && !saved ? "invisible" : ""}`}>{saveCount}</span>
         </div>
 
         {/* Read aloud — disabled placeholder reserving its spot in the rail;
@@ -582,8 +585,9 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
             aria-label="Read aloud (coming soon)"
             className="w-11 h-11 flex items-center justify-center text-ink-dim opacity-40 cursor-default"
           >
-            <SpeakerIcon className="w-6 h-6" />
+            <SpeakerIcon className="w-7 h-7" />
           </button>
+          <span className="h-3" aria-hidden="true" />
         </div>
 
         {/* Share */}
@@ -593,8 +597,9 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
             aria-label="Share"
             className="w-11 h-11 flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-90 text-ink-dim"
           >
-            <SendIcon className="w-6 h-6" />
+            <SendIcon className="w-7 h-7" />
           </button>
+          <span className="h-3" aria-hidden="true" />
         </div>
       </div>
 
