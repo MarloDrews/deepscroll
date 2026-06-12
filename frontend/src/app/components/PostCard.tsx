@@ -34,12 +34,16 @@ function DotScale({ value }: { value: 1 | 2 | 3 }) {
   )
 }
 
-// Teaser bullets — a plain list, deliberately not container-shaped so the
-// teasers never read as tappable. The accent markers carry the per-format
-// color; the text sits one ink step below the title, clearly readable.
+// Teaser bullets — one shared frosted panel behind the whole group gives
+// the teasers presence as a distinct layer. A single full-width multi-row
+// block with no hover/press states or pill shapes, so it reads as a content
+// region, never as tappable buttons (per-item pills are deliberately out).
+// The accent markers carry the per-format color; the text sits one ink step
+// below the title. mt-2 on top of the slab's gap-4 separates the title
+// layer from the teaser layer.
 function Teasers({ items }: { items: string[] }) {
   return (
-    <div className="mt-1 space-y-2">
+    <div className="mt-2 rounded-2xl bg-white/[0.05] px-4 py-3.5 space-y-2.5">
       {items.map((teaser, i) => (
         <div key={i} className="flex items-start gap-2.5">
           <span className="w-1.5 h-1.5 rounded-full bg-(--accent) mt-[0.4rem] shrink-0" />
