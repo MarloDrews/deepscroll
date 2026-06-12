@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { ActivityIndicator, View } from "react-native"
+import { View } from "react-native"
 import type { LayoutChangeEvent } from "react-native"
 import { useRouter } from "expo-router"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
 import PagerView from "react-native-pager-view"
 import { getInterestSlugs } from "../lib/interests"
 import { TABS } from "../lib/feedTabs"
 import { colors } from "../theme/tokens"
+import { PulsingSlab } from "../components/stage"
 import FeedTab from "../components/FeedTab"
 import FeedTabBar, { type FeedTabBarHandle } from "../components/FeedTabBar"
 import BottomNav from "../components/BottomNav"
@@ -15,12 +15,13 @@ import Toast, { useToast } from "../components/Toast"
 // Home: the 9-tab feed (For You + Following + 7 formats), ported from
 // frontend/src/app/page.tsx. Horizontal swipe between tabs via PagerView;
 // each tab is an independent lazily-fetched vertical snap feed (FeedTab).
-// Onboarding gate: without stored interest slugs this screen redirects to
-// /onboarding, exactly like the web localStorage check.
+// Stage chrome: the tab capsule and the nav dock float over the full-screen
+// pager (cards keep their own safe-area clearances), never attached to an
+// edge. Onboarding gate: without stored interest slugs this screen redirects
+// to /onboarding, exactly like the web localStorage check.
 
 export default function HomeScreen() {
   const router = useRouter()
-  const insets = useSafeAreaInsets()
   // undefined = still reading storage; string[] = onboarded.
   const [slugs, setSlugs] = useState<string[] | undefined>(undefined)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -63,31 +64,25 @@ export default function HomeScreen() {
 
   const onComingSoon = useCallback(() => show("Coming soon"), [show])
 
-  // Spinner while the interests gate resolves (or while redirecting).
+  // Pulsing slab while the interests gate resolves (or while redirecting).
   if (slugs === undefined) {
     return (
       <View
         style={{
           flex: 1,
-          alignItems: "center",
           justifyContent: "center",
+          paddingHorizontal: 12,
           backgroundColor: colors["surface-0"],
         }}
       >
-        <ActivityIndicator size="large" color={colors.lamp} />
+        <PulsingSlab height={360} />
       </View>
     )
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors["surface-0"], paddingTop: insets.top }}>
-      <FeedTabBar
-        ref={tabBarRef}
-        tabs={TABS}
-        activeIndex={activeIndex}
-        onTabPress={goToTab}
-        onSearchPress={onComingSoon}
-      />
+    <View style={{ flex: 1, backgroundColor: colors["surface-0"] }}>
+      {/* The pager fills the whole screen; the floating chrome sits on top. */}
       <View style={{ flex: 1 }} onLayout={onLayout}>
         <PagerView
           ref={pagerRef}
@@ -116,6 +111,13 @@ export default function HomeScreen() {
           ))}
         </PagerView>
       </View>
+      <FeedTabBar
+        ref={tabBarRef}
+        tabs={TABS}
+        activeIndex={activeIndex}
+        onTabPress={goToTab}
+        onSearchPress={onComingSoon}
+      />
       <BottomNav onComingSoon={onComingSoon} />
       <Toast message={message} />
     </View>

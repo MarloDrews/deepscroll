@@ -1,14 +1,16 @@
 import { Pressable, View } from "react-native"
 import { useRouter } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import Svg, { Circle, Line, Path, Rect } from "react-native-svg"
+import Svg, { Circle, Line, Path } from "react-native-svg"
 import { useAuth } from "../lib/auth"
-import { colors } from "../theme/tokens"
+import { colors, fills } from "../theme/tokens"
+import { Frosted } from "./stage"
 
-// Port of frontend/src/app/components/BottomNav.tsx (icon geometries copied
-// verbatim). This phase only the feed exists, so Feed is always the active
-// item; Chat/Stats/Create (and Profile while logged in) report "coming soon"
-// instead of navigating.
+// Port of frontend/src/app/components/BottomNav.tsx (Stage): a frosted pill
+// dock floating inset from every edge; the active item is a filled neutral
+// circle — functional, never glow. This phase only the feed exists, so Feed
+// is always the active item; Chat/Stats/Create (and Profile while logged in)
+// report "coming soon" instead of navigating.
 
 const ICON_PROPS = {
   width: 20,
@@ -32,20 +34,16 @@ function NavButton({
   return (
     <Pressable
       onPress={onPress}
-      style={{ flex: 1, alignItems: "center", justifyContent: "center", height: "100%" }}
+      style={({ pressed }) => ({
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: active ? fills.active12 : "transparent",
+        transform: [{ scale: pressed ? 0.95 : 1 }],
+      })}
     >
-      {/* Soft lamp glow behind the active icon (web: double drop-shadow). */}
-      {active && (
-        <View
-          style={{
-            position: "absolute",
-            width: 28,
-            height: 28,
-            borderRadius: 14,
-            boxShadow: "0 0 22px 8px rgba(124, 111, 255, 0.35)",
-          }}
-        />
-      )}
       {children}
     </Pressable>
   )
@@ -61,54 +59,63 @@ export default function BottomNav({ onComingSoon }: { onComingSoon: () => void }
   return (
     <View
       style={{
-        borderTopWidth: 1,
-        borderTopColor: colors.edge,
-        backgroundColor: colors["surface-overlay"],
-        paddingBottom: insets.bottom,
-        boxShadow: "0 -20px 50px rgba(124, 111, 255, 0.18)",
+        position: "absolute",
+        left: 16,
+        right: 16,
+        bottom: insets.bottom + 12,
+        zIndex: 30,
       }}
     >
-      <View style={{ height: 56, flexDirection: "row" }}>
-        {/* Chat */}
-        <NavButton onPress={onComingSoon}>
-          <Svg {...ICON_PROPS} stroke={inactive}>
-            <Path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-          </Svg>
-        </NavButton>
+      <Frosted borderRadius={999} style={{ height: 56 }}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-around",
+            paddingHorizontal: 8,
+          }}
+        >
+          {/* Chat */}
+          <NavButton onPress={onComingSoon}>
+            <Svg {...ICON_PROPS} stroke={inactive}>
+              <Path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+            </Svg>
+          </NavButton>
 
-        {/* Stats */}
-        <NavButton onPress={onComingSoon}>
-          <Svg {...ICON_PROPS} stroke={inactive}>
-            <Rect x={18} y={3} width={3} height={18} />
-            <Rect x={11} y={8} width={3} height={13} />
-            <Rect x={4} y={13} width={3} height={8} />
-          </Svg>
-        </NavButton>
+          {/* Stats — line chart (axes + rising trend), matching the web glyph */}
+          <NavButton onPress={onComingSoon}>
+            <Svg {...ICON_PROPS} stroke={inactive}>
+              <Path d="M3 3v18h18" />
+              <Path d="m7 14 4-4 3 3 5-6" />
+            </Svg>
+          </NavButton>
 
-        {/* Feed — always the active tab this phase */}
-        <NavButton onPress={() => {}} active>
-          <Svg {...ICON_PROPS} stroke={colors.lamp}>
-            <Path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z" />
-          </Svg>
-        </NavButton>
+          {/* Feed — always the active tab this phase */}
+          <NavButton onPress={() => {}} active>
+            <Svg {...ICON_PROPS} stroke={colors.ink}>
+              <Path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z" />
+            </Svg>
+          </NavButton>
 
-        {/* Create */}
-        <NavButton onPress={onComingSoon}>
-          <Svg {...ICON_PROPS} stroke={inactive}>
-            <Circle cx={12} cy={12} r={10} />
-            <Line x1={12} y1={8} x2={12} y2={16} />
-            <Line x1={8} y1={12} x2={16} y2={12} />
-          </Svg>
-        </NavButton>
+          {/* Create */}
+          <NavButton onPress={onComingSoon}>
+            <Svg {...ICON_PROPS} stroke={inactive}>
+              <Circle cx={12} cy={12} r={10} />
+              <Line x1={12} y1={8} x2={12} y2={16} />
+              <Line x1={8} y1={12} x2={16} y2={12} />
+            </Svg>
+          </NavButton>
 
-        {/* Profile */}
-        <NavButton onPress={() => (user ? onComingSoon() : router.push("/login"))}>
-          <Svg {...ICON_PROPS} stroke={inactive}>
-            <Circle cx={12} cy={8} r={4} />
-            <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-          </Svg>
-        </NavButton>
-      </View>
+          {/* Profile */}
+          <NavButton onPress={() => (user ? onComingSoon() : router.push("/login"))}>
+            <Svg {...ICON_PROPS} stroke={inactive}>
+              <Circle cx={12} cy={8} r={4} />
+              <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </Svg>
+          </NavButton>
+        </View>
+      </Frosted>
     </View>
   )
 }

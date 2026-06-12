@@ -162,7 +162,7 @@ mobile/                         React Native app (Expo SDK 56, TypeScript, expo-
   src/lib/relativeTime.ts       relativeTime(iso) port, unchanged
   src/types/post.ts             Post/Section/SectionType/feed-card types + fcStr/fcNum, identical to frontend/src/types/post.ts
   src/app/_layout.tsx           root layout: loads Newsreader/Source Sans 3/Geist Mono via useFonts, awaits initAuthToken, holds splash until ready, wraps Stack in AuthProvider, dark Stack on surface-0, GestureHandlerRootView
-  src/app/index.tsx             home: 9-tab feed container; interests gate (AsyncStorage -> redirect /onboarding), FeedTabBar + PagerView (9 FeedTab pages, collapsable=false, lazy activation set) + BottomNav + Toast; measured pager height drives card height
+  src/app/index.tsx             home: 9-tab feed container; interests gate (AsyncStorage -> redirect /onboarding, pulsing-slab placeholder), full-screen PagerView (9 FeedTab pages, collapsable=false, lazy activation set) with FeedTabBar capsule + BottomNav dock floating over it + Toast; measured pager height drives card height
   src/app/post/[id].tsx         post detail port of web post/[id]/page.tsx: slide_from_bottom Stack animation, gesture-handler Pan swipe-right-to-close (dx>80 && dx>|dy|), header (badge/attribution/Books cover/title/interest chips), AccentProvider wraps SectionRenderer, bottom bar = comment field opening CommentsBottomSheet + like/save (lamp when active) + share
   src/app/login.tsx             port of web login page: centered card, email+password fields, inline error in bad color, PrimaryButton, link to /register; redirects to / when logged in
   src/app/register.tsx          port of web register page: email+username+password, otherwise same pattern as login.tsx
@@ -177,11 +177,11 @@ mobile/                         React Native app (Expo SDK 56, TypeScript, expo-
   src/components/MathText.tsx   $...$ parser port; math segments render as Geist Mono text (no KaTeX/HTML in RN - known fidelity gap for academy/formalism)
   src/components/icons.tsx      Stage glyph set (heart/comment/bookmark/share/arrow-up/speaker/back), path data copied from web icons.tsx: strokeWidth 1.8 soft outlines, filled prop turns closed shapes solid
   src/components/stage.tsx      Stage primitives: SlabGlow (Svg radial accent halo, 8% -> transparent 70%), SlabAccent (3px left bar + 48px top tint), Frosted (BlurView chrome pill — translucent fallback on Android), PulsingSlab (stage-pulse loading), MessageSlab + ghostPillStyle for slab states
-  src/components/PrimaryButton.tsx  web .btn-primary recipe (lamp gradient pill) as Pressable+LinearGradient; label/onPress/disabled
-  src/components/FeedTab.tsx    one pager page: lazy fetch on first activation (GET /api/feed?interests&format; Following -> /api/feed/following with login/empty states); posts reset on user change; vertical paging FlatList from phase 1
-  src/components/FeedTabBar.tsx tab strip + sliding 16x4 indicator; reanimated progress from PagerView onPageScroll, translateX over measured tab centers + interpolateColor over tab accents; auto-centers active tab (clamped); inert search icon
-  src/components/BottomNav.tsx  web BottomNav port (5 svg icons verbatim); Feed active with lamp glow; Chat/Stats/Create -> "Coming soon" toast; Profile -> /login or toast when logged in; safe-area bottom padding
-  src/components/Toast.tsx      useToast hook + pill component above BottomNav; 1800ms auto-hide, reanimated FadeIn/FadeOut
+  src/components/PrimaryButton.tsx  web Stage .btn-primary recipe (flat lamp-tinted pill, springy press) as Pressable; label/onPress/disabled
+  src/components/FeedTab.tsx    one pager page: lazy fetch on first activation (GET /api/feed?interests&format; Following -> /api/feed/following with login/empty states); posts reset on user change; vertical paging FlatList from phase 1; Stage states (pulsing-slab loading, MessageSlab empty/login/error, ghost-pill retry)
+  src/components/FeedTabBar.tsx Stage floating frosted capsule (h-44 pill, detached at safe-area+12) + separate frosted search circle; neutral white/10% indicator pill slides behind labels (reanimated translateX+width over measured tab bounds from PagerView onPageScroll — no color interpolation); accent only as 6px dot on the active tab; auto-centers active tab (clamped)
+  src/components/BottomNav.tsx  Stage floating dock port: frosted pill (h-56) inset left/right 16 and 12px above the safe-area bottom; active item = neutral white/12% circle, no glow; stats = line-chart glyph; Chat/Stats/Create -> "Coming soon" toast; Profile -> /login or toast when logged in
+  src/components/Toast.tsx      useToast hook + frosted white/10% pill above the nav dock; 1800ms auto-hide, reanimated FadeIn/FadeOut
 
 docs/REVIEW.md                  full-pass audit (June 2026): categorized findings + design direction and token set
 docs/DESIGN.md                  "Stage" design identity (June 2026, post-exploration consolidation): content floating in dark space, frosted slab + pill chrome rules, accent policy, motion, component vocabulary

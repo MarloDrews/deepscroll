@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native"
+import { FlatList, Pressable, Text, View } from "react-native"
 import type { ListRenderItemInfo } from "react-native"
 import { useRouter } from "expo-router"
 import { apiFetch } from "../lib/api"
@@ -7,6 +7,7 @@ import { useAuth } from "../lib/auth"
 import type { FeedTabDef } from "../lib/feedTabs"
 import type { Post } from "../types/post"
 import { colors, fonts } from "../theme/tokens"
+import { MessageSlab, PulsingSlab, ghostPillStyle } from "./stage"
 import PostCard from "./PostCard"
 import PrimaryButton from "./PrimaryButton"
 
@@ -23,19 +24,18 @@ interface Props {
   onComingSoon: () => void
 }
 
+// Stage states: every message floats as its own frosted slab in the dark.
 function CenteredMessage({ children }: { children: React.ReactNode }) {
   return (
     <View
       style={{
         flex: 1,
-        alignItems: "center",
         justifyContent: "center",
-        paddingHorizontal: 32,
-        gap: 12,
+        paddingHorizontal: 20,
         backgroundColor: colors["surface-0"],
       }}
     >
-      {children}
+      <MessageSlab>{children}</MessageSlab>
     </View>
   )
 }
@@ -159,15 +159,9 @@ export default function FeedTab({ tab, slugs, activated, pageHeight, onComingSoo
         </Text>
         <Pressable
           onPress={() => setError(null)}
-          style={{
-            borderWidth: 1.5,
-            borderColor: colors.lamp + "66",
-            borderRadius: 999,
-            paddingHorizontal: 20,
-            paddingVertical: 10,
-          }}
+          style={({ pressed }) => [ghostPillStyle, { transform: [{ scale: pressed ? 0.96 : 1 }] }]}
         >
-          <Text style={{ fontFamily: fonts.sansMedium, fontSize: 14, color: colors.lamp }}>
+          <Text style={{ fontFamily: fonts.sansMedium, fontSize: 14, color: colors["ink-body"] }}>
             Retry
           </Text>
         </Pressable>
@@ -180,12 +174,12 @@ export default function FeedTab({ tab, slugs, activated, pageHeight, onComingSoo
       <View
         style={{
           flex: 1,
-          alignItems: "center",
           justifyContent: "center",
+          paddingHorizontal: 20,
           backgroundColor: colors["surface-0"],
         }}
       >
-        <ActivityIndicator size="large" color={colors.lamp} />
+        <PulsingSlab height={360} />
       </View>
     )
   }

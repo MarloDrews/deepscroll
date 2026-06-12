@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { Text } from "react-native"
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { colors, fonts } from "../theme/tokens"
+import { colors, fills, fonts } from "../theme/tokens"
 
 // Mirrors the web Toast.tsx: a short-lived pill notification above the
 // bottom nav. useToast owns the message + auto-hide timer; the component
@@ -38,13 +38,12 @@ export default function Toast({ message }: { message: string | null }) {
       entering={FadeIn.duration(200)}
       exiting={FadeOut.duration(300)}
       pointerEvents="none"
+      // Frosted pill floating above the nav dock (dock top = safe-area + 68).
       style={{
         position: "absolute",
         bottom: BOTTOM_NAV_HEIGHT + insets.bottom + 24,
         alignSelf: "center",
-        backgroundColor: colors["surface-3"],
-        borderWidth: 1,
-        borderColor: colors.edge,
+        backgroundColor: fills.active10,
         borderRadius: 999,
         paddingHorizontal: 16,
         paddingVertical: 8,
