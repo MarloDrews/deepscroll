@@ -74,7 +74,10 @@ export function SlabAccent({ accent }: { accent: string }) {
 
 // Frosted chrome surface — the web backdrop-blur pills (bg-white/6% + blur).
 // BlurView renders the translucent fallback on Android and a real blur on
-// iOS; the white fill on top carries the Stage look either way. The wrapper
+// iOS; the white fill on top carries the Stage look either way. The dark
+// scrim stands in for the legibility the web gets from blurring content
+// that scrolls underneath — invisible over the near-black base, it only
+// shows where text would otherwise bleed through the chrome. The wrapper
 // clips to the given radius.
 export function Frosted({
   fill = fills.chrome,
@@ -88,7 +91,9 @@ export function Frosted({
   children?: React.ReactNode
 }) {
   return (
-    <View style={[{ borderRadius, overflow: "hidden" }, style]}>
+    <View
+      style={[{ borderRadius, overflow: "hidden", backgroundColor: "rgba(10, 10, 10, 0.85)" }, style]}
+    >
       <BlurView tint="dark" intensity={50} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
       <View
         pointerEvents="none"
