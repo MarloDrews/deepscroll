@@ -53,6 +53,29 @@ function Teasers({ items }: { items: string[] }) {
   )
 }
 
+// Format-colored glow behind a slab — a faint radial wash of the post's
+// accent bleeding from behind the slab into the dark, so the content reads
+// as a light source on the Stage. Static (never animated), very low
+// intensity, and it fades out well before the screen edges so the frosted
+// chrome above and below keeps a pure-black backdrop. Rendered inside each
+// card's own DOM reading that card's --accent: the color switches hard with
+// the snapped post — there is no shared glow element to crossfade. Gradient
+// falloff instead of filter blur keeps it cheap with many cards mounted.
+export function SlabGlow({ className }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`pointer-events-none ${
+        className ?? "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] aspect-square"
+      }`}
+      style={{
+        background:
+          "radial-gradient(closest-side, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%)",
+      }}
+    />
+  )
+}
+
 // Accent carriers on a slab: a thin vertical bar on the left edge plus a
 // faint tint falling from the top edge, both clipped into the slab's rounded
 // corners (the host slab adds relative + overflow-hidden). A single edge
@@ -291,6 +314,10 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
       // on these classes. One post fills the screen; nothing bleeds in.
       className="h-[100dvh] relative overflow-hidden shrink-0 snap-start [scroll-snap-stop:always] bg-surface-0"
     >
+      {/* Format glow — behind the z-10 content, clipped by the card's own
+          overflow-hidden so it never reaches neighboring posts or chrome. */}
+      <SlabGlow />
+
       {/* Double-tap heart overlay */}
       {showHeartAnim && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
