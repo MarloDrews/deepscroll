@@ -8,7 +8,7 @@ import { fcStr, type Post } from "@/types/post"
 import SectionRenderer from "@/components/SectionRenderer"
 import CommentsSection, { type Comment } from "@/app/components/CommentsSection"
 import VerifiedBadge from "@/components/VerifiedBadge"
-import { HeartIcon, SendIcon } from "@/app/components/icons"
+import { ArrowUpIcon, HeartIcon } from "@/app/components/icons"
 import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
 import { queueEvent, hasPendingLike, cancelPendingLike } from "@/app/lib/eventQueue"
@@ -363,7 +363,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       stickyDraft.trim() && !posting ? "text-ink" : "text-ink-muted"
                     }`}
                   >
-                    <SendIcon className="w-4 h-4" />
+                    <ArrowUpIcon className="w-4 h-4" />
                   </button>
                 </form>
               ) : (

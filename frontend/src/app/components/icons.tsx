@@ -58,6 +58,25 @@ export function BookmarkIcon({ filled = false, ...props }: IconProps) {
   )
 }
 
+// Comment submit — an upward arrow (inside the circular submit button it
+// reads as "arrow up in circle"), deliberately distinct from the SendIcon
+// paper plane used for sharing.
+export function ArrowUpIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+    </svg>
+  )
+}
+
 export function SendIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg

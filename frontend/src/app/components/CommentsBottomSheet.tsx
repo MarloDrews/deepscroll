@@ -11,7 +11,7 @@ import Link from "next/link"
 import { useAuth } from "../lib/auth"
 import { useComments } from "../lib/useComments"
 import CommentRow from "./CommentRow"
-import { SendIcon } from "./icons"
+import { ArrowUpIcon } from "./icons"
 
 interface Props {
   postId: number
@@ -154,7 +154,7 @@ export default function CommentsBottomSheet({ postId, onClose, onCountChange }: 
                   draft.trim() && !posting ? "text-ink" : "text-ink-muted"
                 }`}
               >
-                <SendIcon className="w-4 h-4" />
+                <ArrowUpIcon className="w-4 h-4" />
               </button>
             </form>
           ) : (
