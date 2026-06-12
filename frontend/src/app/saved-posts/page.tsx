@@ -6,7 +6,6 @@ import PostCard, { type Post } from "@/app/components/PostCard"
 import { getSavedPostIds } from "@/app/lib/savedPosts"
 import { apiFetch } from "@/app/lib/api"
 import BottomNav from "@/app/components/BottomNav"
-import Spinner from "@/components/Spinner"
 
 export default function SavedPostsPage() {
   const router = useRouter()
@@ -37,36 +36,39 @@ export default function SavedPostsPage() {
     <div className="h-[100dvh] bg-surface-0 flex justify-center">
       <div className="w-full max-w-[430px] h-[100dvh] relative overflow-hidden">
 
-        {/* Loading */}
+        {/* Loading: pulsing slabs where the card slab would sit */}
         {posts === null && (
-          <div className="flex items-center justify-center h-full">
-            <Spinner />
+          <div className="h-full flex flex-col justify-center px-5 gap-4">
+            <div className="stage-pulse card h-72 w-full" />
+            <div className="stage-pulse card h-20 w-3/4" />
           </div>
         )}
 
         {/* Empty state */}
         {posts !== null && posts.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center px-8 gap-4 text-center pb-24">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-10 h-10 text-ink-faint"
-            >
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-            </svg>
-            <p className="text-ink-dim text-sm">
-              No saved posts yet. Tap the bookmark icon on any post to save it.
-            </p>
-            <button
-              onClick={() => router.back()}
-              className="btn btn-ghost text-sm"
-            >
-              Go back
-            </button>
+          <div className="h-full flex items-center justify-center px-6 pb-24">
+            <div className="card px-8 py-10 text-center max-w-xs flex flex-col items-center gap-4">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-10 h-10 text-ink-faint"
+              >
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+              </svg>
+              <p className="text-ink-dim text-sm">
+                No saved posts yet. Tap the bookmark icon on any post to save it.
+              </p>
+              <button
+                onClick={() => router.back()}
+                className="btn btn-ghost text-sm"
+              >
+                Go back
+              </button>
+            </div>
           </div>
         )}
 

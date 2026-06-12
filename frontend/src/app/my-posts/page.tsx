@@ -6,7 +6,6 @@ import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
 import { FORMAT_STYLES, type FormatId } from "@/lib/formats"
 import BottomNav from "@/app/components/BottomNav"
-import Spinner from "@/components/Spinner"
 import { relativeTime } from "@/app/lib/relativeTime"
 import { fcStr, type Post } from "@/types/post"
 
@@ -53,10 +52,12 @@ export default function MyPostsPage() {
             <p className="text-bad text-sm px-4">{fetchError}</p>
           )}
 
-          {/* Loading */}
+          {/* Loading: pulsing slab rows where the posts will appear */}
           {posts === null && !fetchError && (
-            <div className="flex justify-center pt-16">
-              <Spinner />
+            <div className="flex flex-col gap-2 px-4 pt-2">
+              <div className="stage-pulse card h-20 w-full" />
+              <div className="stage-pulse card h-20 w-full" />
+              <div className="stage-pulse card h-20 w-full" />
             </div>
           )}
 
@@ -82,10 +83,10 @@ export default function MyPostsPage() {
                   <button
                     key={post.id}
                     onClick={() => router.push(`/post/${post.id}`)}
-                    className="w-full text-left card px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-surface-2 transition-colors duration-150"
+                    className="w-full text-left card px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-white/[0.07] transition-colors duration-150"
                   >
                     {/* Cover thumbnail */}
-                    <div className="shrink-0 w-10 h-14 rounded-md overflow-hidden bg-surface-2 border border-edge">
+                    <div className="shrink-0 w-10 h-14 rounded-lg overflow-hidden bg-white/[0.06]">
                       {fcStr(post.feed_card, "cover_url") ? (
                         <img
                           src={fcStr(post.feed_card, "cover_url")}
