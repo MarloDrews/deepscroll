@@ -469,7 +469,12 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 <Teasers items={fc.teasers as string[]} />
               )}
 
-              <CardFooter post={post} fc={fc} extras={[fcStr(fc, "era")]} />
+              {/* Display-only trim: feed_card.era is free-form place+period
+                  ("The Netherlands, 1937 to 1947") and overflows the meta
+                  line; the period is already on the era_label kicker above.
+                  The era field stays in the JSON for the detail page and
+                  search. */}
+              <CardFooter post={post} fc={fc} />
             </div>
           ) : post.format === "academy" && fc ? (
             <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
