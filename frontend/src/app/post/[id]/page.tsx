@@ -9,7 +9,9 @@ import SectionRenderer from "@/components/SectionRenderer"
 import CommentsSection, { type Comment } from "@/app/components/CommentsSection"
 import { SlabAccent, SlabGlow } from "@/app/components/PostCard"
 import VerifiedBadge from "@/components/VerifiedBadge"
-import { ArrowUpIcon, HeartIcon } from "@/app/components/icons"
+import { ArrowUpIcon, HeartIcon, PauseIcon, SpeakerIcon, StopIcon } from "@/app/components/icons"
+import { useReadAloud } from "@/lib/readAloud/useReadAloud"
+import { consumeAutoRead } from "@/lib/readAloud/autostart"
 import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
 import { queueEvent, hasPendingLike, cancelPendingLike } from "@/app/lib/eventQueue"
@@ -34,6 +36,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   )
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const readableRef        = useRef<HTMLDivElement>(null)
   const commentsTopRef     = useRef<HTMLDivElement>(null)
   const stickyInputRef     = useRef<HTMLInputElement>(null)
   const isClosingRef       = useRef(false)
@@ -84,9 +87,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       .catch(() => {})
   }, [id])
 
+  const { status: readStatus, start: startReading, stop: stopReading, toggle: toggleReading } =
+    useReadAloud(readableRef)
+
+  // Speaker tap on the feed card: the post content is in the DOM once this
+  // effect runs (effects fire after render), so reading can start directly.
+  useEffect(() => {
+    if (post && consumeAutoRead(post.id)) startReading()
+  }, [post, startReading])
+
   function close() {
     if (isClosingRef.current) return
     isClosingRef.current = true
+    stopReading()
     setClosing(true)
     setTimeout(() => router.back(), 250)
   }
@@ -227,6 +240,43 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             </svg>
           </button>
 
+          {/* Read-aloud transport — mirrors the back button's floating
+              btn-icon circles in the opposite corner. Idle shows a single
+              speaker; while reading it becomes pause/resume (accent ink)
+              plus stop. */}
+          {post && (
+            <div className="absolute top-4 right-4 z-10 flex gap-2">
+              {readStatus !== "idle" && (
+                <button onClick={stopReading} className="btn-icon" aria-label="Stop reading">
+                  <StopIcon className="w-5 h-5" />
+                </button>
+              )}
+              <button
+                onClick={toggleReading}
+                className={`btn-icon ${readStatus === "loading" ? "stage-pulse" : ""} ${
+                  readStatus === "playing" || readStatus === "paused"
+                    ? "btn-icon-active text-(--accent)"
+                    : ""
+                }`}
+                aria-label={
+                  readStatus === "playing"
+                    ? "Pause reading"
+                    : readStatus === "paused"
+                      ? "Resume reading"
+                      : readStatus === "loading"
+                        ? "Preparing audio (tap to cancel)"
+                        : "Read aloud"
+                }
+              >
+                {readStatus === "playing" ? (
+                  <PauseIcon className="w-5 h-5" />
+                ) : (
+                  <SpeakerIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          )}
+
           {/* Scrollable content */}
           <div
             ref={scrollContainerRef}
@@ -234,6 +284,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           >
             {post && style ? (
               <>
+                {/* Readable region for read-aloud: header slab + sections.
+                    Comments stay outside so they are never spoken. */}
+                <div ref={readableRef}>
                 {/* Header — frosted slab inset from the edges, with the same
                     format glow as the feed card behind it. The glow box stays
                     at container width (a wider box would make the vertical
@@ -244,8 +297,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   <SlabGlow className="absolute inset-x-0 -inset-y-14" />
                   <div className="mx-3 mb-3 card relative overflow-hidden px-5 py-6">
                     <SlabAccent />
-                    {/* Format marker — dot and label carry the accent */}
-                    <div className="flex items-center gap-2 mb-4">
+                    {/* Format marker — dot and label carry the accent.
+                        data-no-read: chrome, not spoken by read-aloud. */}
+                    <div data-no-read className="flex items-center gap-2 mb-4">
                       <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-(--accent)" />
                       <span className="text-xs font-mono lowercase tracking-widest text-(--accent)">
                         {style.badge.toLowerCase()}
@@ -278,8 +332,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       </p>
                     )}
 
-                    {/* Attribution */}
-                    <div className="flex items-center gap-1 mb-4">
+                    {/* Attribution — chrome, not spoken by read-aloud */}
+                    <div data-no-read className="flex items-center gap-1 mb-4">
                       {post.is_user_content && post.author_username ? (
                         <span className="flex items-center gap-1 text-ink-muted text-xs">
                           Submitted by{" "}
@@ -296,9 +350,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       ) : null}
                     </div>
 
-                    {/* Interest tags as floating pills */}
+                    {/* Interest tags as floating pills — not spoken */}
                     {post.interests.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
+                      <div data-no-read className="flex flex-wrap gap-2">
                         {post.interests.map((name) => (
                           <span
                             key={name}
@@ -318,6 +372,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   isUserContent={post.is_user_content}
                   postId={post.id}
                 />
+                </div>
 
                 {/* Comments list */}
                 <div ref={commentsTopRef} className="px-6">
