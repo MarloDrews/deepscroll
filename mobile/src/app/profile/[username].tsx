@@ -131,6 +131,14 @@ export default function PublicProfileScreen() {
 
   useEffect(() => {
     let cancelled = false
+    // The route instance is reused when only the username param changes
+    // (e.g. follower list -> another profile), so the previous profile's
+    // data and not-found flag must be cleared by hand.
+    setProfile(null)
+    setNotFound(false)
+    setPosts(null)
+    setSavedPosts(null)
+    setLikedPosts(null)
     apiFetch(`/api/users/${username}/profile`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data) => {
