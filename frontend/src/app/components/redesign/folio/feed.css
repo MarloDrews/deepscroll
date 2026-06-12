@@ -1,1 +1,21 @@
 /* Folio (books + facts) — feed styles. Owned by the folio design build. */
+
+/* Loading ellipsis: three dots blink in sequence after the small-caps word. */
+@keyframes folio-dot-blink {
+  0%, 80%, 100% { opacity: 0.15; }
+  40% { opacity: 1; }
+}
+
+.folio-loading-dot {
+  display: inline-block;
+  animation: folio-dot-blink 1.2s ease-in-out infinite;
+}
+.folio-loading-dot:nth-of-type(2) { animation-delay: 0.2s; }
+.folio-loading-dot:nth-of-type(3) { animation-delay: 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .folio-loading-dot {
+    animation: none;
+    opacity: 1;
+  }
+}
