@@ -1,14 +1,22 @@
-import { memo } from "react"
-import { Text, View } from "react-native"
+import { memo, useRef, useState } from "react"
+import { Pressable, Text, View } from "react-native"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
+import { useRouter } from "expo-router"
 import { fcNum, fcStr, type Post } from "../types/post"
 import { formatStyle } from "../lib/formats"
+import { resolveImageUrl } from "../config"
+import { usePostActions } from "../lib/usePostActions"
+import { sharePost } from "../lib/share"
 import { colors, fonts, radius } from "../theme/tokens"
 import SafeSvg from "./SafeSvg"
+import CommentsBottomSheet from "./CommentsBottomSheet"
+import { HeartIcon, BookmarkIcon, CommentIcon, ShareIcon } from "./icons"
 
 // Full-screen feed card, ported from frontend PostCard.tsx (Circuit design).
-// Feed-only phase: no like/save/comment actions, no detail navigation.
+// Tap opens the post detail; double tap likes (web 300ms double-tap rule).
+// Action rail on the right: like (red when active), comments bottom sheet,
+// save (yellow when active), share — counts hidden while zero, like the web.
 // Every card is exactly `height` tall so FlatList paging snaps one card per
 // swipe without measuring.
 
@@ -127,7 +135,7 @@ function CardBody({ post }: { post: Post }) {
           </View>
           {fcStr(fc, "cover_url") !== "" && (
             <Image
-              source={{ uri: fcStr(fc, "cover_url") }}
+              source={{ uri: resolveImageUrl(fcStr(fc, "cover_url")) }}
               style={{
                 width: 64,
                 height: 96,
@@ -163,7 +171,7 @@ function CardBody({ post }: { post: Post }) {
         <View className="flex-row items-start" style={{ gap: 16 }}>
           {portrait && (
             <Image
-              source={{ uri: portrait }}
+              source={{ uri: resolveImageUrl(portrait) }}
               style={{
                 width: 80,
                 height: 80,
@@ -282,11 +290,88 @@ function CardBody({ post }: { post: Post }) {
   )
 }
 
+// One action rail entry: 44px tap target with the count below; the count is
+// kept in layout but invisible at zero so icons don't shift (web .invisible).
+function RailButton({
+  onPress,
+  icon,
+  count,
+  countColor,
+  countVisible,
+}: {
+  onPress: () => void
+  icon: React.ReactNode
+  count?: number
+  countColor?: string
+  countVisible?: boolean
+}) {
+  return (
+    <View style={{ alignItems: "center" }}>
+      <Pressable
+        onPress={onPress}
+        hitSlop={4}
+        style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }}
+      >
+        {icon}
+      </Pressable>
+      {count !== undefined && (
+        <Text
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: 12,
+            lineHeight: 13,
+            color: countColor ?? colors["ink-dim"],
+            opacity: countVisible ? 1 : 0,
+          }}
+        >
+          {count}
+        </Text>
+      )}
+    </View>
+  )
+}
+
 function PostCard({ post, height }: { post: Post; height: number }) {
   const style = formatStyle(post.format)
+  const router = useRouter()
+  const { liked, likesCount, saved, like, toggleLike, toggleSave } = usePostActions(
+    post.id,
+    post.like_count
+  )
+  const [commentsCount, setCommentsCount] = useState(post.comment_count)
+  const [showComments, setShowComments] = useState(false)
+  // Saves are local-only (no backend endpoint yet), so the count can only
+  // reflect this user's own save state.
+  const saveCount = saved ? 1 : 0
+
+  const lastTapRef = useRef(0)
+  const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Web double-tap rule: a second tap within 300ms likes; otherwise navigate
+  // after the window closes.
+  function handleCardPress() {
+    const now = Date.now()
+    const elapsed = now - lastTapRef.current
+    lastTapRef.current = now
+
+    if (elapsed < 300) {
+      if (navTimerRef.current) {
+        clearTimeout(navTimerRef.current)
+        navTimerRef.current = null
+      }
+      like()
+      return
+    }
+
+    navTimerRef.current = setTimeout(() => {
+      navTimerRef.current = null
+      router.push(`/post/${post.id}`)
+    }, 300)
+  }
 
   return (
-    <View
+    <Pressable
+      onPress={handleCardPress}
       style={{ height, backgroundColor: colors["surface-0"] }}
       className="px-5 pt-12 pb-8"
     >
@@ -369,8 +454,8 @@ function PostCard({ post, height }: { post: Post; height: number }) {
         </View>
       </View>
 
-      {/* Interest tags */}
-      <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+      {/* Interest tags — right inset keeps them clear of the action rail */}
+      <View className="flex-row flex-wrap" style={{ gap: 8, paddingRight: 48 }}>
         {post.interests.map((name) => (
           <View
             key={name}
@@ -387,7 +472,43 @@ function PostCard({ post, height }: { post: Post; height: number }) {
           </View>
         ))}
       </View>
-    </View>
+
+      {/* Action rail — web PostCard right-edge icon column */}
+      <View style={{ position: "absolute", right: 8, bottom: 88, alignItems: "center", gap: 4 }}>
+        <RailButton
+          onPress={toggleLike}
+          icon={<HeartIcon size={24} color={liked ? colors.like : colors["ink-body"]} filled={liked} />}
+          count={likesCount}
+          countColor={liked ? colors.like : colors["ink-dim"]}
+          countVisible={likesCount > 0 || liked}
+        />
+        <RailButton
+          onPress={() => setShowComments(true)}
+          icon={<CommentIcon size={24} color={colors["ink-body"]} />}
+          count={commentsCount}
+          countVisible={commentsCount > 0}
+        />
+        <RailButton
+          onPress={toggleSave}
+          icon={<BookmarkIcon size={24} color={saved ? colors.save : colors["ink-body"]} filled={saved} />}
+          count={saveCount}
+          countColor={saved ? colors.save : colors["ink-dim"]}
+          countVisible={saveCount > 0 || saved}
+        />
+        <RailButton
+          onPress={() => sharePost(post)}
+          icon={<ShareIcon size={24} color={colors["ink-body"]} />}
+        />
+      </View>
+
+      {showComments && (
+        <CommentsBottomSheet
+          postId={post.id}
+          onClose={() => setShowComments(false)}
+          onCountChange={setCommentsCount}
+        />
+      )}
+    </Pressable>
   )
 }
 

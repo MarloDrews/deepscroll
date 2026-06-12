@@ -26,9 +26,11 @@ interface SafeSvgProps {
   isUserContent: boolean
   width: number
   height: number
+  // currentColor for stroke-based seed SVGs (web SvgBlock's color prop).
+  color?: string
 }
 
-export default function SafeSvg({ svg, isUserContent, width, height }: SafeSvgProps) {
+export default function SafeSvg({ svg, isUserContent, width, height, color }: SafeSvgProps) {
   if (isUserContent) {
     // encodeURIComponent keeps the data URI valid for non-ASCII SVG text
     // without needing a base64 polyfill (Hermes has no btoa).
@@ -40,7 +42,7 @@ export default function SafeSvg({ svg, isUserContent, width, height }: SafeSvgPr
       xml={rePalette(svg)}
       width={width}
       height={height}
-      color={colors["ink-body"]}
+      color={color ?? colors["ink-body"]}
     />
   )
 }

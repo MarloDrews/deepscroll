@@ -26,3 +26,20 @@ export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_DEV_URL
 
 // Websocket URL derived from the same origin (http -> ws, https -> wss).
 export const WS_URL = BASE_URL.replace(/^http/, "ws")
+
+// Public web frontend origin used when sharing post links (the app shares a
+// browser-openable URL, mirroring window.location.origin on the web).
+// Set EXPO_PUBLIC_WEB_URL once the frontend is deployed; the default matches
+// the web dev server.
+export const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "http://localhost:3000"
+
+// Origin for seed images stored as web-relative paths (/seed-images/... in
+// frontend/public). Shares the WEB_URL override, but the dev default must be
+// 10.0.2.2 because localhost inside the emulator is the emulator itself.
+export const SEED_IMAGE_ORIGIN = process.env.EXPO_PUBLIC_WEB_URL ?? "http://10.0.2.2:3000"
+
+// Seed content stores some image paths relative to the web frontend origin.
+// Absolute URLs (Supabase, Wikimedia, ...) pass through unchanged.
+export function resolveImageUrl(url: string): string {
+  return url.startsWith("/") ? `${SEED_IMAGE_ORIGIN}${url}` : url
+}
