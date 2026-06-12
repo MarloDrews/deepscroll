@@ -1,1 +1,39 @@
 /* Console (people + concepts) — feed styles. Owned by the console design build. */
+
+/* Rotated format label on the card's left rail. */
+.console-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+/* Blinking block cursor on the loading line. */
+@keyframes console-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.console-cursor {
+  animation: console-blink 1s step-end infinite;
+}
+
+/* Brief scale pulse on like/save state squares. */
+@keyframes console-pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.6); }
+  100% { transform: scale(1); }
+}
+
+.console-pulse {
+  animation: console-pulse 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Cursor goes static; the pulse keeps a 1ms run so onAnimationEnd still
+     fires and the animating flags reset. */
+  .console-cursor {
+    animation: none;
+  }
+  .console-pulse {
+    animation-duration: 1ms;
+  }
+}
