@@ -1,1 +1,17 @@
 /* Console (people + concepts) — comments + detail chrome styles. Owned by the console design build. */
+
+/* Comments inspector panel slides in from the right. */
+@keyframes console-slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.console-panel-in {
+  animation: console-slide-in 250ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .console-panel-in {
+    animation: none;
+  }
+}

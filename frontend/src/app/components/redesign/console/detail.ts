@@ -1,12 +1,18 @@
 // Console (people + concepts) — comments + detail chrome slot wiring.
-// Null slots render baseline.
 
 import type { DetailSlots } from "../types"
+import ConsoleCommentsSheet from "./ConsoleCommentsSheet"
+import {
+  ConsoleDetailBack,
+  ConsoleDetailHeader,
+  ConsoleDetailBar,
+  ConsoleCommentsList,
+} from "./ConsoleDetailChrome"
 
 export const consoleDetail: DetailSlots = {
-  CommentsSheet: null,
-  DetailBack: null,
-  DetailHeader: null,
-  DetailBar: null,
-  CommentsList: null,
+  CommentsSheet: ConsoleCommentsSheet,
+  DetailBack: ConsoleDetailBack,
+  DetailHeader: ConsoleDetailHeader,
+  DetailBar: ConsoleDetailBar,
+  CommentsList: ConsoleCommentsList,
 }
