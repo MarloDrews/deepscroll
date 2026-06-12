@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import useSWR from "swr"
@@ -8,7 +8,9 @@ import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
 import { getSavedPostIds } from "@/app/lib/savedPosts"
 import { getLikedPostIds } from "@/app/lib/likedPosts"
+import { useSwipeTabs } from "@/app/lib/useSwipeTabs"
 import BottomNav from "@/app/components/BottomNav"
+import SegmentedTabs from "@/app/components/SegmentedTabs"
 import VerifiedBadge from "@/components/VerifiedBadge"
 import PostRow from "@/components/PostRow"
 import Spinner from "@/components/Spinner"
@@ -48,6 +50,8 @@ interface Post {
 
 type Tab = "posts" | "saved" | "liked"
 
+const TAB_ORDER: Tab[] = ["posts", "saved", "liked"]
+
 export default function PublicProfilePage() {
   const params = useParams()
   const username = params.username as string
@@ -56,10 +60,30 @@ export default function PublicProfilePage() {
 
   const [savedPosts, setSavedPosts] = useState<Post[] | null>(null)
   const [likedPosts, setLikedPosts] = useState<Post[] | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>("posts")
   const [followLoading, setFollowLoading] = useState(false)
   const [listOpen, setListOpen] = useState<"followers" | "following" | null>(null)
   const [listUsers, setListUsers] = useState<ListUser[] | null>(null)
+
+  // Swipeable Posts/Saved/Liked pager; the lazy saved/liked fetch effects
+  // below key on the derived activeTab, so they fire on swipe-settle the
+  // same way they fired on tab click.
+  const { activeIndex, pagerRef, indicatorRef, tabRefs, selectTab } = useSwipeTabs({ count: 3 })
+  const activeTab = TAB_ORDER[activeIndex]
+
+  // The pager's natural height is its tallest page, which would leave dead
+  // scroll space under short tabs; clamp a wrapper to the active page's
+  // measured height instead (ResizeObserver catches async post loads).
+  const pageRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [pagerHeight, setPagerHeight] = useState<number | undefined>(undefined)
+  useEffect(() => {
+    const page = pageRefs.current[activeIndex]
+    if (!page) return
+    const measure = () => setPagerHeight(page.offsetHeight)
+    measure()
+    const resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(page)
+    return () => resizeObserver.disconnect()
+  }, [activeIndex])
 
   const isOwnProfile = user?.username === username
 
@@ -267,32 +291,37 @@ export default function PublicProfilePage() {
           )}
         </div>
 
-        {/* Tab bar — frosted segmented capsule */}
-        <div className="mx-3 mt-2 h-11 rounded-full backdrop-blur-xl bg-white/[0.06] flex items-center p-1 gap-1">
-          {(["posts", "saved", "liked"] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 h-9 rounded-full text-sm capitalize cursor-pointer transition-colors duration-150 ${
-                activeTab === tab
-                  ? "bg-white/[0.12] text-ink font-semibold"
-                  : "text-ink-muted font-medium hover:text-ink-dim"
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div>
+        {/* Tab bar — frosted segmented capsule with sliding indicator */}
+        <SegmentedTabs
+          className="mx-3 mt-2"
+          labels={["Posts", "Saved", "Liked"]}
+          activeIndex={activeIndex}
+          onSelect={selectTab}
+          tabRefs={tabRefs}
+          indicatorRef={indicatorRef}
+        />
 
-        {/* Tab content */}
-        <div className="px-4 pt-3">
-          {activeTab === "posts" && <PostsTab posts={posts} />}
-          {activeTab === "saved" && (
-            <PrivateTabContent canSee={canSeePrivateContent} isOwnProfile={isOwnProfile} posts={savedPosts} lockedMessage="Follow to see saved posts" privateMessage="Saved posts are private" />
-          )}
-          {activeTab === "liked" && (
-            <PrivateTabContent canSee={canSeePrivateContent} isOwnProfile={isOwnProfile} posts={likedPosts} lockedMessage="Follow to see liked posts" privateMessage="Liked posts are private" />
-          )}
+        {/* Tab content — swipeable pager inside the vertical scroller; the
+            wrapper height-clamps to the active page so short tabs don't
+            inherit the tallest page's scroll length. */}
+        <div
+          className="overflow-hidden transition-[height] duration-200"
+          style={{ height: pagerHeight }}
+        >
+          <div
+            ref={pagerRef}
+            className="flex items-start overflow-x-scroll overflow-y-hidden snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+          >
+            <div ref={(el) => { pageRefs.current[0] = el }} className="w-full shrink-0 snap-start px-4 pt-3 min-h-[160px]">
+              <PostsTab posts={posts} />
+            </div>
+            <div ref={(el) => { pageRefs.current[1] = el }} className="w-full shrink-0 snap-start px-4 pt-3 min-h-[160px]">
+              <PrivateTabContent canSee={canSeePrivateContent} isOwnProfile={isOwnProfile} posts={savedPosts} lockedMessage="Follow to see saved posts" privateMessage="Saved posts are private" />
+            </div>
+            <div ref={(el) => { pageRefs.current[2] = el }} className="w-full shrink-0 snap-start px-4 pt-3 min-h-[160px]">
+              <PrivateTabContent canSee={canSeePrivateContent} isOwnProfile={isOwnProfile} posts={likedPosts} lockedMessage="Follow to see liked posts" privateMessage="Liked posts are private" />
+            </div>
+          </div>
         </div>
         </div>
 
