@@ -17,6 +17,7 @@ import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCou
 import { updatePostInFeedCaches } from "@/app/lib/swr"
 import { designForFormat } from "@/lib/redesign"
 import { designModule } from "@/app/components/redesign/registry"
+import { useBodyDesign } from "@/app/lib/useBodyDesign"
 
 export default function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -215,13 +216,16 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const style = post ? formatStyle(post.format) : null
   // Design exploration dispatch, mapped by post format. Unknown until the
   // post loads, so loading/not-found states always render baseline chrome.
-  const mod = designModule(post ? designForFormat(post.format) : null)
+  const design = post ? designForFormat(post.format) : null
+  const mod = designModule(design)
+  useBodyDesign(design)
 
   return (
     <div className="h-[100dvh] bg-surface-0 flex justify-center">
       <div className="w-full max-w-[430px] h-[100dvh] relative overflow-hidden">
         <div
           className="absolute inset-0 bg-surface-0 flex flex-col z-40"
+          data-design={design ?? undefined}
           // --accent drives every format-colored detail in the header and sections.
           style={{
             animation: closing

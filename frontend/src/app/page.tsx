@@ -6,12 +6,15 @@ import Link from "next/link"
 import useSWR from "swr"
 import PostCard from "@/app/components/PostCard"
 import BottomNav from "@/app/components/BottomNav"
-import FeedHeader, { type FeedTab } from "@/app/components/FeedHeader"
+import FeedHeader, { headerConfigFor, type FeedTab } from "@/app/components/FeedHeader"
 import EmptyState from "@/components/EmptyState"
 import Spinner from "@/components/Spinner"
 import type { Post } from "@/types/post"
 import { FORMAT_IDS, FORMAT_STYLES } from "@/lib/formats"
+import { designForTab } from "@/lib/redesign"
+import { designModule } from "@/app/components/redesign/registry"
 import { useAuth } from "@/app/lib/auth"
+import { useBodyDesign } from "@/app/lib/useBodyDesign"
 
 const TABS: FeedTab[] = [
   // Non-format tabs use the primary ink color (--color-ink).
@@ -46,6 +49,9 @@ function TabPage({
   const scrollRef = useRef<HTMLDivElement>(null)
   const { user, loading: authLoading } = useAuth()
   const isFollowingTab = tab.id === "following"
+  // Design is static per tab, so cards and states never lag mid-swipe.
+  const design = designForTab(tab.id)
+  const dmod = designModule(design)
 
   // SWR key; null reproduces the old fetch gating (not activated yet, no
   // interests, or following tab before auth resolves). revalidateIfStale:
@@ -78,7 +84,11 @@ function TabPage({
   }, [posts, tab.id])
 
   return (
-    <div ref={scrollRef} className="w-full shrink-0 snap-start h-[100dvh] overflow-y-scroll snap-y snap-mandatory overscroll-y-contain [&::-webkit-scrollbar]:hidden [scrollbar-width:none] pb-14">
+    <div
+      ref={scrollRef}
+      data-design={design ?? undefined}
+      className={`w-full shrink-0 snap-start h-[100dvh] overflow-y-scroll snap-y snap-mandatory overscroll-y-contain [&::-webkit-scrollbar]:hidden [scrollbar-width:none] ${dmod?.tabPagePaddingClass ?? "pb-14"}`}
+    >
       {!isActivated ? (
         <div className="h-full bg-surface-0" />
       ) : isFollowingTab && !authLoading && !user ? (
@@ -97,13 +107,21 @@ function TabPage({
           </Link>
         </div>
       ) : posts === null ? (
-        <div className="h-full flex items-center justify-center bg-surface-0">
-          <Spinner />
-        </div>
+        dmod?.FeedLoading ? (
+          <dmod.FeedLoading tab={tab} />
+        ) : (
+          <div className="h-full flex items-center justify-center bg-surface-0">
+            <Spinner />
+          </div>
+        )
       ) : posts.length === 0 && tab.format ? (
-        <div className="h-full flex items-center justify-center bg-surface-0">
-          <EmptyState format={tab.format} accentColor={tab.accent} />
-        </div>
+        dmod?.FeedEmpty ? (
+          <dmod.FeedEmpty tab={tab} />
+        ) : (
+          <div className="h-full flex items-center justify-center bg-surface-0">
+            <EmptyState format={tab.format} accentColor={tab.accent} />
+          </div>
+        )
       ) : posts.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center gap-3 bg-surface-0">
           <p className="text-ink font-serif font-medium text-lg">Nothing here yet</p>
@@ -119,6 +137,9 @@ function TabPage({
 export default function Home() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("for-you")
+  // Chrome (header, nav, body texture) follows the settled tab's design.
+  const activeDesign = designForTab(activeTab)
+  useBodyDesign(activeDesign)
   const [activatedTabs, setActivatedTabs] = useState<Set<string>>(new Set(["for-you"]))
   const [slugs, setSlugs] = useState<string[]>([])
   const outerRef        = useRef<HTMLDivElement>(null)
@@ -188,21 +209,40 @@ export default function Home() {
       const rightBtn = tabRefs.current[TABS[rightIndex].id]
       if (!leftBtn || !rightBtn) return
 
-      // Read the half-width live so designs can change the indicator size in CSS.
-      const halfInd = indicatorRef.current.offsetWidth / 2
+      // Per-design indicator behavior, read for both sides of the swipe.
+      const leftCfg  = headerConfigFor(designForTab(TABS[leftIndex].id))
+      const rightCfg = headerConfigFor(designForTab(TABS[rightIndex].id))
+
+      // Width: pill/block indicators track the tab button width; otherwise
+      // clear any stale inline width and read the CSS size live.
+      let width: number
+      if (leftCfg.trackIndicatorWidth || rightCfg.trackIndicatorWidth) {
+        width = leftBtn.offsetWidth + (rightBtn.offsetWidth - leftBtn.offsetWidth) * fraction
+        indicatorRef.current.style.width = `${width}px`
+      } else {
+        indicatorRef.current.style.width = ""
+        width = indicatorRef.current.offsetWidth
+      }
+      const halfInd = width / 2
       const leftX  = leftBtn.offsetLeft  + leftBtn.offsetWidth  / 2 - halfInd
       const rightX = rightBtn.offsetLeft + rightBtn.offsetWidth / 2 - halfInd
       const x      = leftX + (rightX - leftX) * fraction
 
-      const [lr, lg, lb] = TABS[leftIndex].rgb as [number, number, number]
-      const [rr, rg, rb] = TABS[rightIndex].rgb as [number, number, number]
-      const r = Math.round(lr + (rr - lr) * fraction)
-      const g = Math.round(lg + (rg - lg) * fraction)
-      const b = Math.round(lb + (rb - lb) * fraction)
-
       indicatorRef.current.style.transition = "none"
       indicatorRef.current.style.left = `${x}px`
-      indicatorRef.current.style.backgroundColor = `rgb(${r},${g},${b})`
+
+      // Color: fixed-color designs keep the class color; clearing the inline
+      // value also drops a stale interpolated color after a design switch.
+      if (leftCfg.lockIndicatorColor || rightCfg.lockIndicatorColor) {
+        indicatorRef.current.style.backgroundColor = ""
+      } else {
+        const [lr, lg, lb] = TABS[leftIndex].rgb as [number, number, number]
+        const [rr, rg, rb] = TABS[rightIndex].rgb as [number, number, number]
+        const r = Math.round(lr + (rr - lr) * fraction)
+        const g = Math.round(lg + (rg - lg) * fraction)
+        const b = Math.round(lb + (rb - lb) * fraction)
+        indicatorRef.current.style.backgroundColor = `rgb(${r},${g},${b})`
+      }
     }
 
     function onSettled() {
@@ -265,6 +305,7 @@ export default function Home() {
       <FeedHeader
         tabs={TABS}
         activeTab={activeTab}
+        design={activeDesign}
         onTabClick={handleTabClick}
         onSearch={() => router.push("/search")}
         tabRefs={tabRefs}
@@ -286,7 +327,7 @@ export default function Home() {
           />
         ))}
       </div>
-      <BottomNav activeTab="feed" />
+      <BottomNav activeTab="feed" design={activeDesign} />
     </PhoneFrame>
   )
 }

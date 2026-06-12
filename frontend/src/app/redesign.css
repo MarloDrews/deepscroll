@@ -1,0 +1,30 @@
+/*
+  Design exploration styles (redesign/explore-3).
+
+  Shared scoping plumbing lives in this file; each design's classes live in
+  its own folder (feed.css + detail.css) so the three builds never edit a
+  shared file. Imported by globals.css right after tailwindcss.
+
+  Scoping rules:
+  - Never override existing semantic tokens (--color-ink*, --color-surface*,
+    --color-edge*) under a [data-design] scope: post bodies render inside the
+    scoped detail page and must not shift. Define namespaced tokens instead
+    (--folio-*, --console-*, --stage-*).
+  - data-design sits on each feed TabPage root, on the detail page container,
+    on variant portal roots (portals escape the page wrapper), and on <body>
+    via useBodyDesign (drives body::before texture variants and portal cascade).
+  - New keyframes need a prefers-reduced-motion guard like heart-pop has.
+*/
+
+@import "./components/redesign/folio/feed.css";
+@import "./components/redesign/folio/detail.css";
+@import "./components/redesign/console/feed.css";
+@import "./components/redesign/console/detail.css";
+@import "./components/redesign/stage/feed.css";
+@import "./components/redesign/stage/detail.css";
+
+/* Variants for restyling shared skeleton markup from JSX, e.g.
+   design-folio:border-t. Match the element itself or any descendant. */
+@custom-variant design-folio (&:where([data-design="folio"], [data-design="folio"] *));
+@custom-variant design-console (&:where([data-design="console"], [data-design="console"] *));
+@custom-variant design-stage (&:where([data-design="stage"], [data-design="stage"] *));

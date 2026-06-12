@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./redesign.css";
 
 @theme inline {
   --font-serif: var(--font-newsreader);
