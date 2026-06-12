@@ -1,1 +1,28 @@
 /* Folio (books + facts) — comments + detail chrome styles. Owned by the folio design build. */
+
+/* Notes page: slides in from the right like turning a page. The exit
+   animation must finish before the portal unmounts (onAnimationEnd). */
+@keyframes folio-page-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes folio-page-out {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
+.folio-page-enter { animation: folio-page-in 300ms ease-out both; }
+.folio-page-exit  { animation: folio-page-out 250ms ease-in both; }
+
+/* 1ms instead of none so onAnimationEnd still fires and the page closes. */
+@media (prefers-reduced-motion: reduce) {
+  .folio-page-enter,
+  .folio-page-exit {
+    animation-duration: 1ms;
+  }
+}
+
+/* Endnote hanging indent: the entry is indented, the head row is pulled
+   back to the margin so comment bodies hang under the author line. */
+.folio-endnote { padding-left: 1.25rem; }
+.folio-endnote-head { margin-left: -1.25rem; }

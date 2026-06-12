@@ -2,11 +2,14 @@
 // Null slots render baseline.
 
 import type { DetailSlots } from "../types"
+import FolioCommentsSheet from "./FolioCommentsSheet"
+import { FolioDetailBack, FolioDetailHeader, FolioDetailBar } from "./FolioDetailChrome"
+import FolioCommentsList from "./FolioCommentsList"
 
 export const folioDetail: DetailSlots = {
-  CommentsSheet: null,
-  DetailBack: null,
-  DetailHeader: null,
-  DetailBar: null,
-  CommentsList: null,
+  CommentsSheet: FolioCommentsSheet,
+  DetailBack: FolioDetailBack,
+  DetailHeader: FolioDetailHeader,
+  DetailBar: FolioDetailBar,
+  CommentsList: FolioCommentsList,
 }
