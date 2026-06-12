@@ -1,8 +1,9 @@
 "use client"
 
-// Stage chat-style comment row — a frosted avatar circle next to a soft
+// Stage chat-style comment row — the commenter's avatar next to a soft
 // bubble. Shared by the comments sheet and the detail-page comments list.
 
+import Avatar from "@/components/Avatar"
 import VerifiedBadge from "@/components/VerifiedBadge"
 import { relativeTime } from "@/app/lib/relativeTime"
 import type { Comment } from "@/app/components/CommentsSection"
@@ -17,10 +18,13 @@ interface CommentRowProps {
 export default function CommentRow({ comment, isOwn, deleting, onDelete }: CommentRowProps) {
   return (
     <div className="flex items-start gap-2.5 mb-3">
-      {/* Avatar circle with the author's initial */}
-      <div className="w-8 h-8 rounded-full bg-white/[0.06] backdrop-blur-md flex items-center justify-center shrink-0 mt-0.5">
-        <span className="text-xs font-semibold text-ink-dim uppercase">{comment.username[0]}</span>
-      </div>
+      {/* Commenter avatar — real picture, initial-letter fallback */}
+      <Avatar
+        username={comment.username}
+        avatarUrl={comment.avatar_url}
+        size={28}
+        className="mt-0.5"
+      />
 
       {/* Bubble */}
       <div className="flex-1 min-w-0 rounded-2xl bg-surface-2 px-4 py-2.5">

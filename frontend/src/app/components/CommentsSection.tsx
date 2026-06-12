@@ -7,6 +7,7 @@ export interface Comment {
   post_id: number
   username: string
   is_verified: number
+  avatar_url: string | null
   body: string
   created_at: string
 }
