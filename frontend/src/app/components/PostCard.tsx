@@ -97,21 +97,14 @@ export function SlabAccent() {
 }
 
 // Slab footer: creator byline on the left, neutral reading metadata on the
-// right. Lives inside the slab so the card carries its own context.
-function CardFooter({
-  post,
-  fc,
-  extras = [],
-}: {
-  post: Post
-  fc: Post["feed_card"]
-  extras?: (string | number | null | undefined)[]
-}) {
+// right. The meta line is deliberately uniform across all seven formats —
+// reading time + difficulty only. Format-specific fields (year, era,
+// lifespan, genre, venue, ...) stay in the post JSON and render on the
+// detail page, never on the card.
+function CardFooter({ post, fc }: { post: Post; fc: Post["feed_card"] }) {
   const difficulty = fcNum(fc, "post_difficulty")
   const minutes = fcNum(fc, "post_reading_time_min")
-  const metaText = [minutes > 0 ? `${minutes} min` : null, ...extras]
-    .filter((x) => x !== null && x !== undefined && x !== "" && x !== 0)
-    .join(" · ")
+  const metaText = minutes > 0 ? `${minutes} min` : ""
   return (
     <div className="flex items-center gap-2 pt-1 min-w-0">
       {post.author_username && (
@@ -381,7 +374,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 <Teasers items={fc.teasers as string[]} />
               )}
 
-              <CardFooter post={post} fc={fc} extras={[fc.year as number, fc.genre as string]} />
+              <CardFooter post={post} fc={fc} />
             </div>
           ) : post.format === "people" && fc ? (
             <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
@@ -496,11 +489,6 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 <Teasers items={fc.teasers as string[]} />
               )}
 
-              {/* Display-only trim: feed_card.era is free-form place+period
-                  ("The Netherlands, 1937 to 1947") and overflows the meta
-                  line; the period is already on the era_label kicker above.
-                  The era field stays in the JSON for the detail page and
-                  search. */}
               <CardFooter post={post} fc={fc} />
             </div>
           ) : post.format === "academy" && fc ? (
@@ -525,7 +513,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
               {Array.isArray(fc.teasers) && (fc.teasers as string[]).length > 0 && (
                 <Teasers items={fc.teasers as string[]} />
               )}
-              <CardFooter post={post} fc={fc} extras={[fc.published_year as number]} />
+              <CardFooter post={post} fc={fc} />
             </div>
           ) : (
             /* Fallback for unknown formats */
