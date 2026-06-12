@@ -83,6 +83,8 @@ export interface DetailBarProps {
   posting: boolean
   onSubmitComment: (body: string) => Promise<void> | void
   liked: boolean
+  likesCount: number
+  commentCount: number
   onToggleLike: () => void
   saved: boolean
   animatingSave: boolean

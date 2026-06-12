@@ -15,6 +15,8 @@ import { queueEvent, hasPendingLike, cancelPendingLike } from "@/app/lib/eventQu
 import { savePost, unsavePost, isPostSaved } from "@/app/lib/savedPosts"
 import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCount, isLikeSent, markLikeSent, unmarkLikeSent } from "@/app/lib/likedPosts"
 import { updatePostInFeedCaches } from "@/app/lib/swr"
+import { designForFormat } from "@/lib/redesign"
+import { designModule } from "@/app/components/redesign/registry"
 
 export default function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -211,6 +213,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   const style = post ? formatStyle(post.format) : null
+  // Design exploration dispatch, mapped by post format. Unknown until the
+  // post loads, so loading/not-found states always render baseline chrome.
+  const mod = designModule(post ? designForFormat(post.format) : null)
 
   return (
     <div className="h-[100dvh] bg-surface-0 flex justify-center">
@@ -240,24 +245,28 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           `}</style>
 
           {/* Back button */}
-          <button
-            onClick={close}
-            className="absolute top-4 left-4 z-10 btn-icon"
-            aria-label="Go back"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-6 h-6"
+          {mod?.DetailBack ? (
+            <mod.DetailBack onClose={close} />
+          ) : (
+            <button
+              onClick={close}
+              className="absolute top-4 left-4 z-10 btn-icon"
+              aria-label="Go back"
             >
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-6 h-6"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+          )}
 
           <Toast message="Link copied!" visible={toastVisible} />
 
@@ -268,7 +277,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           >
             {post && style ? (
               <>
-                {/* Header: cover + title + author */}
+                {mod?.DetailHeader ? (
+                  <mod.DetailHeader post={post} style={style} />
+                ) : (
                 <div className="px-6 pb-2">
                   {/* Format badge */}
                   <div className="flex items-center gap-2 mb-5">
@@ -334,6 +345,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     ))}
                   </div>
                 </div>
+                )}
 
                 {/* Sections */}
                 <SectionRenderer
@@ -343,14 +355,25 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 />
 
                 {/* Comments list */}
-                <div ref={commentsTopRef} className="px-6 pt-4">
-                  <CommentsSection
-                    comments={comments}
-                    currentUsername={user?.username}
-                    onDelete={handleDelete}
-                    deletingId={deletingId}
-                  />
-                </div>
+                {mod?.CommentsList ? (
+                  <div ref={commentsTopRef}>
+                    <mod.CommentsList
+                      comments={comments}
+                      currentUsername={user?.username}
+                      onDelete={handleDelete}
+                      deletingId={deletingId}
+                    />
+                  </div>
+                ) : (
+                  <div ref={commentsTopRef} className="px-6 pt-4">
+                    <CommentsSection
+                      comments={comments}
+                      currentUsername={user?.username}
+                      onDelete={handleDelete}
+                      deletingId={deletingId}
+                    />
+                  </div>
+                )}
               </>
             ) : notFound ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 px-8 text-center">
@@ -369,6 +392,21 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
           {/* Sticky comment bar — sits above bottom nav (z-40 > nav z-30).
               Only needs safe-area clearance for the iOS home indicator. */}
+          {post && mod?.DetailBar ? (
+            <mod.DetailBar
+              posting={posting}
+              onSubmitComment={handlePostComment}
+              liked={liked}
+              likesCount={likesCount}
+              commentCount={comments.length}
+              onToggleLike={handleToggleLike}
+              saved={saved}
+              animatingSave={animatingSave}
+              onSaveAnimEnd={() => setAnimatingSave(false)}
+              onToggleSave={handleSaveToggle}
+              onShare={handleShare}
+            />
+          ) : (
           <div
             className="flex-none border-t border-edge bg-surface-overlay backdrop-blur-md"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
@@ -472,6 +510,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               )}
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>
