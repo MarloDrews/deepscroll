@@ -11,35 +11,117 @@ import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCou
 import { updatePostInFeedCaches } from "@/app/lib/swr"
 import { fcNum, fcStr, type Post } from "@/types/post"
 import { formatStyle } from "@/lib/formats"
+import Avatar from "@/components/Avatar"
+import VerifiedBadge from "@/components/VerifiedBadge"
+import { BookmarkIcon, CommentIcon, HeartIcon, SendIcon, SpeakerIcon } from "./icons"
 
 export type { Post }
 
 const MIN_DWELL_MS = 500
 
-// Difficulty dots take the per-format ink from the card's --accent variable.
+// Difficulty as three neutral dots; the per-format accent stays on the
+// format marker and the teaser bullets only.
 function DotScale({ value }: { value: 1 | 2 | 3 }) {
   return (
-    <span className="flex gap-0.5">
+    <span className="flex gap-1" aria-hidden="true">
       {[1, 2, 3].map((i) => (
         <span
           key={i}
-          className={`inline-block w-1.5 h-1.5 rounded-full ${i <= value ? "bg-(--accent)" : "bg-surface-3"}`}
+          className={`inline-block w-1 h-1 rounded-full ${i <= value ? "bg-ink-dim" : "bg-white/15"}`}
         />
       ))}
     </span>
   )
 }
 
-// Teaser bullet list shared by every format card.
+// Teaser bullets — prominence comes from typography alone: reading-size
+// text (17px, matching prose-post) in full ink, sitting directly on the
+// slab. Deliberately no second surface, border or vertical line (the slab
+// already carries its left accent edge) and nothing button-shaped. The
+// accent dots carry the per-format color; row rhythm and the mt-2 above
+// the group keep the teasers reading as their own layer.
 function Teasers({ items }: { items: string[] }) {
   return (
-    <div className="mt-2 space-y-1.5">
+    <div className="mt-2 space-y-2.5">
       {items.map((teaser, i) => (
         <div key={i} className="flex items-start gap-2.5">
-          <span className="text-(--accent) text-sm mt-0.5 shrink-0">&mdash;</span>
-          <span className="text-sm text-ink-dim leading-snug">{teaser}</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-(--accent) mt-2 shrink-0" />
+          <span className="text-[1.0625rem] text-ink leading-snug">{teaser}</span>
         </div>
       ))}
+    </div>
+  )
+}
+
+// Format-colored glow behind a slab — a faint radial wash of the post's
+// accent bleeding from behind the slab into the dark, so the content reads
+// as a light source on the Stage. Static (never animated), very low
+// intensity, and it fades out well before the screen edges so the frosted
+// chrome above and below keeps a pure-black backdrop. Rendered inside each
+// card's own DOM reading that card's --accent: the color switches hard with
+// the snapped post — there is no shared glow element to crossfade. Gradient
+// falloff instead of filter blur keeps it cheap with many cards mounted.
+export function SlabGlow({ className }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`pointer-events-none ${
+        className ?? "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] aspect-square"
+      }`}
+      style={{
+        background:
+          "radial-gradient(closest-side, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%)",
+      }}
+    />
+  )
+}
+
+// Accent carriers on a slab: a thin vertical bar on the left edge plus a
+// faint tint falling from the top edge, both clipped into the slab's rounded
+// corners (the host slab adds relative + overflow-hidden). A single edge
+// accent, never a border or fill — the slab itself stays borderless and
+// neutral. Shared with the post detail header slab.
+export function SlabAccent() {
+  return (
+    <>
+      <span
+        aria-hidden="true"
+        className="absolute left-0 top-0 bottom-0 w-[3px] bg-(--accent)"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-12 bg-linear-to-b from-(--accent)/8 to-transparent pointer-events-none"
+      />
+    </>
+  )
+}
+
+// Slab footer: creator byline on the left, neutral reading metadata on the
+// right. The meta line is deliberately uniform across all seven formats —
+// reading time + difficulty only. Format-specific fields (year, era,
+// lifespan, genre, venue, ...) stay in the post JSON and render on the
+// detail page, never on the card.
+function CardFooter({ post, fc }: { post: Post; fc: Post["feed_card"] }) {
+  const difficulty = fcNum(fc, "post_difficulty")
+  const minutes = fcNum(fc, "post_reading_time_min")
+  const metaText = minutes > 0 ? `${minutes} min` : ""
+  return (
+    <div className="flex items-center gap-2 pt-1 min-w-0">
+      {post.author_username && (
+        <span className="flex items-center gap-1.5 min-w-0">
+          <Avatar username={post.author_username} avatarUrl={post.author_avatar_url} size={24} />
+          <span className="text-xs text-ink-dim truncate">@{post.author_username}</span>
+          {(post.author_is_verified ?? 0) > 0 && (
+            <VerifiedBadge size={12} level={post.author_is_verified ?? 1} />
+          )}
+        </span>
+      )}
+      <span className="ml-auto flex items-center gap-2 shrink-0">
+        {difficulty > 0 && <DotScale value={difficulty as 1 | 2 | 3} />}
+        {metaText && (
+          <span className="text-[11px] font-mono text-ink-muted leading-none">{metaText}</span>
+        )}
+      </span>
     </div>
   )
 }
@@ -221,8 +303,14 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
       onClick={handleCardClick}
       // --accent drives every format-colored detail inside the card.
       style={{ cursor: "pointer", ["--accent" as string]: style.accent }}
-      className="h-[100dvh] relative overflow-hidden shrink-0 snap-start [scroll-snap-stop:always] flex flex-col bg-surface-0 pl-5 pr-5 pt-12 pb-8"
+      // Invariant wrapper: the vertical snap feed and scroll restore depend
+      // on these classes. One post fills the screen; nothing bleeds in.
+      className="h-[100dvh] relative overflow-hidden shrink-0 snap-start [scroll-snap-stop:always] bg-surface-0"
     >
+      {/* Format glow — behind the z-10 content, clipped by the card's own
+          overflow-hidden so it never reaches neighboring posts or chrome. */}
+      <SlabGlow />
+
       {/* Double-tap heart overlay */}
       {showHeartAnim && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
@@ -238,42 +326,47 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
         </div>
       )}
 
-      {/* Format indicator row */}
-      <div className="flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-2">
-          <span
-            className={`w-2 h-2 rounded-full shrink-0 ${style.dot}`}
-            style={{ boxShadow: `0 0 8px 3px ${style.accent}dd, 0 0 20px 6px ${style.accent}66` }}
-          />
-          <span
-            className={`label-caps ${style.text}`}
-            style={{ textShadow: `0 0 5px ${style.accent}ff, 0 0 14px ${style.accent}dd, 0 0 30px ${style.accent}77` }}
-          >
-            {style.badge}
-          </span>
-        </div>
-        {null}
-      </div>
-
-      {/* Card body — centered vertically */}
-      <div className="flex-1 flex flex-col justify-center relative z-10">
+      {/* Content floats in the dark: marker + slab, centered vertically. */}
+      <div className="relative h-full flex flex-col justify-center px-5 pt-16 pb-28 z-10">
         <div
-          className={`relative transition-all duration-500 ease-out ${
-            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
+          className={`transition-all duration-500 ease-out ${
+            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
         >
+          {/* Format marker floating above the slab — dot and label both carry
+              the per-format accent so the format is legible at a glance. The
+              read-aloud placeholder sits at the row's right end — the post
+              block's top-right corner: it belongs to the post, not to the
+              social action rail. (Inside the slab surface it would collide
+              with the books cover / people portrait layouts.) */}
+          <div className="flex items-center gap-2 mb-3 px-2">
+            <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-(--accent)" />
+            <span className="text-xs font-mono lowercase tracking-widest text-(--accent)">
+              {style.badge.toLowerCase()}
+            </span>
+            <button
+              disabled
+              aria-disabled="true"
+              aria-label="Read aloud (coming soon)"
+              className="ml-auto -my-2 w-8 h-8 flex items-center justify-center text-ink-dim opacity-40 cursor-default"
+            >
+              <SpeakerIcon className="w-5 h-5" />
+            </button>
+          </div>
+
           {post.format === "books" && fc ? (
-            <div className="card border-l-2 border-l-(--accent) px-6 py-7 flex flex-col gap-4">
+            <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
+              <SlabAccent />
               {/* Title row + cover */}
               <div className="flex gap-4 items-start">
                 <div className="flex-1 min-w-0">
                   <h2 className="font-serif text-[1.75rem] font-medium tracking-tight text-ink leading-snug">
                     {fc.title as string}
                   </h2>
-                  <p className="text-(--accent) text-sm font-medium mt-1">{fc.author as string}</p>
+                  <p className="text-ink-dim text-sm font-medium mt-1">{fc.author as string}</p>
                 </div>
                 {fcStr(fc, "cover_url") && (
-                  <div className="shrink-0 rounded-md overflow-hidden w-16 h-24 bg-surface-2 border border-edge">
+                  <div className="shrink-0 rounded-xl overflow-hidden w-16 h-24 bg-white/[0.06]">
                     <img
                       src={fcStr(fc, "cover_url")}
                       alt=""
@@ -293,22 +386,14 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 <Teasers items={fc.teasers as string[]} />
               )}
 
-              {/* Metadata bar */}
-              <div className="flex items-center gap-3 pt-2 border-t border-edge">
-                <DotScale value={fc.post_difficulty as 1 | 2 | 3} />
-                {fcNum(fc, "post_reading_time_min") > 0 && (
-                  <span className="text-ink-muted text-xs font-mono">{fcNum(fc, "post_reading_time_min")} min read</span>
-                )}
-                <span className="text-ink-muted text-xs font-mono">{fc.year as number}</span>
-                <span className="text-ink-faint text-xs">·</span>
-                <span className="text-ink-muted text-xs">{fc.genre as string}</span>
-              </div>
+              <CardFooter post={post} fc={fc} />
             </div>
           ) : post.format === "people" && fc ? (
-            <div className="card border-l-2 border-l-(--accent) px-6 py-7 flex flex-col gap-4">
+            <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
+              <SlabAccent />
               <div className="flex gap-4 items-start">
                 {(fc.portrait as { image_url?: string } | undefined)?.image_url && (
-                  <div className="shrink-0 w-20 h-20 rounded-full overflow-hidden bg-surface-2 border border-(--accent)/40">
+                  <div className="shrink-0 w-20 h-20 rounded-full overflow-hidden bg-white/[0.06]">
                     <img
                       src={(fc.portrait as { image_url: string }).image_url}
                       alt=""
@@ -339,15 +424,11 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 <Teasers items={fc.teasers as string[]} />
               )}
 
-              <div className="flex items-center gap-3 pt-2 border-t border-edge">
-                <DotScale value={fc.post_difficulty as 1 | 2 | 3} />
-                {fcNum(fc, "post_reading_time_min") > 0 && (
-                  <span className="text-ink-muted text-xs font-mono">{fcNum(fc, "post_reading_time_min")} min read</span>
-                )}
-              </div>
+              <CardFooter post={post} fc={fc} />
             </div>
           ) : post.format === "facts" && fc ? (
-            <div className="card border-l-2 border-l-(--accent) px-6 py-7 flex flex-col gap-4">
+            <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
+              <SlabAccent />
               {fcStr(fc, "field") && (
                 <p className="label-caps text-(--accent)">{fcStr(fc, "field")}</p>
               )}
@@ -359,15 +440,11 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 <Teasers items={fc.teasers as string[]} />
               )}
 
-              <div className="flex items-center gap-3 pt-2 border-t border-edge">
-                <DotScale value={fc.post_difficulty as 1 | 2 | 3} />
-                {fcNum(fc, "post_reading_time_min") > 0 && (
-                  <span className="text-ink-muted text-xs font-mono">{fcNum(fc, "post_reading_time_min")} min read</span>
-                )}
-              </div>
+              <CardFooter post={post} fc={fc} />
             </div>
           ) : post.format === "concepts" && fc ? (
-            <div className="card border-l-2 border-l-(--accent) px-6 py-7 flex flex-col gap-4">
+            <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
+              <SlabAccent />
               {fcStr(fc, "field") && (
                 <p className="label-caps text-(--accent)">{fcStr(fc, "field")}</p>
               )}
@@ -382,15 +459,11 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 <Teasers items={fc.teasers as string[]} />
               )}
 
-              <div className="flex items-center gap-3 pt-2 border-t border-edge">
-                <DotScale value={fc.post_difficulty as 1 | 2 | 3} />
-                {fcNum(fc, "post_reading_time_min") > 0 && (
-                  <span className="text-ink-muted text-xs font-mono">{fcNum(fc, "post_reading_time_min")} min read</span>
-                )}
-              </div>
+              <CardFooter post={post} fc={fc} />
             </div>
           ) : post.format === "questions" && fc ? (
-            <div className="card border-l-2 border-l-(--accent) px-6 py-7 flex flex-col gap-4">
+            <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
+              <SlabAccent />
               {fcStr(fc, "field") && (
                 <p className="label-caps text-(--accent)">{fcStr(fc, "field")}</p>
               )}
@@ -405,15 +478,11 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 <Teasers items={fc.teasers as string[]} />
               )}
 
-              <div className="flex items-center gap-3 pt-2 border-t border-edge">
-                <DotScale value={fc.post_difficulty as 1 | 2 | 3} />
-                {fcNum(fc, "post_reading_time_min") > 0 && (
-                  <span className="text-ink-muted text-xs font-mono">{fcNum(fc, "post_reading_time_min")} min read</span>
-                )}
-              </div>
+              <CardFooter post={post} fc={fc} />
             </div>
           ) : post.format === "stories" && fc ? (
-            <div className="card border-l-2 border-l-(--accent) px-6 py-7 flex flex-col gap-4">
+            <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
+              <SlabAccent />
               <div className="flex items-center gap-2 flex-wrap">
                 {fcStr(fc, "era_label") && (
                   <span className="label-caps text-(--accent)">
@@ -432,18 +501,11 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 <Teasers items={fc.teasers as string[]} />
               )}
 
-              <div className="flex items-center gap-3 pt-2 border-t border-edge">
-                <DotScale value={fc.post_difficulty as 1 | 2 | 3} />
-                {fcNum(fc, "post_reading_time_min") > 0 && (
-                  <span className="text-ink-muted text-xs font-mono">{fcNum(fc, "post_reading_time_min")} min read</span>
-                )}
-                {fcStr(fc, "era") && (
-                  <span className="text-ink-faint text-xs font-mono">{fcStr(fc, "era")}</span>
-                )}
-              </div>
+              <CardFooter post={post} fc={fc} />
             </div>
           ) : post.format === "academy" && fc ? (
-            <div className="card border-l-2 border-l-(--accent) px-6 py-7 flex flex-col gap-4">
+            <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
+              <SlabAccent />
               {fcStr(fc, "field") && (
                 <p className="label-caps text-(--accent)">{fcStr(fc, "field")}</p>
               )}
@@ -463,74 +525,64 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
               {Array.isArray(fc.teasers) && (fc.teasers as string[]).length > 0 && (
                 <Teasers items={fc.teasers as string[]} />
               )}
-              <div className="flex items-center gap-3 pt-2 border-t border-edge">
-                <DotScale value={fc.post_difficulty as 1 | 2 | 3} />
-                {fcNum(fc, "post_reading_time_min") > 0 && (
-                  <span className="text-ink-muted text-xs font-mono">{fcNum(fc, "post_reading_time_min")} min read</span>
-                )}
-                {(fc.published_year as number) > 0 && (
-                  <span className="text-ink-muted text-xs font-mono">{fc.published_year as number}</span>
-                )}
-              </div>
+              <CardFooter post={post} fc={fc} />
             </div>
           ) : (
             /* Fallback for unknown formats */
-            <div className="card border-l-2 border-l-(--accent) px-6 py-7 flex flex-col gap-4">
+            <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
+              <SlabAccent />
               <h2 className="font-serif text-3xl font-medium tracking-tight text-ink leading-snug">
                 {post.title}
               </h2>
               {fcStr(fc, "essence") && (
                 <p className="font-serif italic text-base text-ink-body leading-relaxed">{fcStr(fc, "essence")}</p>
               )}
-            </div>
-          )}
-
-          {/* Author avatar — bottom-right corner of the card box */}
-          {post.author_username && (
-            <div className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-surface-2 border-2 border-edge-strong flex items-center justify-center shrink-0 overflow-hidden z-10">
-              <span className="text-sm font-semibold text-ink-dim uppercase">
-                {post.author_username[0]}
-              </span>
+              <CardFooter post={post} fc={fc} />
             </div>
           )}
         </div>
       </div>
 
-      {/* Interest tags */}
-      <div className="absolute top-[calc(100%-88px)] left-5 right-10 flex flex-wrap gap-2 z-10">
-        {post.interests.map((name) => (
-          <span
-            key={name}
-            className="bg-surface-2/90 border border-edge text-ink-dim text-xs px-2.5 py-1 rounded-full"
-          >
-            {name}
-          </span>
-        ))}
-      </div>
+      {/* Interest tags — floating pills bottom-left, clear of the actions,
+          anchored just above the nav dock (dock top = safe-area + 68px).
+          wrap-reverse keeps the first row hugging the bottom edge so it stays
+          level with the send button even if the tags wrap. */}
+      {post.interests.length > 0 && (
+        <div className="absolute left-4 right-20 bottom-[calc(env(safe-area-inset-bottom)+72px)] flex flex-wrap-reverse gap-2 z-10">
+          {post.interests.slice(0, 2).map((name) => (
+            <span
+              key={name}
+              className="rounded-full bg-white/[0.05] backdrop-blur-md text-ink-dim text-xs px-3 py-1.5"
+            >
+              {name}
+            </span>
+          ))}
+        </div>
+      )}
 
-      {/* Action buttons — icon-only pill buttons per the Lamplight design spec. */}
-      <div className="absolute right-2 z-10 flex flex-col items-center gap-1" style={{ bottom: "64px" }}>
+      {/* Action rail — bare glyphs floating at the right edge, no borders or
+          containers. Every item is button + a fixed-height count slot (h-3,
+          empty/invisible when there is no number) so button centers sit at
+          one uniform interval whether or not an action has a count; the last
+          item (share) carries no trailing slot since the slot only sets the
+          rhythm between items. Press feedback is a springy scale-down. The
+          rail bottom-aligns with the first interest-tag row just above the
+          nav dock (dock top = safe-area + 68px). */}
+      <div className="absolute right-2 bottom-[calc(env(safe-area-inset-bottom)+72px)] z-10 flex flex-col items-center">
         {/* Like */}
         <div className="flex flex-col items-center">
           <button
             onClick={(e) => { e.stopPropagation(); handleToggleLike() }}
             aria-label={liked ? "Unlike" : "Like"}
-            className={`btn-action${liked ? " btn-action-liked" : ""}`}
+            className={`w-11 h-11 flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-90 ${liked ? "text-like" : "text-ink-dim"}`}
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill={liked ? "currentColor" : "none"}
-              stroke="currentColor"
-              strokeWidth={liked ? 0 : 2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`w-6 h-6 ${animatingLike ? "heart-pop" : ""}`}
+            <HeartIcon
+              filled={liked}
+              className={`w-7 h-7 ${animatingLike ? "heart-pop" : ""}`}
               onAnimationEnd={() => setAnimatingLike(false)}
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
+            />
           </button>
-          <span className={`text-xs font-sans leading-none transition-colors duration-150 ${liked ? "text-[#ff3a5c]" : "text-ink-dim"} ${likesCount === 0 && !liked ? "invisible" : ""}`}>{likesCount}</span>
+          <span className={`h-3 text-[11px] font-mono leading-none transition-colors duration-150 ${liked ? "text-like" : "text-ink-dim"} ${likesCount === 0 && !liked ? "invisible" : ""}`}>{likesCount}</span>
         </div>
 
         {/* Comment */}
@@ -538,22 +590,11 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           <button
             onClick={(e) => { e.stopPropagation(); setShowComments(true) }}
             aria-label="Comments"
-            className="btn-action"
+            className="w-11 h-11 flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-90 text-ink-dim"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-6 h-6"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
+            <CommentIcon className="w-7 h-7" />
           </button>
-          <span className={`text-xs text-ink-dim font-sans leading-none ${commentsCount === 0 ? "invisible" : ""}`}>{commentsCount}</span>
+          <span className={`h-3 text-[11px] font-mono text-ink-dim leading-none ${commentsCount === 0 ? "invisible" : ""}`}>{commentsCount}</span>
         </div>
 
         {/* Save */}
@@ -561,22 +602,15 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           <button
             onClick={handleSaveClick}
             aria-label={saved ? "Unsave" : "Save"}
-            className={`btn-action${saved ? " btn-action-saved" : ""}`}
+            className={`w-11 h-11 flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-90 ${saved ? "text-save" : "text-ink-dim"}`}
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill={saved ? "currentColor" : "none"}
-              stroke="currentColor"
-              strokeWidth={saved ? 0 : 2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`w-6 h-6 ${animatingSave ? "heart-pop" : ""}`}
+            <BookmarkIcon
+              filled={saved}
+              className={`w-7 h-7 ${animatingSave ? "heart-pop" : ""}`}
               onAnimationEnd={() => setAnimatingSave(false)}
-            >
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-            </svg>
+            />
           </button>
-          <span className={`text-xs font-sans leading-none transition-colors duration-150 ${saved ? "text-[#f5c542]" : "text-ink-dim"} ${saveCount === 0 && !saved ? "invisible" : ""}`}>{saveCount}</span>
+          <span className={`h-3 text-[11px] font-mono leading-none transition-colors duration-150 ${saved ? "text-save" : "text-ink-dim"} ${saveCount === 0 && !saved ? "invisible" : ""}`}>{saveCount}</span>
         </div>
 
         {/* Share */}
@@ -584,20 +618,9 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           <button
             onClick={handleShare}
             aria-label="Share"
-            className="btn-action"
+            className="w-11 h-11 flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-90 text-ink-dim"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-6 h-6"
-            >
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
+            <SendIcon className="w-7 h-7" />
           </button>
         </div>
       </div>

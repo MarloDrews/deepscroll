@@ -6,34 +6,27 @@ import Link from "next/link"
 import useSWR from "swr"
 import PostCard from "@/app/components/PostCard"
 import BottomNav from "@/app/components/BottomNav"
+import FeedHeader, { type FeedTab } from "@/app/components/FeedHeader"
 import EmptyState from "@/components/EmptyState"
-import Spinner from "@/components/Spinner"
 import type { Post } from "@/types/post"
-import { FORMAT_IDS, FORMAT_STYLES, type FormatId } from "@/lib/formats"
+import { FORMAT_IDS, FORMAT_STYLES } from "@/lib/formats"
 import { useAuth } from "@/app/lib/auth"
-
-interface FeedTab {
-  id: string
-  label: string
-  format: FormatId | null
-  accent: string
-  rgb: readonly [number, number, number]
-}
+import { useSwipeTabs } from "@/app/lib/useSwipeTabs"
 
 const TABS: FeedTab[] = [
-  // Non-format tabs use the primary ink color (--color-ink).
-  { id: "for-you", label: "For You", format: null, accent: "#eceeff", rgb: [236, 238, 255] },
-  { id: "following", label: "Following", format: null, accent: "#eceeff", rgb: [236, 238, 255] },
+  // Non-format tabs carry no accent dot; the capsule itself stays neutral.
+  // Following sits left of For You, but For You stays the default open tab.
+  { id: "following", label: "Following", format: null, accent: "#eceeff" },
+  { id: "for-you", label: "For You", format: null, accent: "#eceeff" },
   ...FORMAT_IDS.map((id) => ({
     id,
     label: FORMAT_STYLES[id].label,
     format: id,
     accent: FORMAT_STYLES[id].accent,
-    rgb: FORMAT_STYLES[id].rgb,
   })),
 ]
 
-const HALF_IND = 8 // half of w-4 (16px indicator width)
+const DEFAULT_TAB_INDEX = TABS.findIndex((t) => t.id === "for-you")
 
 function PhoneFrame({ children }: { children: React.ReactNode }) {
   return (
@@ -87,36 +80,47 @@ function TabPage({
   }, [posts, tab.id])
 
   return (
-    <div ref={scrollRef} className="w-full shrink-0 snap-start h-[100dvh] overflow-y-scroll snap-y snap-mandatory overscroll-y-contain [&::-webkit-scrollbar]:hidden [scrollbar-width:none] pb-14">
+    // pb-24 clears the floating dock (12px inset + 56px tall).
+    <div ref={scrollRef} className="w-full shrink-0 snap-start h-[100dvh] overflow-y-scroll snap-y snap-mandatory overscroll-y-contain [&::-webkit-scrollbar]:hidden [scrollbar-width:none] pb-24">
       {!isActivated ? (
         <div className="h-full bg-surface-0" />
       ) : isFollowingTab && !authLoading && !user ? (
-        <div className="h-full flex flex-col items-center justify-center gap-3 bg-surface-0 px-8 text-center">
-          <p className="text-ink font-serif font-medium text-lg">See posts from people you follow</p>
-          <Link href="/login" className="btn btn-primary px-5 py-2">
-            Log in
-          </Link>
+        <div className="h-full flex items-center justify-center bg-surface-0 px-6">
+          <div className="card px-8 py-10 text-center max-w-xs flex flex-col items-center gap-3">
+            <p className="font-serif text-xl text-ink leading-snug">See posts from people you follow</p>
+            <Link href="/login" className="btn btn-primary px-5 py-2">
+              Log in
+            </Link>
+          </div>
         </div>
       ) : isFollowingTab && posts !== null && posts.length === 0 ? (
-        <div className="h-full flex flex-col items-center justify-center gap-3 bg-surface-0 px-8 text-center">
-          <p className="text-ink font-serif font-medium text-lg">Nothing here yet</p>
-          <p className="text-ink-muted text-sm">Posts from people you follow will show up here.</p>
-          <Link href="/search" className="btn btn-primary px-5 py-2">
-            Find people
-          </Link>
+        <div className="h-full flex items-center justify-center bg-surface-0 px-6">
+          <div className="card px-8 py-10 text-center max-w-xs flex flex-col items-center gap-3">
+            <p className="font-serif text-xl text-ink leading-snug">Nothing here yet</p>
+            <p className="text-ink-muted text-sm">Posts from people you follow will show up here.</p>
+            <Link href="/search" className="btn btn-primary px-5 py-2">
+              Find people
+            </Link>
+          </div>
         </div>
       ) : posts === null ? (
-        <div className="h-full flex items-center justify-center bg-surface-0">
-          <Spinner />
+        // Loading: pulsing slabs floating where the card slab would sit.
+        <div className="h-full flex flex-col justify-center bg-surface-0 px-5 gap-4">
+          <div className="stage-pulse card h-72 w-full" />
+          <div className="stage-pulse card h-20 w-3/4" />
         </div>
       ) : posts.length === 0 && tab.format ? (
-        <div className="h-full flex items-center justify-center bg-surface-0">
-          <EmptyState format={tab.format} accentColor={tab.accent} />
+        <div className="h-full flex items-center justify-center bg-surface-0 px-6">
+          <div className="card px-8 py-10 max-w-xs">
+            <EmptyState format={tab.format} accentColor={tab.accent} />
+          </div>
         </div>
       ) : posts.length === 0 ? (
-        <div className="h-full flex flex-col items-center justify-center gap-3 bg-surface-0">
-          <p className="text-ink font-serif font-medium text-lg">Nothing here yet</p>
-          <p className="text-ink-muted text-sm">Try adjusting your interests</p>
+        <div className="h-full flex items-center justify-center bg-surface-0 px-6">
+          <div className="card px-8 py-10 text-center max-w-xs flex flex-col items-center gap-2">
+            <p className="font-serif text-xl text-ink leading-snug">Nothing here yet</p>
+            <p className="text-ink-muted text-sm">Try adjusting your interests</p>
+          </div>
         </div>
       ) : (
         posts.map((post) => <PostCard key={post.id} post={post} activeTabId={tab.id} />)
@@ -127,15 +131,18 @@ function TabPage({
 
 export default function Home() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState("for-you")
-  const [activatedTabs, setActivatedTabs] = useState<Set<string>>(new Set(["for-you"]))
   const [slugs, setSlugs] = useState<string[]>([])
-  const outerRef        = useRef<HTMLDivElement>(null)
-  const activeTabRef    = useRef("for-you")
-  const tabRefs         = useRef<Record<string, HTMLButtonElement | null>>({})
-  const indicatorRef    = useRef<HTMLDivElement>(null)
+  // The swipe pager, sliding indicator and active/activated tab state all
+  // live in the shared hook; the indicator is the neutral pill fill whose
+  // color never changes — the per-post accent switches hard with the
+  // settled card, not the chrome.
+  const { activeIndex, activatedIndices, pagerRef, indicatorRef, tabRefs, selectTab } =
+    useSwipeTabs({ count: TABS.length, initialIndex: DEFAULT_TAB_INDEX })
+  const activeTab = TABS[activeIndex].id
   const tabStripRef     = useRef<HTMLDivElement>(null)
   const isFirstTabCenter = useRef(true)
+  const selectTabRef = useRef(selectTab)
+  selectTabRef.current = selectTab
 
   // Check localStorage on mount, store interests, and restore active tab from sessionStorage
   useEffect(() => {
@@ -147,193 +154,56 @@ export default function Home() {
     setSlugs(JSON.parse(saved))
 
     const savedTab = sessionStorage.getItem("feedActiveTab")
-    if (savedTab) {
-      const tabIndex = TABS.findIndex((t) => t.id === savedTab)
-      if (tabIndex !== -1) {
-        activeTabRef.current = savedTab
-        setActiveTab(savedTab)
-        setActivatedTabs(new Set(["for-you", savedTab]))
-        sessionStorage.removeItem("feedActiveTab")
-        requestAnimationFrame(() => {
-          if (outerRef.current) {
-            outerRef.current.scrollLeft = tabIndex * outerRef.current.clientWidth
-          }
-        })
-      }
-    }
+    if (savedTab) sessionStorage.removeItem("feedActiveTab")
+    const savedIndex = savedTab ? TABS.findIndex((t) => t.id === savedTab) : -1
+    // The default tab (For You) is not the first pager page since Following
+    // sits left of it, so the pager always needs an instant alignment on
+    // mount — to the restored tab if there is one, otherwise the default.
+    selectTabRef.current(savedIndex !== -1 ? savedIndex : DEFAULT_TAB_INDEX, {
+      behavior: "instant",
+    })
   }, [router])
 
   // Align the active tab: first tab snaps left, last tab snaps right, middle tabs center.
   useEffect(() => {
-    const button = tabRefs.current[activeTab]
+    const button = tabRefs.current[activeIndex]
     if (!button) return
     const strip = tabStripRef.current
-    const tabIndex = TABS.findIndex((t) => t.id === activeTab)
     const behavior: ScrollBehavior = isFirstTabCenter.current ? "instant" : "smooth"
     isFirstTabCenter.current = false
 
-    if (tabIndex === 0) {
+    if (activeIndex === 0) {
       strip?.scrollTo({ left: 0, behavior })
-    } else if (tabIndex === TABS.length - 1) {
+    } else if (activeIndex === TABS.length - 1) {
       strip?.scrollTo({ left: strip.scrollWidth, behavior })
     } else {
       button.scrollIntoView({ behavior, inline: "center", block: "nearest" })
     }
-  }, [activeTab])
-
-  // Real-time indicator + state update on outer feed scroll
-  useEffect(() => {
-    const el = outerRef.current
-    if (!el) return
-
-    function updateIndicator() {
-      if (!el || !indicatorRef.current) return
-      const progress   = el.scrollLeft / el.clientWidth
-      const leftIndex  = Math.max(0,              Math.floor(progress))
-      const rightIndex = Math.min(TABS.length - 1, Math.ceil(progress))
-      const fraction   = progress - Math.floor(progress)
-
-      const leftBtn  = tabRefs.current[TABS[leftIndex].id]
-      const rightBtn = tabRefs.current[TABS[rightIndex].id]
-      if (!leftBtn || !rightBtn) return
-
-      const leftX  = leftBtn.offsetLeft  + leftBtn.offsetWidth  / 2 - HALF_IND
-      const rightX = rightBtn.offsetLeft + rightBtn.offsetWidth / 2 - HALF_IND
-      const x      = leftX + (rightX - leftX) * fraction
-
-      const [lr, lg, lb] = TABS[leftIndex].rgb as [number, number, number]
-      const [rr, rg, rb] = TABS[rightIndex].rgb as [number, number, number]
-      const r = Math.round(lr + (rr - lr) * fraction)
-      const g = Math.round(lg + (rg - lg) * fraction)
-      const b = Math.round(lb + (rb - lb) * fraction)
-
-      indicatorRef.current.style.transition = "none"
-      indicatorRef.current.style.left = `${x}px`
-      indicatorRef.current.style.backgroundColor = `rgb(${r},${g},${b})`
-    }
-
-    function onSettled() {
-      if (!el) return
-      // Restore a brief transition so the final snap feels smooth
-      if (indicatorRef.current) {
-        indicatorRef.current.style.transition =
-          "left 0.15s ease-out, background-color 0.15s ease-out"
-      }
-      const index = Math.round(el.scrollLeft / el.clientWidth)
-      const tab = TABS[index]
-      if (!tab || tab.id === activeTabRef.current) return
-      activeTabRef.current = tab.id
-      setActiveTab(tab.id)
-      setActivatedTabs((prev) => new Set([...prev, tab.id]))
-    }
-
-    // Set initial indicator position
-    updateIndicator()
-
-    el.addEventListener("scroll", updateIndicator, { passive: true })
-
-    if ("onscrollend" in el) {
-      el.addEventListener("scrollend", onSettled, { passive: true })
-      return () => {
-        el.removeEventListener("scroll", updateIndicator)
-        el.removeEventListener("scrollend", onSettled)
-      }
-    }
-
-    // Fallback: 50ms debounce for older browsers.
-    // Cast needed: lib.dom assumes scrollend always exists, narrowing el to never here.
-    const legacyEl = el as HTMLDivElement
-    let timer: ReturnType<typeof setTimeout>
-    function onScroll() {
-      clearTimeout(timer)
-      timer = setTimeout(onSettled, 50)
-    }
-    legacyEl.addEventListener("scroll", onScroll, { passive: true })
-    return () => {
-      legacyEl.removeEventListener("scroll", updateIndicator)
-      legacyEl.removeEventListener("scroll", onScroll)
-      clearTimeout(timer)
-    }
-  }, [])
-
-  function handleTabClick(index: number) {
-    const tab = TABS[index]
-    activeTabRef.current = tab.id
-    setActiveTab(tab.id)
-    setActivatedTabs((prev) => new Set([...prev, tab.id]))
-    outerRef.current?.scrollTo({
-      left: index * (outerRef.current.clientWidth),
-      behavior: "smooth",
-    })
-  }
+  }, [activeIndex, tabRefs])
 
   return (
     <PhoneFrame>
-      {/* Tab bar — single sliding indicator, TikTok style */}
-      <div className="absolute top-0 left-0 right-0 z-20">
-        <div className="relative bg-surface-0/90 backdrop-blur-md">
-          {/* Search — top-right, TikTok style */}
-          <button
-            onClick={() => router.push("/search")}
-            className="absolute right-1 top-0 h-[44px] w-10 flex items-center justify-center text-ink-dim hover:text-ink transition-colors duration-150 cursor-pointer z-20"
-            aria-label="Search"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-          </button>
-          {/* Scrollable tab strip */}
-          <div
-            ref={tabStripRef}
-            className="relative flex overflow-x-scroll snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [scrollbar-width:none] h-[44px] items-center px-[calc(50%-40px)]"
-            // Labels fade out at both edges instead of hard-clipping; the wider
-            // right ramp keeps them legible until they tuck under the search button.
-            style={{
-              maskImage:
-                "linear-gradient(to right, transparent 0, black 32px, black calc(100% - 88px), transparent calc(100% - 36px))",
-              WebkitMaskImage:
-                "linear-gradient(to right, transparent 0, black 32px, black calc(100% - 88px), transparent calc(100% - 36px))",
-            }}
-          >
-            {TABS.map((tab, i) => {
-              const isActive = activeTab === tab.id
-              return (
-                <button
-                  key={tab.id}
-                  ref={(el) => { tabRefs.current[tab.id] = el }}
-                  onClick={() => handleTabClick(i)}
-                  className={`snap-center shrink-0 px-4 h-[44px] flex items-center justify-center cursor-pointer transition-all duration-200 ${
-                    isActive
-                      ? "text-ink scale-100 font-semibold"
-                      : "text-ink-muted scale-90 font-medium"
-                  }`}
-                >
-                  <span className="text-sm whitespace-nowrap">{tab.label}</span>
-                </button>
-              )
-            })}
-            {/* Single sliding indicator — positioned in scroll-content space */}
-            <div
-              ref={indicatorRef}
-              className="absolute bottom-0 h-[4px] w-4 rounded-full pointer-events-none"
-              style={{ left: 0, backgroundColor: "rgb(239,233,222)" }}
-            />
-          </div>
-        </div>
-      </div>
+      <FeedHeader
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabClick={selectTab}
+        onSearch={() => router.push("/search")}
+        tabRefs={tabRefs}
+        indicatorRef={indicatorRef}
+        tabStripRef={tabStripRef}
+      />
 
       {/* Horizontal strip — one full-width page per tab */}
       <div
-        ref={outerRef}
+        ref={pagerRef}
         className="h-full flex flex-row overflow-x-scroll overflow-y-hidden snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
       >
-        {TABS.map((tab) => (
+        {TABS.map((tab, i) => (
           <TabPage
             key={tab.id}
             tab={tab}
             slugs={slugs}
-            isActivated={activatedTabs.has(tab.id)}
+            isActivated={activatedIndices.has(i)}
           />
         ))}
       </div>

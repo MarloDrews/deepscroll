@@ -397,6 +397,7 @@ class PostOut(BaseModel):
     author_id: int | None = None
     author_username: str | None = None
     author_is_verified: int | None = None
+    author_avatar_url: str | None = None
     status: str = "published"
     created_at: datetime | None = None
     is_user_content: bool = False

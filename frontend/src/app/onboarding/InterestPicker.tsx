@@ -183,7 +183,16 @@ export default function InterestPicker() {
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-6 pb-4 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {loading ? (
-          <p className="text-ink-faint text-sm mt-4">Loading...</p>
+          // Loading: pulsing pill placeholders where the chips will appear.
+          <div className="flex flex-wrap gap-2 mt-4">
+            {Array.from({ length: 12 }, (_, i) => (
+              <div
+                key={i}
+                className="stage-pulse rounded-full bg-white/[0.04] h-9"
+                style={{ width: 64 + (i % 4) * 24 }}
+              />
+            ))}
+          </div>
         ) : (
           <>
             {categorySections.map((section, index) => (

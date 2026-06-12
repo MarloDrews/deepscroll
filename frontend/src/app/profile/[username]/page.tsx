@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import useSWR from "swr"
@@ -8,7 +8,9 @@ import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
 import { getSavedPostIds } from "@/app/lib/savedPosts"
 import { getLikedPostIds } from "@/app/lib/likedPosts"
+import { useSwipeTabs } from "@/app/lib/useSwipeTabs"
 import BottomNav from "@/app/components/BottomNav"
+import SegmentedTabs from "@/app/components/SegmentedTabs"
 import VerifiedBadge from "@/components/VerifiedBadge"
 import PostRow from "@/components/PostRow"
 import Spinner from "@/components/Spinner"
@@ -48,6 +50,8 @@ interface Post {
 
 type Tab = "posts" | "saved" | "liked"
 
+const TAB_ORDER: Tab[] = ["posts", "saved", "liked"]
+
 export default function PublicProfilePage() {
   const params = useParams()
   const username = params.username as string
@@ -56,10 +60,30 @@ export default function PublicProfilePage() {
 
   const [savedPosts, setSavedPosts] = useState<Post[] | null>(null)
   const [likedPosts, setLikedPosts] = useState<Post[] | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>("posts")
   const [followLoading, setFollowLoading] = useState(false)
   const [listOpen, setListOpen] = useState<"followers" | "following" | null>(null)
   const [listUsers, setListUsers] = useState<ListUser[] | null>(null)
+
+  // Swipeable Posts/Saved/Liked pager; the lazy saved/liked fetch effects
+  // below key on the derived activeTab, so they fire on swipe-settle the
+  // same way they fired on tab click.
+  const { activeIndex, pagerRef, indicatorRef, tabRefs, selectTab } = useSwipeTabs({ count: 3 })
+  const activeTab = TAB_ORDER[activeIndex]
+
+  // The pager's natural height is its tallest page, which would leave dead
+  // scroll space under short tabs; clamp a wrapper to the active page's
+  // measured height instead (ResizeObserver catches async post loads).
+  const pageRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [pagerHeight, setPagerHeight] = useState<number | undefined>(undefined)
+  useEffect(() => {
+    const page = pageRefs.current[activeIndex]
+    if (!page) return
+    const measure = () => setPagerHeight(page.offsetHeight)
+    measure()
+    const resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(page)
+    return () => resizeObserver.disconnect()
+  }, [activeIndex])
 
   const isOwnProfile = user?.username === username
 
@@ -131,8 +155,6 @@ export default function PublicProfilePage() {
     }
   }
 
-  const canSeePrivateContent = isOwnProfile || profile?.follow_status === "accepted" || !profile?.is_private
-
   if (error) {
     return (
       <div className="h-[100dvh] bg-surface-0 flex justify-center">
@@ -155,7 +177,10 @@ export default function PublicProfilePage() {
 
   return (
     <div className="h-[100dvh] bg-surface-0 flex justify-center">
-      <div className="w-full max-w-[430px] h-[100dvh] relative overflow-y-auto pb-20 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+      <div className="w-full max-w-[430px] h-[100dvh] relative">
+        {/* Scrolling moved to an inner div so the floating dock and the
+            followers sheet stay pinned while the content scrolls. */}
+        <div className="h-full overflow-y-auto pb-24 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
 
         {/* Header */}
         <div className="flex items-center px-4 pt-4 pb-2">
@@ -264,32 +289,49 @@ export default function PublicProfilePage() {
           )}
         </div>
 
-        {/* Tab bar */}
-        <div className="flex border-b border-edge mt-2">
-          {(["posts", "saved", "liked"] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2.5 text-sm font-medium capitalize cursor-pointer transition-colors duration-150 ${
-                activeTab === tab
-                  ? "text-ink border-b-2 border-lamp"
-                  : "text-ink-muted"
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div>
+        {/* Own profile: swipeable Posts/Saved/Liked pager. Foreign profile:
+            Posts only — Saved and Liked are private, so the switcher and
+            the swipe gesture have no place there. */}
+        {isOwnProfile ? (
+          <>
+            {/* Tab bar — frosted segmented capsule with sliding indicator */}
+            <SegmentedTabs
+              className="mx-3 mt-2"
+              labels={["Posts", "Saved", "Liked"]}
+              activeIndex={activeIndex}
+              onSelect={selectTab}
+              tabRefs={tabRefs}
+              indicatorRef={indicatorRef}
+            />
 
-        {/* Tab content */}
-        <div className="px-4 pt-3">
-          {activeTab === "posts" && <PostsTab posts={posts} />}
-          {activeTab === "saved" && (
-            <PrivateTabContent canSee={canSeePrivateContent} isOwnProfile={isOwnProfile} posts={savedPosts} lockedMessage="Follow to see saved posts" privateMessage="Saved posts are private" />
-          )}
-          {activeTab === "liked" && (
-            <PrivateTabContent canSee={canSeePrivateContent} isOwnProfile={isOwnProfile} posts={likedPosts} lockedMessage="Follow to see liked posts" privateMessage="Liked posts are private" />
-          )}
+            {/* Tab content — swipeable pager inside the vertical scroller;
+                the wrapper height-clamps to the active page so short tabs
+                don't inherit the tallest page's scroll length. */}
+            <div
+              className="overflow-hidden transition-[height] duration-200"
+              style={{ height: pagerHeight }}
+            >
+              <div
+                ref={pagerRef}
+                className="flex items-start overflow-x-scroll overflow-y-hidden snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+              >
+                <div ref={(el) => { pageRefs.current[0] = el }} className="w-full shrink-0 snap-start px-4 pt-3 min-h-[160px]">
+                  <PostsTab posts={posts} />
+                </div>
+                <div ref={(el) => { pageRefs.current[1] = el }} className="w-full shrink-0 snap-start px-4 pt-3 min-h-[160px]">
+                  <PostList posts={savedPosts} emptyMessage="Nothing here yet." />
+                </div>
+                <div ref={(el) => { pageRefs.current[2] = el }} className="w-full shrink-0 snap-start px-4 pt-3 min-h-[160px]">
+                  <PostList posts={likedPosts} emptyMessage="Nothing here yet." />
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="px-4 pt-3 min-h-[160px]">
+            <PostsTab posts={posts} />
+          </div>
+        )}
         </div>
 
         {/* Followers / Following bottom sheet */}
@@ -297,10 +339,10 @@ export default function PublicProfilePage() {
           <div className="fixed inset-0 z-40 flex justify-center" onClick={() => setListOpen(null)}>
             <div className="absolute inset-0 bg-surface-0/70" />
             <div
-              className="absolute bottom-0 w-full max-w-[430px] max-h-[70dvh] bg-surface-1 border-t border-edge rounded-t-sheet flex flex-col"
+              className="stage-sheet-in absolute inset-x-3 bottom-3 max-w-[406px] mx-auto max-h-[70dvh] rounded-3xl bg-surface-1/95 backdrop-blur-xl flex flex-col overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-edge">
+              <div className="flex items-center justify-between px-5 pt-4 pb-2">
                 <p className="text-ink text-sm font-semibold capitalize">{listOpen}</p>
                 <button onClick={() => setListOpen(null)} className="btn-icon" aria-label="Close">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -323,7 +365,7 @@ export default function PublicProfilePage() {
                       key={u.username}
                       href={`/profile/${u.username}`}
                       onClick={() => setListOpen(null)}
-                      className="flex items-center gap-3 px-2 py-2 rounded-field hover:bg-surface-2 transition-colors duration-150"
+                      className="flex items-center gap-3 px-2 py-2 rounded-2xl hover:bg-white/[0.06] transition-colors duration-150"
                     >
                       <Avatar username={u.username} avatarUrl={u.avatar_url} size={40} verified={u.is_verified} />
                       <span className="flex items-center gap-1.5 text-ink text-sm font-medium">
@@ -368,24 +410,3 @@ function PostsTab({ posts }: { posts: Post[] | null }) {
   return <PostList posts={posts} emptyMessage="No posts yet." />
 }
 
-function PrivateTabContent({
-  canSee,
-  isOwnProfile,
-  posts,
-  lockedMessage,
-  privateMessage,
-}: {
-  canSee: boolean
-  isOwnProfile: boolean
-  posts: Post[] | null
-  lockedMessage: string
-  privateMessage: string
-}) {
-  if (!canSee) {
-    return <p className="text-ink-muted text-sm text-center pt-8">{lockedMessage}</p>
-  }
-  if (!isOwnProfile) {
-    return <p className="text-ink-muted text-sm text-center pt-8">{privateMessage}</p>
-  }
-  return <PostList posts={posts} emptyMessage="Nothing here yet." />
-}

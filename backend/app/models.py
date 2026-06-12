@@ -48,6 +48,10 @@ class Post(Base):
     def author_is_verified(self):
         return bool(self.author.is_verified) if self.author else None
 
+    @property
+    def author_avatar_url(self):
+        return self.author.avatar_url if self.author else None
+
 
 class Event(Base):
     __tablename__ = "events"

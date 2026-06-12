@@ -7,12 +7,12 @@ import { formatStyle } from "@/lib/formats"
 import { fcStr, type Post } from "@/types/post"
 import SectionRenderer from "@/components/SectionRenderer"
 import CommentsSection, { type Comment } from "@/app/components/CommentsSection"
+import { SlabAccent, SlabGlow } from "@/app/components/PostCard"
 import VerifiedBadge from "@/components/VerifiedBadge"
-import Toast from "@/app/components/Toast"
+import { ArrowUpIcon, HeartIcon } from "@/app/components/icons"
 import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
 import { queueEvent, hasPendingLike, cancelPendingLike } from "@/app/lib/eventQueue"
-import { savePost, unsavePost, isPostSaved } from "@/app/lib/savedPosts"
 import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCount, isLikeSent, markLikeSent, unmarkLikeSent } from "@/app/lib/likedPosts"
 import { updatePostInFeedCaches } from "@/app/lib/swr"
 
@@ -32,9 +32,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [likesCount, setLikesCount] = useState(() =>
     getCachedLikeCount(Number(id)) ?? 0
   )
-  const [saved, setSaved] = useState(false)
-  const [animatingSave, setAnimatingSave] = useState(false)
-  const [toastVisible, setToastVisible] = useState(false)
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const commentsTopRef     = useRef<HTMLDivElement>(null)
@@ -59,7 +56,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           return
         }
         setPost(data)
-        setSaved(isPostSaved(data.id))
         if (!likeInteractedRef.current) {
           setLikesCount(getCachedLikeCount(data.id) ?? data.like_count)
         }
@@ -143,18 +139,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  function handleSaveToggle() {
-    if (!post) return
-    const next = !saved
-    setSaved(next)
-    if (next) {
-      savePost(post.id)
-      setAnimatingSave(true)
-    } else {
-      unsavePost(post.id)
-    }
-  }
-
   async function handleDelete(commentId: number) {
     if (deletingId !== null) return
     setDeletingId(commentId)
@@ -192,22 +176,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     if (!body) return
     setStickyDraft("")
     await handlePostComment(body)
-  }
-
-  async function handleShare() {
-    if (!post) return
-    const url = window.location.origin + "/post/" + post.id
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: post.title, text: fcStr(post.feed_card, "essence"), url })
-      } else {
-        await navigator.clipboard.writeText(url)
-        setToastVisible(true)
-        setTimeout(() => setToastVisible(false), 2000)
-      }
-    } catch {
-      // User cancelled share or clipboard failed
-    }
   }
 
   const style = post ? formatStyle(post.format) : null
@@ -259,8 +227,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             </svg>
           </button>
 
-          <Toast message="Link copied!" visible={toastVisible} />
-
           {/* Scrollable content */}
           <div
             ref={scrollContainerRef}
@@ -268,70 +234,81 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           >
             {post && style ? (
               <>
-                {/* Header: cover + title + author */}
-                <div className="px-6 pb-2">
-                  {/* Format badge */}
-                  <div className="flex items-center gap-2 mb-5">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${style.dot}`} />
-                    <span className={`label-caps ${style.text}`}>
-                      {style.badge}
-                    </span>
-                  </div>
-
-                  {/* Attribution */}
-                  <div className="flex items-center gap-1 mb-4">
-                    {post.is_user_content && post.author_username ? (
-                      <span className="flex items-center gap-1 text-ink-muted text-xs">
-                        Submitted by{" "}
-                        <Link href={`/profile/${post.author_username}`} className="hover:text-ink-body transition-colors">
-                          @{post.author_username}
-                        </Link>
-                        {post.author_is_verified != null && post.author_is_verified > 0 && <VerifiedBadge size={16} level={post.author_is_verified} />}
+                {/* Header — frosted slab inset from the edges, with the same
+                    format glow as the feed card behind it. The glow box stays
+                    at container width (a wider box would make the vertical
+                    scroller horizontally scrollable) and bleeds only a little
+                    vertically, so the floating back circle keeps a near-black
+                    backdrop. */}
+                <div className="relative">
+                  <SlabGlow className="absolute inset-x-0 -inset-y-14" />
+                  <div className="mx-3 mb-3 card relative overflow-hidden px-5 py-6">
+                    <SlabAccent />
+                    {/* Format marker — dot and label carry the accent */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-(--accent)" />
+                      <span className="text-xs font-mono lowercase tracking-widest text-(--accent)">
+                        {style.badge.toLowerCase()}
                       </span>
-                    ) : !post.is_user_content ? (
-                      <>
-                        <span className="text-ink-muted text-xs">Deepscroll</span>
-                        <VerifiedBadge size={12} variant="official" />
-                      </>
-                    ) : null}
-                  </div>
-
-                  {/* Books cover */}
-                  {post.format === "books" && fcStr(post.feed_card, "cover_url") && (
-                    <div className="flex justify-center mb-5">
-                      <div className="rounded-lg overflow-hidden w-32 h-48 bg-surface-2 border border-edge">
-                        <img
-                          src={fcStr(post.feed_card, "cover_url")}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
-                        />
-                      </div>
                     </div>
-                  )}
 
-                  {/* Title */}
-                  <h1 className="font-serif text-3xl font-medium text-ink leading-snug mb-1">
-                    {post.title}
-                  </h1>
+                    {/* Books cover */}
+                    {post.format === "books" && fcStr(post.feed_card, "cover_url") && (
+                      <div className="flex justify-center mb-5">
+                        <div className="rounded-xl overflow-hidden w-32 h-48 bg-white/[0.06]">
+                          <img
+                            src={fcStr(post.feed_card, "cover_url")}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
+                          />
+                        </div>
+                      </div>
+                    )}
 
-                  {/* Author (Books) */}
-                  {post.format === "books" && fcStr(post.feed_card, "author") && (
-                    <p className="text-(--accent) text-sm font-medium mb-4">
-                      {fcStr(post.feed_card, "author")}
-                    </p>
-                  )}
+                    {/* Title */}
+                    <h1 className="font-serif text-3xl font-medium text-ink leading-snug mb-1">
+                      {post.title}
+                    </h1>
 
-                  {/* Interest tags */}
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {post.interests.map((name) => (
-                      <span
-                        key={name}
-                        className="px-3 py-1 rounded-full text-xs bg-surface-2 border border-edge text-ink-dim"
-                      >
-                        {name}
-                      </span>
-                    ))}
+                    {/* Author (Books) */}
+                    {post.format === "books" && fcStr(post.feed_card, "author") && (
+                      <p className="text-ink-dim text-sm font-medium mb-3">
+                        {fcStr(post.feed_card, "author")}
+                      </p>
+                    )}
+
+                    {/* Attribution */}
+                    <div className="flex items-center gap-1 mb-4">
+                      {post.is_user_content && post.author_username ? (
+                        <span className="flex items-center gap-1 text-ink-muted text-xs">
+                          Submitted by{" "}
+                          <Link href={`/profile/${post.author_username}`} className="hover:text-ink-body transition-colors">
+                            @{post.author_username}
+                          </Link>
+                          {post.author_is_verified != null && post.author_is_verified > 0 && <VerifiedBadge size={16} level={post.author_is_verified} />}
+                        </span>
+                      ) : !post.is_user_content ? (
+                        <>
+                          <span className="text-ink-muted text-xs">Deepscroll</span>
+                          <VerifiedBadge size={12} variant="official" />
+                        </>
+                      ) : null}
+                    </div>
+
+                    {/* Interest tags as floating pills */}
+                    {post.interests.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {post.interests.map((name) => (
+                          <span
+                            key={name}
+                            className="px-3 py-1 rounded-full text-xs bg-white/[0.06] text-ink-dim"
+                          >
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -343,7 +320,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 />
 
                 {/* Comments list */}
-                <div ref={commentsTopRef} className="px-6 pt-4">
+                <div ref={commentsTopRef} className="px-6">
                   <CommentsSection
                     comments={comments}
                     currentUsername={user?.username}
@@ -353,124 +330,77 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
               </>
             ) : notFound ? (
-              <div className="flex flex-col items-center justify-center h-full gap-3 px-8 text-center">
-                <p className="text-ink font-serif font-medium text-lg">Post not found</p>
-                <p className="text-ink-muted text-sm">It may have been removed or is awaiting review.</p>
-                <button onClick={close} className="text-ink-dim text-sm underline cursor-pointer">
-                  Go back
-                </button>
+              <div className="flex items-center justify-center h-full px-6">
+                <div className="card px-8 py-10 text-center max-w-xs flex flex-col items-center gap-3">
+                  <p className="text-ink font-serif font-medium text-lg">Post not found</p>
+                  <p className="text-ink-muted text-sm">It may have been removed or is awaiting review.</p>
+                  <button onClick={close} className="btn btn-ghost px-5 py-2">
+                    Go back
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full">
-                <span className="text-ink-faint text-sm">Loading...</span>
+              // Loading: pulsing slabs where the header and body will appear.
+              <div className="h-full flex flex-col px-3 gap-3">
+                <div className="stage-pulse card h-56 w-full" />
+                <div className="stage-pulse card h-28 w-3/4" />
               </div>
             )}
           </div>
 
-          {/* Sticky comment bar — sits above bottom nav (z-40 > nav z-30).
-              Only needs safe-area clearance for the iOS home indicator. */}
+          {/* Floating pill comment bar — detached from every edge, sits above
+              the bottom nav (page z-40 > nav z-30); safe-area aware. */}
           <div
-            className="flex-none border-t border-edge bg-surface-overlay backdrop-blur-md"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
+            className="absolute left-3 right-3 z-10 rounded-full backdrop-blur-xl bg-white/[0.06] px-2 py-1.5 flex items-center gap-1.5"
+            style={{ bottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
           >
-            <div className="flex items-center gap-2 px-3 py-2">
-              <div className="flex-1 min-w-0">
-                {user ? (
-                  <form onSubmit={handleStickySubmit} className="flex items-center gap-2">
-                    <input
-                      ref={stickyInputRef}
-                      value={stickyDraft}
-                      onChange={(e) => setStickyDraft(e.target.value)}
-                      placeholder="Add a comment..."
-                      maxLength={2000}
-                      className="field rounded-full text-sm py-2"
-                    />
-                    <button
-                      type="submit"
-                      disabled={!stickyDraft.trim() || posting}
-                      aria-label="Post comment"
-                      className={`btn-icon shrink-0${stickyDraft.trim() && !posting ? " btn-icon-active" : ""}`}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                        <line x1="22" y1="2" x2="11" y2="13" />
-                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                      </svg>
-                    </button>
-                  </form>
-                ) : (
-                  <p className="text-sm text-ink-muted py-1">
-                    <Link
-                      href="/login"
-                      className="text-ink-dim hover:text-lamp underline transition-colors"
-                    >
-                      Sign in
-                    </Link>{" "}
-                    to comment
-                  </p>
-                )}
-              </div>
-
-              {/* Like + save + share row */}
-              {post && (
-                <div className="flex items-center gap-1">
+            <div className="flex-1 min-w-0">
+              {user ? (
+                <form onSubmit={handleStickySubmit} className="flex items-center gap-1.5">
+                  <input
+                    ref={stickyInputRef}
+                    value={stickyDraft}
+                    onChange={(e) => setStickyDraft(e.target.value)}
+                    placeholder="Add a comment..."
+                    maxLength={2000}
+                    className="flex-1 min-w-0 h-11 rounded-full bg-white/[0.06] px-4 text-sm text-ink placeholder:text-ink-muted"
+                  />
                   <button
-                    onClick={handleToggleLike}
-                    className={`btn-action${liked ? " btn-action-active" : ""}`}
-                    aria-label={liked ? "Unlike" : "Like"}
+                    type="submit"
+                    disabled={!stickyDraft.trim() || posting}
+                    aria-label="Post comment"
+                    className={`w-11 h-11 shrink-0 rounded-full bg-white/[0.10] flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-95 disabled:opacity-45 disabled:cursor-default ${
+                      stickyDraft.trim() && !posting ? "text-ink" : "text-ink-muted"
+                    }`}
                   >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill={liked ? "currentColor" : "none"}
-                      stroke="currentColor"
-                      strokeWidth={liked ? 0 : 2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="w-5 h-5"
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
+                    <ArrowUpIcon className="w-4 h-4" />
                   </button>
-
-                  <button
-                    onClick={handleSaveToggle}
-                    className={`btn-action${saved ? " btn-action-active" : ""}`}
-                    aria-label={saved ? "Unsave" : "Save"}
+                </form>
+              ) : (
+                <p className="text-sm text-ink-muted px-3 py-2 whitespace-nowrap overflow-hidden text-ellipsis">
+                  <Link
+                    href="/login"
+                    className="text-ink-dim hover:text-lamp underline transition-colors"
                   >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill={saved ? "currentColor" : "none"}
-                      stroke="currentColor"
-                      strokeWidth={saved ? 0 : 2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={`w-5 h-5 ${animatingSave ? "heart-pop" : ""}`}
-                      onAnimationEnd={() => setAnimatingSave(false)}
-                    >
-                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </button>
-
-                  <button
-                    onClick={handleShare}
-                    className="btn-action"
-                    aria-label="Share"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="w-5 h-5"
-                    >
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                    </svg>
-                  </button>
-                </div>
+                    Sign in
+                  </Link>{" "}
+                  to comment
+                </p>
               )}
             </div>
+
+            {/* Like circle — the bar carries only comment + like */}
+            {post && (
+              <button
+                onClick={handleToggleLike}
+                aria-label={liked ? "Unlike" : "Like"}
+                className={`w-11 h-11 shrink-0 rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-95 ${
+                  liked ? "bg-like/10 text-like" : "bg-white/[0.06] text-ink-dim"
+                }`}
+              >
+                <HeartIcon filled={liked} className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
       </div>

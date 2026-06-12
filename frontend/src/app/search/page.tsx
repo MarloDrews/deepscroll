@@ -8,10 +8,11 @@ import { fcStr } from "@/types/post"
 import { FORMAT_IDS, FORMAT_STYLES, type FormatId } from "@/lib/formats"
 import { apiFetch } from "@/app/lib/api"
 import { useAuth } from "@/app/lib/auth"
+import { useSwipeTabs } from "@/app/lib/useSwipeTabs"
 import BottomNav from "@/app/components/BottomNav"
+import SegmentedTabs from "@/app/components/SegmentedTabs"
 import VerifiedBadge from "@/components/VerifiedBadge"
 import Avatar from "@/components/Avatar"
-import Spinner from "@/components/Spinner"
 
 const FORMAT_CHIPS: { label: string; value: FormatId | "" }[] = [
   { label: "All", value: "" },
@@ -19,7 +20,6 @@ const FORMAT_CHIPS: { label: string; value: FormatId | "" }[] = [
 ]
 
 type FormatValue = FormatId | ""
-type Scope = "posts" | "accounts"
 
 interface UserResult {
   username: string
@@ -78,7 +78,7 @@ function UserRow({ user, loggedIn }: { user: UserResult; loggedIn: boolean }) {
   return (
     <button
       onClick={() => router.push(`/profile/${user.username}`)}
-      className="w-full text-left card px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-surface-2 transition-colors duration-150"
+      className="w-full text-left card px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-white/[0.07] transition-colors duration-150"
     >
       <Avatar username={user.username} avatarUrl={user.avatar_url} size={44} verified={user.is_verified} />
       <div className="flex-1 min-w-0">
@@ -110,12 +110,16 @@ export default function SearchPage() {
   const router = useRouter()
   const { user: authUser } = useAuth()
   const [query, setQuery] = useState("")
-  const [scope, setScope] = useState<Scope>("posts")
   const [formatFilter, setFormatFilter] = useState<FormatValue>("")
   const [results, setResults] = useState<Post[] | null>(null)
   const [userResults, setUserResults] = useState<UserResult[] | null>(null)
   const [loading, setLoading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Posts/Accounts is no longer a pre-search mode: one search fetches both,
+  // and this swipeable switcher just flips which fetched list is visible.
+  const { activeIndex, pagerRef, indicatorRef, tabRefs, selectTab, refreshIndicator } =
+    useSwipeTabs({ count: 2 })
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -133,35 +137,57 @@ export default function SearchPage() {
     setLoading(true)
     const timer = setTimeout(async () => {
       try {
-        if (scope === "posts") {
-          const params = new URLSearchParams({ q: trimmed })
-          if (formatFilter) params.set("format", formatFilter)
-          const res = await apiFetch(`/api/search?${params}`)
-          const data: Post[] = await res.json()
-          setResults(data)
-        } else {
-          const res = await apiFetch(`/api/search/users?${new URLSearchParams({ q: trimmed })}`)
-          const data: UserResult[] = await res.json()
-          setUserResults(data)
-        }
+        // Both endpoints in parallel — the backend has no combined search,
+        // and the two routes are rate-limited independently.
+        const params = new URLSearchParams({ q: trimmed })
+        if (formatFilter) params.set("format", formatFilter)
+        const [postsRes, usersRes] = await Promise.all([
+          apiFetch(`/api/search?${params}`),
+          apiFetch(`/api/search/users?${new URLSearchParams({ q: trimmed })}`),
+        ])
+        setResults((await postsRes.json()) as Post[])
+        setUserResults((await usersRes.json()) as UserResult[])
       } finally {
         setLoading(false)
       }
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [query, formatFilter, scope])
+  }, [query, formatFilter])
 
   const hasQuery = !!query.trim()
-  const emptyPosts = scope === "posts" && results !== null && results.length === 0
-  const emptyUsers = scope === "accounts" && userResults !== null && userResults.length === 0
+
+  // The capsule only mounts once a query exists, after the hook's initial
+  // measurement ran — ask it to re-measure so the indicator appears.
+  useEffect(() => {
+    if (hasQuery) refreshIndicator()
+  }, [hasQuery, refreshIndicator])
+
+  const emptyPosts = results !== null && results.length === 0
+  const emptyUsers = userResults !== null && userResults.length === 0
+
+  // Loading and idle states render identically on both pager pages.
+  const loadingSlabs = (
+    <div className="flex flex-col gap-2 pt-2">
+      <div className="stage-pulse card h-20 w-full" />
+      <div className="stage-pulse card h-20 w-full" />
+      <div className="stage-pulse card h-20 w-full" />
+    </div>
+  )
+  const idleMessage = (
+    <div className="flex flex-col items-center justify-center pt-20 text-center px-6">
+      <p className="text-ink-muted text-sm">Search posts, books, people…</p>
+    </div>
+  )
+  const pageClass =
+    "w-full shrink-0 snap-start h-full overflow-y-auto overscroll-y-contain px-3 pb-24 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
 
   return (
     <div className="h-[100dvh] bg-surface-0 flex justify-center">
-      <div className="w-full max-w-[430px] h-[100dvh] relative">
+      <div className="w-full max-w-[430px] h-[100dvh] relative flex flex-col">
 
-        {/* Top bar: back + search input */}
-        <div className="absolute top-0 left-0 right-0 z-20 bg-surface-0 px-3 pt-3 pb-2">
+        {/* Top bar: back + search input + post-search switcher */}
+        <div className="shrink-0 z-20 bg-surface-0 px-3 pt-3 pb-2">
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.back()}
@@ -184,8 +210,8 @@ export default function SearchPage() {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={scope === "posts" ? "Search posts, books, questions…" : "Search accounts…"}
-                className="field text-sm pl-9 pr-9 py-2.5"
+                placeholder="Search posts, books, people…"
+                className="field rounded-full text-sm pl-9 pr-9 py-2.5"
               />
               {query && (
                 <button
@@ -201,23 +227,21 @@ export default function SearchPage() {
             </div>
           </div>
 
-          {/* Scope toggle: Posts | Accounts */}
-          <div className="flex gap-2 mt-2">
-            {(["posts", "accounts"] as Scope[]).map((s) => (
-              <button
-                key={s}
-                onClick={() => setScope(s)}
-                className={`chip flex-1 justify-center py-1.5 text-xs font-semibold capitalize ${
-                  scope === s ? "chip-on" : "chip-off"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+          {/* Posts | Accounts — appears after a query exists and filters the
+              already-fetched results, swipeable like the result pager. */}
+          {hasQuery && (
+            <SegmentedTabs
+              className="mt-2"
+              labels={["Posts", "Accounts"]}
+              activeIndex={activeIndex}
+              onSelect={selectTab}
+              tabRefs={tabRefs}
+              indicatorRef={indicatorRef}
+            />
+          )}
 
-          {/* Format chips (posts scope only) */}
-          {scope === "posts" && (
+          {/* Format chips (refine the posts search server-side) */}
+          {activeIndex === 0 && (
             <div className="flex gap-2 mt-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none] pb-1">
               {FORMAT_CHIPS.map((chip) => {
                 const isActive = formatFilter === chip.value
@@ -229,7 +253,7 @@ export default function SearchPage() {
                     className={`chip shrink-0 px-3 py-1 text-xs ${
                       isActive
                         ? style
-                          ? `bg-surface-3 border-edge-strong ${style.text}`
+                          ? `bg-white/[0.12] ${style.text}`
                           : "chip-on"
                         : "chip-off"
                     }`}
@@ -242,54 +266,64 @@ export default function SearchPage() {
           )}
         </div>
 
-        {/* Results area */}
-        <div className={`absolute inset-0 ${scope === "posts" ? "top-[148px]" : "top-[112px]"} overflow-y-auto pb-14 [&::-webkit-scrollbar]:hidden [scrollbar-width:none] px-3`}>
-          {loading ? (
-            <div className="flex justify-center pt-16">
-              <Spinner />
-            </div>
-          ) : !hasQuery ? (
-            <div className="flex flex-col items-center justify-center pt-20 text-center px-6">
-              <p className="text-ink-muted text-sm">
-                {scope === "posts" ? "Search posts, books, questions…" : "Find people to follow"}
-              </p>
-            </div>
-          ) : emptyPosts || emptyUsers ? (
-            <div className="flex flex-col items-center justify-center pt-20 text-center px-6 gap-2">
-              <p className="text-ink font-serif font-medium text-base">No results for &ldquo;{query}&rdquo;</p>
-              <p className="text-ink-muted text-xs">
-                {scope === "posts" ? "Try a different word or format" : "Try a different username"}
-              </p>
-            </div>
-          ) : scope === "accounts" && userResults !== null ? (
-            <div className="flex flex-col gap-2 pt-2">
-              {userResults.map((u) => (
-                <UserRow key={u.username} user={u} loggedIn={!!authUser} />
-              ))}
-            </div>
-          ) : scope === "posts" && results !== null ? (
-            <div className="flex flex-col gap-2 pt-2">
-              {results.map((post) => (
-                <button
-                  key={post.id}
-                  onClick={() => router.push(`/post/${post.id}`)}
-                  className="w-full text-left card px-4 py-3 cursor-pointer hover:bg-surface-2 transition-colors duration-150"
-                >
-                  <FormatBadge format={post.format} />
-                  <p className="text-ink font-serif font-medium text-[15px] mt-0.5 line-clamp-2">{post.title}</p>
-                  <p className="flex items-center gap-1 text-ink-faint text-xs mt-0.5">
-                    {post.is_user_content && post.author_username ? (
-                      <Link href={`/profile/${post.author_username}`} className="hover:text-ink-dim transition-colors" onClick={(e) => e.stopPropagation()}>
-                        @{post.author_username}
-                      </Link>
-                    ) : "Deepscroll"}
-                    {post.is_user_content && post.author_is_verified != null && post.author_is_verified > 0 && <VerifiedBadge size={14} level={post.author_is_verified} />}
-                  </p>
-                  <Snippet post={post} />
-                </button>
-              ))}
-            </div>
-          ) : null}
+        {/* Results — swipeable pager: Posts | Accounts */}
+        <div
+          ref={pagerRef}
+          className="flex-1 min-h-0 flex overflow-x-scroll overflow-y-hidden snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+        >
+          <div className={pageClass}>
+            {loading ? (
+              loadingSlabs
+            ) : !hasQuery ? (
+              idleMessage
+            ) : emptyPosts ? (
+              <div className="flex flex-col items-center justify-center pt-20 text-center px-6 gap-2">
+                <p className="text-ink font-serif font-medium text-base">No results for &ldquo;{query}&rdquo;</p>
+                <p className="text-ink-muted text-xs">Try a different word or format</p>
+              </div>
+            ) : results !== null ? (
+              <div className="flex flex-col gap-2 pt-2">
+                {results.map((post) => (
+                  <button
+                    key={post.id}
+                    onClick={() => router.push(`/post/${post.id}`)}
+                    className="w-full text-left card px-4 py-3 cursor-pointer hover:bg-white/[0.07] transition-colors duration-150"
+                  >
+                    <FormatBadge format={post.format} />
+                    <p className="text-ink font-serif font-medium text-[15px] mt-0.5 line-clamp-2">{post.title}</p>
+                    <p className="flex items-center gap-1 text-ink-faint text-xs mt-0.5">
+                      {post.is_user_content && post.author_username ? (
+                        <Link href={`/profile/${post.author_username}`} className="hover:text-ink-dim transition-colors" onClick={(e) => e.stopPropagation()}>
+                          @{post.author_username}
+                        </Link>
+                      ) : "Deepscroll"}
+                      {post.is_user_content && post.author_is_verified != null && post.author_is_verified > 0 && <VerifiedBadge size={14} level={post.author_is_verified} />}
+                    </p>
+                    <Snippet post={post} />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          <div className={pageClass}>
+            {loading ? (
+              loadingSlabs
+            ) : !hasQuery ? (
+              idleMessage
+            ) : emptyUsers ? (
+              <div className="flex flex-col items-center justify-center pt-20 text-center px-6 gap-2">
+                <p className="text-ink font-serif font-medium text-base">No results for &ldquo;{query}&rdquo;</p>
+                <p className="text-ink-muted text-xs">Try a different username</p>
+              </div>
+            ) : userResults !== null ? (
+              <div className="flex flex-col gap-2 pt-2">
+                {userResults.map((u) => (
+                  <UserRow key={u.username} user={u} loggedIn={!!authUser} />
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <BottomNav activeTab="search" />

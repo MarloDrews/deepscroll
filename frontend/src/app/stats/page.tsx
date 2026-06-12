@@ -17,7 +17,9 @@ import useSWR from "swr"
 import { useAuth } from "../lib/auth"
 import { apiFetch } from "../lib/api"
 import { getSavedPostIds } from "../lib/savedPosts"
+import { useSwipeTabs } from "../lib/useSwipeTabs"
 import BottomNav from "../components/BottomNav"
+import SegmentedTabs from "../components/SegmentedTabs"
 import { FORMAT_IDS, FORMAT_STYLES } from "@/lib/formats"
 
 // --- Error boundary ---
@@ -52,24 +54,26 @@ const FORMAT_COLORS: Record<string, string> = Object.fromEntries(
   FORMAT_IDS.map((id) => [id, FORMAT_STYLES[id].accent]),
 )
 const FORMATS: string[] = [...FORMAT_IDS]
-const DEFAULT_COLOR = "#6e7f9e"
+const DEFAULT_COLOR = "#7888a8"
 const RANK_COLORS = ["#7c6fff", "#6655d8", "#5040a8", "#3a2e78", "#251d4a"]
 
+// Stage chart chrome: frosted dark tooltip, neutral ink axes, hairline grid.
 const TT = {
   contentStyle: {
-    background: "#0f0f1e",
-    border: "1px solid #2a2a4a",
-    borderRadius: 8,
-    color: "#eceeff",
+    background: "rgba(20,20,20,0.96)",
+    border: "none",
+    borderRadius: 16,
+    boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+    color: "#eeeeee",
     fontSize: 12,
   },
-  labelStyle: { color: "#6e7f9e" },
-  cursor: { fill: "rgba(124,111,255,0.06)" },
+  labelStyle: { color: "#8a8a8a" },
+  cursor: { fill: "rgba(255,255,255,0.04)" },
   wrapperStyle: { zIndex: 50 },
 }
 
-const AXIS = { fill: "#6e7f9e", fontSize: 11 }
-const GRID = { stroke: "#1e1e32", strokeDasharray: "3 3" }
+const AXIS = { fill: "#8a8a8a", fontSize: 11 }
+const GRID = { stroke: "rgba(200,200,200,0.07)", strokeDasharray: "3 3" }
 
 // --- Type definitions ---
 
@@ -147,7 +151,7 @@ function WaffleChart({ data }: { data: { label: string; value: number; color: st
     const n = Math.round((d.value / total) * 100)
     for (let i = 0; i < n; i++) squares.push(d.color)
   }
-  while (squares.length < 100) squares.push(squares[squares.length - 1] ?? "#1e1e32")
+  while (squares.length < 100) squares.push(squares[squares.length - 1] ?? "#222222")
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-10 gap-0.5">
@@ -190,7 +194,7 @@ function CalendarHeatmap({ data }: { data: { period: string; count: number }[] }
               className="w-full h-8 rounded-lg"
               style={{
                 backgroundColor:
-                  count === 0 ? "#0f0f1e" : `rgba(91,200,188,${0.2 + intensity * 0.8})`,
+                  count === 0 ? "#1a1a1a" : `rgba(124,111,255,${0.2 + intensity * 0.8})`,
               }}
               title={`${m.label} ${m.year}: ${count}`}
             />
@@ -204,7 +208,7 @@ function CalendarHeatmap({ data }: { data: { period: string; count: number }[] }
 
 function ActivityHeatmap({
   data,
-  color = "34,211,238",
+  color = "124,111,255",
 }: {
   data: { weekday: number; hour: number; count: number }[]
   color?: string
@@ -216,7 +220,7 @@ function ActivityHeatmap({
   const maxCount = Math.max(...data.map(d => d.count), 1)
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <div className="flex gap-0.5 min-w-max">
         <div className="flex flex-col gap-0.5 mr-1 mt-4">
           {days.map(d => (
@@ -237,7 +241,7 @@ function ActivityHeatmap({
                   className="w-3 h-3 rounded-sm"
                   style={{
                     backgroundColor:
-                      count === 0 ? "#0f0f1e" : `rgba(${color},${0.15 + intensity * 0.85})`,
+                      count === 0 ? "#1a1a1a" : `rgba(${color},${0.15 + intensity * 0.85})`,
                   }}
                   title={`${days[wd]} ${hr}:00 — ${count}`}
                 />
@@ -254,7 +258,7 @@ function GaugeChart({
   value,
   max,
   label,
-  color = "#5bc8bc",
+  color = "#7c6fff",
   size = 160,
 }: {
   value: number
@@ -288,7 +292,7 @@ function GaugeChart({
         <path
           d={`M ${sx} ${sy} A ${r} ${r} 0 0 0 ${ex} ${ey}`}
           fill="none"
-          stroke="#2a2a4a"
+          stroke="rgba(255,255,255,0.08)"
           strokeWidth={size * 0.065}
           strokeLinecap="round"
         />
@@ -301,20 +305,20 @@ function GaugeChart({
             strokeLinecap="round"
           />
         )}
-        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#eceeff" strokeWidth="2" strokeLinecap="round" />
-        <circle cx={cx} cy={cy} r={size * 0.025} fill="#eceeff" />
+        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#eeeeee" strokeWidth="2" strokeLinecap="round" />
+        <circle cx={cx} cy={cy} r={size * 0.025} fill="#eeeeee" />
         <text
           x={cx}
           y={cy + size * 0.1}
           textAnchor="middle"
-          fill="#eceeff"
+          fill="#eeeeee"
           fontSize={size * 0.1}
           fontWeight="bold"
         >
           {displayValue}
         </text>
         {label && (
-          <text x={cx} y={cy + size * 0.2} textAnchor="middle" fill="#6e7f9e" fontSize={size * 0.065}>
+          <text x={cx} y={cy + size * 0.2} textAnchor="middle" fill="#8a8a8a" fontSize={size * 0.065}>
             {label}
           </text>
         )}
@@ -334,7 +338,7 @@ function NoData() {
 function FormatChip({ format }: { format: string }) {
   return (
     <span
-      className="inline-block text-[10px] font-medium px-1.5 py-0.5 rounded capitalize"
+      className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full capitalize"
       style={{ backgroundColor: FORMAT_COLORS[format] + "22", color: FORMAT_COLORS[format] }}
     >
       {format}
@@ -358,20 +362,24 @@ interface ChartOption {
   component: ReactNode
 }
 
+// Each category floats as its own frosted slab; the chart-type selector is a
+// row of neutral pills (active = filled, never accent).
 function CategorySection({ title, charts }: { title: string; charts: ChartOption[] }) {
   const [selected, setSelected] = useState(0)
   return (
-    <div className="px-4 py-4 border-b border-edge">
+    <div className="card mx-3 mb-3 px-4 py-4">
       <div className="label-caps text-ink-dim mb-3">
         {title}
       </div>
       {charts.length > 1 && (
-        <div className="flex gap-1.5 mb-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none] pb-1">
+        <div className="flex gap-1.5 mb-4 overflow-x-auto overscroll-x-contain [&::-webkit-scrollbar]:hidden [scrollbar-width:none] pb-1">
           {charts.map((c, i) => (
             <button
               key={c.label}
               onClick={() => setSelected(i)}
-              className={`btn shrink-0 ${selected === i ? "btn-primary" : "btn-quiet"}`}
+              className={`btn shrink-0 px-3.5 py-1.5 text-[0.8125rem] ${
+                selected === i ? "bg-white/[0.12] text-ink" : "btn-quiet"
+              }`}
             >
               {c.label}
             </button>
@@ -409,14 +417,14 @@ function TreemapCell(props: {
   if (width <= 0 || height <= 0) return null
   return (
     <g>
-      <rect x={x} y={y} width={width} height={height} fill={fill ?? "#2a2a4a"} rx={2} />
+      <rect x={x} y={y} width={width} height={height} fill={fill ?? "#222222"} rx={2} />
       {width > 40 && height > 18 && (
         <text
           x={x + width / 2}
           y={y + height / 2}
           textAnchor="middle"
           dominantBaseline="middle"
-          fill="#eceeff"
+          fill="#eeeeee"
           fontSize={11}
         >
           {name}
@@ -467,7 +475,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
     </ResponsiveContainer>
   )
   const topByPostsTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -497,7 +505,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
         data={topByPosts.map((r, i) => ({
           name: r.username,
           size: r.post_count,
-          fill: RANK_COLORS[i] ?? "#2a2a4a",
+          fill: RANK_COLORS[i] ?? "#251d4a",
         }))}
         dataKey="size"
         nameKey="name"
@@ -534,7 +542,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
     </ResponsiveContainer>
   )
   const topByLikesTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -598,7 +606,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
     </ResponsiveContainer>
   )
   const topByCommentsTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -651,7 +659,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
     </ResponsiveContainer>
   )
   const topByReadTimeTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -701,7 +709,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
         <XAxis dataKey="format" tick={{ ...AXIS, angle: -30, textAnchor: "end" }} interval={0} />
         <YAxis tick={AXIS} />
         <Tooltip {...TT} />
-        <Legend wrapperStyle={{ fontSize: 11, color: "#6e7f9e" }} />
+        <Legend wrapperStyle={{ fontSize: 11, color: "#8a8a8a" }} />
         <Bar dataKey="first" name="1st" fill="#7c6fff" radius={[2, 2, 0, 0]} />
         <Bar dataKey="second" name="2nd" fill="#6655d8" radius={[2, 2, 0, 0]} />
         <Bar dataKey="third" name="3rd" fill="#5040a8" radius={[2, 2, 0, 0]} />
@@ -728,7 +736,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
     )
     const maxVal = Math.max(...Object.values(userTotals), 1)
     return (
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overscroll-x-contain">
         <div className="min-w-max">
           <div className="flex gap-0.5 mb-1">
             <div className="w-16" />
@@ -748,7 +756,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
                     style={{
                       backgroundColor:
                         cnt === 0
-                          ? "#0f0f1e"
+                          ? "#1a1a1a"
                           : `${FORMAT_COLORS[fmt]}${Math.round(40 + (cnt / maxVal) * 175).toString(16).padStart(2, "0")}`,
                     }}
                     title={`${u} / ${fmt}: ${cnt}`}
@@ -768,7 +776,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
       {FORMATS.map(fmt => {
         const fmtData = data.top_creators_per_format[fmt] ?? []
         return (
-          <div key={fmt} className="bg-surface-1 rounded-lg p-2">
+          <div key={fmt} className="bg-white/[0.04] rounded-xl p-2">
             <div className="text-[10px] font-semibold mb-1" style={{ color: FORMAT_COLORS[fmt] }}>
               {fmt}
             </div>
@@ -816,7 +824,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
     </ResponsiveContainer>
   )
   const topPostsTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -940,7 +948,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
           <YAxis yAxisId="left" tick={AXIS} />
           <YAxis yAxisId="right" orientation="right" tick={AXIS} />
           <Tooltip {...TT} />
-          <Legend wrapperStyle={{ fontSize: 11, color: "#6e7f9e" }} />
+          <Legend wrapperStyle={{ fontSize: 11, color: "#8a8a8a" }} />
           <Line yAxisId="left" type="monotone" dataKey={label1} stroke={color1} dot={false} strokeWidth={2} />
           <Line yAxisId="right" type="monotone" dataKey={label2} stroke={color2} dot={false} strokeWidth={2} />
         </LineChart>
@@ -960,7 +968,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
           </Pie>
           <Tooltip {...TT} />
           <Legend
-            formatter={(v: string) => <span style={{ color: "#6e7f9e", fontSize: 11 }}>{v}</span>}
+            formatter={(v: string) => <span style={{ color: "#8a8a8a", fontSize: 11 }}>{v}</span>}
           />
         </PieChart>
       </ResponsiveContainer>
@@ -978,7 +986,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
           </Pie>
           <Tooltip {...TT} />
           <Legend
-            formatter={(v: string) => <span style={{ color: "#6e7f9e", fontSize: 11 }}>{v}</span>}
+            formatter={(v: string) => <span style={{ color: "#8a8a8a", fontSize: 11 }}>{v}</span>}
           />
         </PieChart>
       </ResponsiveContainer>
@@ -1016,9 +1024,9 @@ function GlobalTab({ data }: { data: GlobalStats }) {
   const makeRadar = (byFormat: Record<string, number>) => (
     <ResponsiveContainer width="100%" height={200}>
       <RadarChart data={formatRadarData(byFormat)}>
-        <PolarGrid stroke="#1e1e32" />
-        <PolarAngleAxis dataKey="subject" tick={{ fill: "#6e7f9e", fontSize: 11 }} />
-        <PolarRadiusAxis tick={{ fill: "#6e7f9e", fontSize: 9 }} />
+        <PolarGrid stroke="rgba(200,200,200,0.07)" />
+        <PolarAngleAxis dataKey="subject" tick={{ fill: "#8a8a8a", fontSize: 11 }} />
+        <PolarRadiusAxis tick={{ fill: "#8a8a8a", fontSize: 9 }} />
         <Radar dataKey="count" stroke="#7c6fff" fill="#7c6fff" fillOpacity={0.3} />
         <Tooltip {...TT} />
       </RadarChart>
@@ -1065,9 +1073,9 @@ function GlobalTab({ data }: { data: GlobalStats }) {
   const wdRadar = (
     <ResponsiveContainer width="100%" height={220}>
       <RadarChart data={data.activity_by_weekday.map(d => ({ subject: d.weekday, count: d.count }))}>
-        <PolarGrid stroke="#1e1e32" />
-        <PolarAngleAxis dataKey="subject" tick={{ fill: "#6e7f9e", fontSize: 11 }} />
-        <PolarRadiusAxis tick={{ fill: "#6e7f9e", fontSize: 9 }} />
+        <PolarGrid stroke="rgba(200,200,200,0.07)" />
+        <PolarAngleAxis dataKey="subject" tick={{ fill: "#8a8a8a", fontSize: 11 }} />
+        <PolarRadiusAxis tick={{ fill: "#8a8a8a", fontSize: 9 }} />
         <Radar dataKey="count" stroke="#7c6fff" fill="#7c6fff" fillOpacity={0.3} />
         <Tooltip {...TT} />
       </RadarChart>
@@ -1117,14 +1125,14 @@ function GlobalTab({ data }: { data: GlobalStats }) {
           count: data.activity_by_hour[h]?.count ?? 0,
         }))}
       >
-        <PolarGrid stroke="#1e1e32" />
-        <PolarAngleAxis dataKey="subject" tick={{ fill: "#6e7f9e", fontSize: 11 }} />
+        <PolarGrid stroke="rgba(200,200,200,0.07)" />
+        <PolarAngleAxis dataKey="subject" tick={{ fill: "#8a8a8a", fontSize: 11 }} />
         <Radar dataKey="count" stroke="#5bc8bc" fill="#5bc8bc" fillOpacity={0.3} />
         <Tooltip {...TT} />
       </RadarChart>
     </ResponsiveContainer>
   )
-  const hrHeatmap = <ActivityHeatmap data={data.activity_heatmap} color="34,211,238" />
+  const hrHeatmap = <ActivityHeatmap data={data.activity_heatmap} />
 
   // 17. Post quality over time
   const qualityLine = (
@@ -1177,7 +1185,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
           </Pie>
           <Tooltip {...TT} />
           <Legend
-            formatter={(v: string) => <span style={{ color: "#6e7f9e", fontSize: 11 }}>{v}</span>}
+            formatter={(v: string) => <span style={{ color: "#8a8a8a", fontSize: 11 }}>{v}</span>}
           />
         </PieChart>
       </ResponsiveContainer>
@@ -1212,7 +1220,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
     </ResponsiveContainer>
   )
   const commentersTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -1237,7 +1245,7 @@ function GlobalTab({ data }: { data: GlobalStats }) {
   return (
     <div>
       {/* 1. Overview */}
-      <div className="px-4 py-4 border-b border-edge">
+      <div className="card mx-3 mb-3 px-4 py-4">
         <div className="label-caps text-ink-dim mb-3">
           Overview
         </div>
@@ -1496,7 +1504,7 @@ function MyStatsTab({
           {eloFormats.map(([fmt, d]) => (
             <div key={fmt} className="flex items-center gap-3">
               <span className="w-20 shrink-0 text-xs text-ink-dim capitalize">{fmt}</span>
-              <div className="flex-1 h-2 bg-surface-1 rounded-full overflow-hidden">
+              <div className="flex-1 h-2 bg-white/[0.08] rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full"
                   style={{
@@ -1578,7 +1586,7 @@ function MyStatsTab({
             {data2.map(d => <Cell key={d.format} fill={FORMAT_COLORS[d.format] ?? DEFAULT_COLOR} />)}
           </Pie>
           <Tooltip {...TT} />
-          <Legend formatter={(v: string) => <span style={{ color: "#6e7f9e", fontSize: 11 }}>{v}</span>} />
+          <Legend formatter={(v: string) => <span style={{ color: "#8a8a8a", fontSize: 11 }}>{v}</span>} />
         </PieChart>
       </ResponsiveContainer>
     )
@@ -1601,9 +1609,9 @@ function MyStatsTab({
   const makeFormatRadar = (arr: { format: string; count: number }[]) => (
     <ResponsiveContainer width="100%" height={220}>
       <RadarChart data={arr.map(d => ({ subject: d.format, count: d.count }))}>
-        <PolarGrid stroke="#1e1e32" />
-        <PolarAngleAxis dataKey="subject" tick={{ fill: "#6e7f9e", fontSize: 11 }} />
-        <PolarRadiusAxis tick={{ fill: "#6e7f9e", fontSize: 9 }} />
+        <PolarGrid stroke="rgba(200,200,200,0.07)" />
+        <PolarAngleAxis dataKey="subject" tick={{ fill: "#8a8a8a", fontSize: 11 }} />
+        <PolarRadiusAxis tick={{ fill: "#8a8a8a", fontSize: 9 }} />
         <Radar dataKey="count" stroke="#7c6fff" fill="#7c6fff" fillOpacity={0.3} />
         <Tooltip {...TT} />
       </RadarChart>
@@ -1655,7 +1663,7 @@ function MyStatsTab({
           <YAxis yAxisId="left" tick={AXIS} />
           <YAxis yAxisId="right" orientation="right" tick={AXIS} />
           <Tooltip {...TT} />
-          <Legend wrapperStyle={{ fontSize: 11, color: "#6e7f9e" }} />
+          <Legend wrapperStyle={{ fontSize: 11, color: "#8a8a8a" }} />
           <Line yAxisId="left" type="monotone" dataKey="posts" stroke="#7c6fff" dot={false} strokeWidth={2} />
           <Line yAxisId="right" type="monotone" dataKey="likes" stroke="#c47dcc" dot={false} strokeWidth={2} />
         </LineChart>
@@ -1689,9 +1697,9 @@ function MyStatsTab({
   const myPolar = (
     <ResponsiveContainer width="100%" height={220}>
       <RadarChart data={data.my_activity_by_weekday.map(d => ({ subject: d.weekday, count: d.count }))}>
-        <PolarGrid stroke="#1e1e32" />
-        <PolarAngleAxis dataKey="subject" tick={{ fill: "#6e7f9e", fontSize: 11 }} />
-        <PolarRadiusAxis tick={{ fill: "#6e7f9e", fontSize: 9 }} />
+        <PolarGrid stroke="rgba(200,200,200,0.07)" />
+        <PolarAngleAxis dataKey="subject" tick={{ fill: "#8a8a8a", fontSize: 11 }} />
+        <PolarRadiusAxis tick={{ fill: "#8a8a8a", fontSize: 9 }} />
         <Radar dataKey="count" stroke="#7c6fff" fill="#7c6fff" fillOpacity={0.3} />
         <Tooltip {...TT} />
       </RadarChart>
@@ -1719,9 +1727,9 @@ function MyStatsTab({
   const readTimeRadar = (
     <ResponsiveContainer width="100%" height={220}>
       <RadarChart data={readTimeArr.map(d => ({ subject: d.format, avg_sec: d.avg_sec }))}>
-        <PolarGrid stroke="#1e1e32" />
-        <PolarAngleAxis dataKey="subject" tick={{ fill: "#6e7f9e", fontSize: 11 }} />
-        <PolarRadiusAxis tick={{ fill: "#6e7f9e", fontSize: 9 }} />
+        <PolarGrid stroke="rgba(200,200,200,0.07)" />
+        <PolarAngleAxis dataKey="subject" tick={{ fill: "#8a8a8a", fontSize: 11 }} />
+        <PolarRadiusAxis tick={{ fill: "#8a8a8a", fontSize: 9 }} />
         <Radar dataKey="avg_sec" stroke="#5bc8bc" fill="#5bc8bc" fillOpacity={0.3} />
         <Tooltip {...TT} formatter={(v: unknown) => [`${v}s`, "Avg read time"]} />
       </RadarChart>
@@ -1768,7 +1776,7 @@ function MyStatsTab({
     </ResponsiveContainer>
   )
   const myTopLikesTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -1812,7 +1820,7 @@ function MyStatsTab({
     </ResponsiveContainer>
   )
   const myTopCommentsTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -1892,12 +1900,12 @@ function MyStatsTab({
   const { current_days, best_days } = data.my_streak
   const streakCards = (
     <div className="grid grid-cols-2 gap-4">
-      <div className="bg-surface-1 rounded-xl p-5 text-center">
+      <div className="bg-white/[0.04] rounded-2xl p-5 text-center">
         <div className="text-4xl font-bold text-ink">{current_days}</div>
         <div className="text-ink-dim text-xs mt-1">Current streak</div>
         <div className="text-2xl mt-1">🔥</div>
       </div>
-      <div className="bg-surface-1 rounded-xl p-5 text-center">
+      <div className="bg-white/[0.04] rounded-2xl p-5 text-center">
         <div className="text-4xl font-bold text-ink">{best_days}</div>
         <div className="text-ink-dim text-xs mt-1">Best streak</div>
         <div className="text-2xl mt-1">🔥</div>
@@ -1907,15 +1915,15 @@ function MyStatsTab({
 
   // 15. Milestones timeline
   const milestonesTimeline = (
-    <div className="overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+    <div className="overflow-x-auto overscroll-x-contain pb-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
       <div className="flex gap-4 min-w-max">
         {data.my_milestones.map(m => (
           <div key={m.label} className="flex flex-col items-center gap-2 w-20">
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm border-2 transition-all ${
                 m.achieved
-                  ? "border-lamp bg-lamp/20 shadow-[0_0_8px_rgba(167,139,250,0.4)]"
-                  : "border-edge-strong bg-surface-1"
+                  ? "border-lamp bg-lamp/20 shadow-[0_0_8px_rgba(124,111,255,0.4)]"
+                  : "border-transparent bg-white/[0.06]"
               }`}
             >
               {m.achieved ? (
@@ -1946,7 +1954,7 @@ function MyStatsTab({
   return (
     <div>
       {/* 1. Overview */}
-      <div className="px-4 py-4 border-b border-edge">
+      <div className="card mx-3 mb-3 px-4 py-4">
         <div className="label-caps text-ink-dim mb-3">
           Overview
         </div>
@@ -1954,7 +1962,7 @@ function MyStatsTab({
       </div>
 
       {/* 1b. My Knowledge Score */}
-      <div className="px-4 py-4 border-b border-edge">
+      <div className="card mx-3 mb-3 px-4 py-4">
         <div className="label-caps text-ink-dim mb-3">
           My Knowledge Score
         </div>
@@ -2122,7 +2130,7 @@ function MyStatsTab({
       />
 
       {/* 14. My Streak */}
-      <div className="px-4 py-4 border-b border-edge">
+      <div className="card mx-3 mb-3 px-4 py-4">
         <div className="label-caps text-ink-dim mb-3">
           My Streak
         </div>
@@ -2130,7 +2138,7 @@ function MyStatsTab({
       </div>
 
       {/* 15. My Milestones */}
-      <div className="px-4 py-4 border-b border-edge">
+      <div className="card mx-3 mb-3 px-4 py-4">
         <div className="label-caps text-ink-dim mb-3">
           My Milestones
         </div>
@@ -2258,8 +2266,9 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-40 text-ink-dim text-sm">
-        Loading friends...
+      <div className="flex flex-col px-3 gap-3 pt-2">
+        <div className="stage-pulse card h-40 w-full" />
+        <div className="stage-pulse card h-64 w-full" />
       </div>
     )
   }
@@ -2267,7 +2276,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
   if (noFollowing) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 px-8 py-16 text-center">
-        <div className="w-12 h-12 rounded-full bg-surface-2 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-full bg-white/[0.06] flex items-center justify-center">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6 text-ink-muted">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
             <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
@@ -2306,7 +2315,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
           <span className={`w-20 shrink-0 text-xs truncate ${p.username === username ? "text-lamp font-semibold" : "text-ink-dim"}`}>
             {shortName(p.username, username)}
           </span>
-          <div className="flex-1 h-2 bg-surface-1 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-white/[0.08] rounded-full overflow-hidden">
             <div
               className="h-full rounded-full"
               style={{ width: `${Math.min(100, ((p.global_rating ?? 0) / eloMax) * 100)}%`, backgroundColor: p.username === username ? "#7c6fff" : DEFAULT_COLOR }}
@@ -2335,7 +2344,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
   )
 
   const eloTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -2392,12 +2401,12 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
   const radarChart = radarData.length === 0 ? <NoData /> : (
     <ResponsiveContainer width="100%" height={240}>
       <RadarChart data={radarData}>
-        <PolarGrid stroke="#1e1e32" />
-        <PolarAngleAxis dataKey="subject" tick={{ fill: "#6e7f9e", fontSize: 11 }} />
-        <PolarRadiusAxis tick={{ fill: "#6e7f9e", fontSize: 9 }} />
+        <PolarGrid stroke="rgba(200,200,200,0.07)" />
+        <PolarAngleAxis dataKey="subject" tick={{ fill: "#8a8a8a", fontSize: 11 }} />
+        <PolarRadiusAxis tick={{ fill: "#8a8a8a", fontSize: 9 }} />
         <Radar dataKey="me" name="You" stroke="#7c6fff" fill="#7c6fff" fillOpacity={0.3} />
         <Radar dataKey="friends_avg" name="Friends avg" stroke={DEFAULT_COLOR} fill={DEFAULT_COLOR} fillOpacity={0.15} />
-        <Legend wrapperStyle={{ fontSize: 11, color: "#6e7f9e" }} />
+        <Legend wrapperStyle={{ fontSize: 11, color: "#8a8a8a" }} />
         <Tooltip {...TT} />
       </RadarChart>
     </ResponsiveContainer>
@@ -2417,7 +2426,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
         <XAxis dataKey="format" tick={{ ...AXIS, angle: -30, textAnchor: "end" }} interval={0} />
         <YAxis tick={AXIS} />
         <Tooltip {...TT} />
-        <Legend wrapperStyle={{ fontSize: 11, color: "#6e7f9e" }} />
+        <Legend wrapperStyle={{ fontSize: 11, color: "#8a8a8a" }} />
         <Bar dataKey="you" name="You" fill="#7c6fff" radius={[2, 2, 0, 0]} />
         <Bar dataKey="friends_avg" name="Friends avg" fill={DEFAULT_COLOR} radius={[2, 2, 0, 0]} />
       </BarChart>
@@ -2431,7 +2440,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
         if (inFmt.length === 0) return null
         const top = inFmt[0]
         return (
-          <div key={fmt} className="bg-surface-1 rounded-lg p-3">
+          <div key={fmt} className="bg-white/[0.04] rounded-xl p-3">
             <div className="text-[10px] font-semibold mb-2" style={{ color: FORMAT_COLORS[fmt] }}>{fmt}</div>
             {inFmt.slice(0, 3).map((p, i) => (
               <div key={p.username} className="flex items-center gap-1.5 mb-1">
@@ -2482,7 +2491,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
         <XAxis dataKey="format" tick={{ ...AXIS, angle: -30, textAnchor: "end" }} interval={0} />
         <YAxis tick={AXIS} />
         <Tooltip {...TT} formatter={(v: unknown) => [String(v), "Answers"]} />
-        <Legend wrapperStyle={{ fontSize: 11, color: "#6e7f9e" }} />
+        <Legend wrapperStyle={{ fontSize: 11, color: "#8a8a8a" }} />
         <Bar dataKey="you" name="You" fill="#7c6fff" radius={[2, 2, 0, 0]} />
         <Bar dataKey="friends_avg" name="Friends avg" fill={DEFAULT_COLOR} radius={[2, 2, 0, 0]} />
       </BarChart>
@@ -2502,12 +2511,12 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
     return (
       <ResponsiveContainer width="100%" height={240}>
         <RadarChart data={data}>
-          <PolarGrid stroke="#1e1e32" />
-          <PolarAngleAxis dataKey="subject" tick={{ fill: "#6e7f9e", fontSize: 11 }} />
-          <PolarRadiusAxis tick={{ fill: "#6e7f9e", fontSize: 9 }} />
+          <PolarGrid stroke="rgba(200,200,200,0.07)" />
+          <PolarAngleAxis dataKey="subject" tick={{ fill: "#8a8a8a", fontSize: 11 }} />
+          <PolarRadiusAxis tick={{ fill: "#8a8a8a", fontSize: 9 }} />
           <Radar dataKey="you" name="You" stroke="#7c6fff" fill="#7c6fff" fillOpacity={0.3} />
           <Radar dataKey="friends_avg" name="Friends avg" stroke={DEFAULT_COLOR} fill={DEFAULT_COLOR} fillOpacity={0.15} />
-          <Legend wrapperStyle={{ fontSize: 11, color: "#6e7f9e" }} />
+          <Legend wrapperStyle={{ fontSize: 11, color: "#8a8a8a" }} />
           <Tooltip {...TT} />
         </RadarChart>
       </ResponsiveContainer>
@@ -2538,7 +2547,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
   )
 
   const effTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -2581,7 +2590,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
             {FORMAT_IDS.map(fmt => {
               const hasAnswers = (p.formats[fmt]?.answered_count ?? 0) > 0
               return (
-                <div key={fmt} className="w-5 h-5 rounded-sm flex items-center justify-center" style={{ backgroundColor: hasAnswers ? FORMAT_COLORS[fmt] + "55" : "#0f0f1e", border: `1px solid ${hasAnswers ? FORMAT_COLORS[fmt] + "80" : "#1e1e32"}` }} title={fmt}>
+                <div key={fmt} className="w-5 h-5 rounded-sm flex items-center justify-center" style={{ backgroundColor: hasAnswers ? FORMAT_COLORS[fmt] + "55" : "#1a1a1a", border: `1px solid ${hasAnswers ? FORMAT_COLORS[fmt] + "80" : "#222222"}` }} title={fmt}>
                   {hasAnswers && <span className="text-[7px] font-bold" style={{ color: FORMAT_COLORS[fmt] }}>{fmt[0].toUpperCase()}</span>}
                 </div>
               )
@@ -2607,7 +2616,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
               {data.map(d => <Cell key={d.name} fill={d.fill} />)}
             </Pie>
             <Tooltip {...TT} />
-            <Legend formatter={(v: string) => <span style={{ color: "#6e7f9e", fontSize: 11 }}>{v}</span>} />
+            <Legend formatter={(v: string) => <span style={{ color: "#8a8a8a", fontSize: 11 }}>{v}</span>} />
           </PieChart>
         </ResponsiveContainer>
         <p className="text-ink-muted text-xs text-center">Formats explored (out of {FORMAT_IDS.length})</p>
@@ -2645,7 +2654,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
   )
 
   const postTable = (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-ink-muted border-b border-edge">
@@ -2696,7 +2705,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
         <XAxis dataKey="name" tick={{ ...AXIS, angle: -30, textAnchor: "end" }} interval={0} />
         <YAxis tick={AXIS} />
         <Tooltip {...TT} />
-        <Legend wrapperStyle={{ fontSize: 11, color: "#6e7f9e" }} />
+        <Legend wrapperStyle={{ fontSize: 11, color: "#8a8a8a" }} />
         <Bar dataKey="followers" name="Followers" fill="#7c6fff" radius={[2, 2, 0, 0]} />
         <Bar dataKey="following" name="Following" fill={DEFAULT_COLOR} radius={[2, 2, 0, 0]} />
       </BarChart>
@@ -2729,7 +2738,7 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
   return (
     <div>
       {/* Overview */}
-      <div className="px-4 py-4 border-b border-edge">
+      <div className="card mx-3 mb-3 px-4 py-4">
         <div className="label-caps text-ink-dim mb-3">Overview</div>
         {overviewCards}
       </div>
@@ -2809,8 +2818,13 @@ function FriendsTab({ username, verifiedLevel }: { username: string; verifiedLev
 
 export default function StatsPage() {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState<"global" | "my" | "friends">("global")
   const [savedCount, setSavedCount] = useState(0)
+
+  // Swipeable Global/Personal/Friends pager; the capsule indicator tracks
+  // the swipe. activatedIndices keeps lazy mounting: a page renders nothing
+  // until first visited (FriendsTab's fan-out fetch must not run on load).
+  const { activeIndex, activatedIndices, pagerRef, indicatorRef, tabRefs, selectTab } =
+    useSwipeTabs({ count: 3 })
 
   // Global stats via SWR: a revisit renders the cached data instantly and
   // refreshes silently in the background (stats are aggregates, no reorder).
@@ -2822,93 +2836,97 @@ export default function StatsPage() {
   const { data: myData, error: myError } = useSWR<MyStats>(user ? "/api/stats/me" : null)
   const myLoading = !myData && !myError
 
-  // Read localStorage saved count client-side
+  // Read localStorage saved count client-side (Personal tab is index 1)
   useEffect(() => {
-    if (activeTab !== "my" || !user) return
+    if (activeIndex !== 1 || !user) return
     setSavedCount(getSavedPostIds().length)
-  }, [activeTab, user])
+  }, [activeIndex, user])
 
-  const tabs: { key: "global" | "my" | "friends"; label: string }[] = [
-    { key: "global", label: "Global" },
-    { key: "my", label: "Personal" },
-    { key: "friends", label: "Friends" },
-  ]
+  // Shared page wrapper: each pager page scrolls vertically on its own, so
+  // every tab keeps its own scroll position.
+  const pageClass =
+    "w-full shrink-0 snap-start h-full overflow-y-auto overscroll-y-contain pt-1 pb-24 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
 
   return (
     <StatsErrorBoundary>
     <div className="relative max-w-[430px] mx-auto bg-surface-0 h-[100dvh] flex flex-col">
-      {/* Tab bar */}
-      <div className="sticky top-0 z-20 bg-surface-0 border-b border-edge px-4 pt-3 pb-0">
-        <div className="flex gap-1.5">
-          {tabs.map(t => (
-            <button
-              key={t.key}
-              onClick={() => setActiveTab(t.key)}
-              className={`btn flex-1 ${activeTab === t.key ? "btn-primary" : "btn-ghost"}`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+      {/* Tab switcher — floating frosted segmented capsule */}
+      <div className="z-20 px-3 pt-3 pb-2">
+        <SegmentedTabs
+          labels={["Global", "Personal", "Friends"]}
+          activeIndex={activeIndex}
+          onSelect={selectTab}
+          tabRefs={tabRefs}
+          indicatorRef={indicatorRef}
+        />
       </div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto pb-20 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
-        {activeTab === "global" && (
-          globalLoading ? (
-            <div className="flex items-center justify-center h-40 text-ink-dim text-sm">
-              Loading stats...
-            </div>
-          ) : globalData ? (
-            <GlobalTab data={globalData} />
-          ) : (
-            <div className="flex items-center justify-center h-40 text-ink-muted text-sm">
-              Could not load stats.
-            </div>
-          )
-        )}
+      {/* Horizontal pager — one full-width, vertically scrolling page per
+          tab. min-h-0 keeps flex-1 inside the viewport; overflow-y-hidden
+          because overflow-x: scroll would otherwise force it to auto. */}
+      <div
+        ref={pagerRef}
+        className="flex-1 min-h-0 flex overflow-x-scroll overflow-y-hidden snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+      >
+        <div className={pageClass}>
+          {activatedIndices.has(0) && (
+            globalLoading ? (
+              <div className="flex flex-col px-3 gap-3 pt-2">
+                <div className="stage-pulse card h-40 w-full" />
+                <div className="stage-pulse card h-64 w-full" />
+              </div>
+            ) : globalData ? (
+              <GlobalTab data={globalData} />
+            ) : (
+              <div className="card mx-3 mt-2 px-8 py-10 text-center">
+                <p className="text-ink-muted text-sm">Could not load stats.</p>
+              </div>
+            )
+          )}
+        </div>
 
-        {activeTab === "my" && !user && (
-          <div className="flex flex-col items-center justify-center h-60 gap-4 px-8 text-center">
-            <div className="text-ink-dim text-sm">Log in to see your personal stats</div>
-            <a
-              href="/login"
-              className="btn btn-primary px-5 py-2"
-            >
-              Log in
-            </a>
-          </div>
-        )}
+        <div className={pageClass}>
+          {activatedIndices.has(1) && (
+            !user ? (
+              <div className="flex items-center justify-center h-60 px-6">
+                <div className="card px-8 py-10 text-center max-w-xs flex flex-col items-center gap-4">
+                  <p className="text-ink-dim text-sm">Log in to see your personal stats</p>
+                  <a href="/login" className="btn btn-primary px-5 py-2">
+                    Log in
+                  </a>
+                </div>
+              </div>
+            ) : myLoading ? (
+              <div className="flex flex-col px-3 gap-3 pt-2">
+                <div className="stage-pulse card h-40 w-full" />
+                <div className="stage-pulse card h-64 w-full" />
+              </div>
+            ) : myData ? (
+              <MyStatsTab data={myData} savedCount={savedCount} />
+            ) : (
+              <div className="card mx-3 mt-2 px-8 py-10 text-center">
+                <p className="text-ink-muted text-sm">Could not load personal stats.</p>
+              </div>
+            )
+          )}
+        </div>
 
-        {activeTab === "my" && user && (
-          myLoading ? (
-            <div className="flex items-center justify-center h-40 text-ink-dim text-sm">
-              Loading stats...
-            </div>
-          ) : myData ? (
-            <MyStatsTab data={myData} savedCount={savedCount} />
-          ) : (
-            <div className="flex items-center justify-center h-40 text-ink-muted text-sm">
-              Could not load personal stats.
-            </div>
-          )
-        )}
-
-        {activeTab === "friends" && !user && (
-          <div className="flex flex-col items-center justify-center h-60 gap-4 px-8 text-center">
-            <div className="text-ink-dim text-sm">Log in to compare stats with friends</div>
-            <a
-              href="/login"
-              className="btn btn-primary px-5 py-2"
-            >
-              Log in
-            </a>
-          </div>
-        )}
-
-        {activeTab === "friends" && user && (
-          <FriendsTab username={user.username} verifiedLevel={user.is_verified} />
-        )}
+        <div className={pageClass}>
+          {activatedIndices.has(2) && (
+            !user ? (
+              <div className="flex items-center justify-center h-60 px-6">
+                <div className="card px-8 py-10 text-center max-w-xs flex flex-col items-center gap-4">
+                  <p className="text-ink-dim text-sm">Log in to compare stats with friends</p>
+                  <a href="/login" className="btn btn-primary px-5 py-2">
+                    Log in
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <FriendsTab username={user.username} verifiedLevel={user.is_verified} />
+            )
+          )}
+        </div>
       </div>
 
       <BottomNav activeTab="stats" />
