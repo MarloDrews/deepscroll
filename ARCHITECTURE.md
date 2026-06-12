@@ -140,7 +140,7 @@ frontend/
       CastSection.tsx           stories: array of character cards (name/role/one_line/lifespan)
       HistoricalContextSection.tsx stories: broader historical setting
 
-mobile/                         React Native app (Expo SDK 56, TypeScript, expo-router, NativeWind 4 + tailwindcss 3.4); phase 3 = post detail with all 80 section types + like/save/comment/share/quiz actions
+mobile/                         React Native app (Expo SDK 56, TypeScript, expo-router, NativeWind 4 + tailwindcss 3.4); phase 4 = Stage restyle of feed + post detail + interactions to match the web redesign
   package.json                  main: expo-router/entry; deps incl. reanimated 4, gesture-handler, react-native-svg, expo-image, expo-blur, async-storage, expo-secure-store, react-native-pager-view, @expo-google-fonts/{newsreader,source-sans-3,geist-mono}; lockfile built with --legacy-peer-deps (react 19.2.3 vs react-dom 19.2.7 peer conflict) — install with npm ci --legacy-peer-deps
   .env                          actual env vars (gitignored via root .gitignore): EXPO_PUBLIC_API_URL + EXPO_PUBLIC_WEB_URL, ports 8000/3000 (real phone: PC LAN IP; emulator: 10.0.2.2); restart expo with -c after edits
   babel.config.js               babel-preset-expo (jsxImportSource nativewind) + nativewind/babel
@@ -488,6 +488,7 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 - Mobile app phase 1 (mobile/): Expo/React Native For You feed with TikTok-style vertical paging, Circuit tokens + web fonts, all 7 format card layouts
 - Mobile app phase 2 (mobile/): JWT auth (SecureStore) with login/register screens + session restore, onboarding interest picker (AsyncStorage gate), 9-tab feed via PagerView with animated tab indicator, BottomNav + toast for unbuilt destinations
 - Mobile app phase 3 (mobile/): post detail screen with all 80 section types (sections/ ports + AccentContext for per-post accent), seed-vs-user SVG security preserved in SafeSvg, quiz answering with Elo correction UI, like/save/comment/share on card rail + detail bar (eventQueue batching, CommentsBottomSheet, RN Share)
+- Mobile app phase 4 (mobile/): Stage restyle of the feed, post detail and interactions (frosted slabs + floating pill chrome + per-post format glow + neutral indicators, web tab order with For You default); expo-blur chrome renders a translucent fallback + dark scrim on Android (real blur iOS-only); slabs/glows are plain fills + Svg radial gradients for FlatList smoothness; login/register/onboarding still Lamplight
 
 **Next**
 - Content for academy format
