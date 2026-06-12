@@ -61,9 +61,9 @@ frontend/
     register/
       page.tsx                  register form: email + username + password, inline error messages, redirects to / on success or if already logged in
     profile/
-      page.tsx                  account page: Avatar with camera-button upload (POST /api/auth/me/avatar), @username, email, "View public profile" link, knowledge score card (global + per-format chips from /api/users/{me}/elo), My posts / Saved posts card rows, bio card (160 chars), private account toggle (PATCH /api/auth/me), follow requests panel with avatars (private accounts only, accept/decline each), inline forms for change username / change password / sign out / delete account; BottomNav (profile active)
+      page.tsx                  account page in Stage slabs: Avatar with frosted camera-button upload (POST /api/auth/me/avatar), @username, email, "View public profile" link, knowledge score slab (global + per-format frosted chips from /api/users/{me}/elo), My posts / Saved posts slab rows, bio slab (160 chars), private account toggle (off = white/10% fill, on = lamp), follow requests panel with avatars (private accounts only, accept/decline each), inline forms for change username / change password / sign out / delete account; followers/following list opens a Stage floating sheet (inset rounded-3xl, stage-sheet-in); BottomNav (profile active)
       [username]/
-        page.tsx                public profile: header with back + settings/more-options, 72px Avatar (uploaded picture or initial), verified badge, bio, stats row (posts/followers/following/knowledge Elo); followers+following counts open a bottom-sheet user list; follow/unfollow button (optimistic update written into the SWR cache, revalidate false), Posts|Saved|Liked tabs (own-profile Saved/Liked per-id fetches run on first tab open, not on mount); profile/elo/posts via useSWR (/api/users/{username}/profile, /elo, /api/feed/user/{username}) — revisits render cached instantly with silent background refresh; BottomNav (profile active)
+        page.tsx                public profile: frosted back/settings circles, 72px Avatar (uploaded picture or initial), verified badge, bio, stats row (posts/followers/following/knowledge Elo); followers+following counts open a Stage floating sheet user list; follow/unfollow pill (optimistic update written into the SWR cache, revalidate false), Posts|Saved|Liked as a frosted segmented capsule (own-profile Saved/Liked per-id fetches run on first tab open, not on mount); content scrolls in an inner div so dock and sheet stay pinned; profile/elo/posts via useSWR (/api/users/{username}/profile, /elo, /api/feed/user/{username}) — revisits render cached instantly with silent background refresh; BottomNav (profile active)
     search/
       page.tsx                  pill search input + Posts|Accounts scope chips; posts scope: format chips (active = neutral fill + accent text) + frosted slab result cards; accounts scope: /api/search/users slab rows with Avatar, verified badge, bio and follow/unfollow pill; stage-pulse loading slabs; debounced 300ms; BottomNav (search active)
     create/
@@ -101,7 +101,7 @@ frontend/
     SectionLabel.tsx            unified section header (h3, text-xs uppercase tracking-widest, zinc-500 default, color override)
     VerifiedBadge.tsx           level-based user check (1=slate-blue, 2=gold, 3+=purple) + variant="official" for Deepscroll seed content; size prop
     Spinner.tsx                 unified loading spinner (sm/md)
-    PostRow.tsx                 compact post list card (format dot + badge + title) used by profile tabs
+    PostRow.tsx                 compact post list slab (format dot + badge + title, hover brightens fill) used by profile tabs
     SectionRenderer.tsx         maps section.type → component; handles all sections for books/facts/people/concepts/questions/stories formats
     sections/
       (books/facts/people/concepts sections — existing)
@@ -410,7 +410,7 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | CommentsSection.tsx    | detail-page comments list; serif "Comments" heading + mono count; renders CommentRow bubbles; receives comments/currentUsername/onDelete/deletingId as props; plain-text only (no dangerouslySetInnerHTML); exports Comment interface (includes is_verified) |
 | CommentRow.tsx         | Stage chat-bubble comment row shared by sheet and detail list: frosted initial avatar circle + bg-surface-2 rounded-2xl bubble with username/VerifiedBadge/relative time/own-delete inline |
 | CommentsBottomSheet.tsx | Stage floating comments sheet for feed cards: card detached inset-x-3 bottom-3 rounded-3xl bg-surface-1/95 blur with stage-sheet-in spring; comment state via useComments; drag handle: swipe up expands to 75 vh, swipe down collapses to 50 vh or closes, live translateY feedback; pill input + circular send, safe-area padded; rendered via createPortal into document.body |
-| Toast.tsx              | fixed bottom-center pill notification; visible prop controls opacity via CSS transition; pointer-events-none |
+| Toast.tsx              | fixed bottom-center frosted pill notification (bg-white/10% blur); visible prop controls opacity via CSS transition; pointer-events-none |
 | chat/page.tsx          | conversation list + New chat overlay (multi-select user picker, optional group name); BottomNav (chat active) |
 | chat/[id]/page.tsx     | conversation view: REST history + live websocket messages, bubble layout, plain-text rendering only |
 | chatSocket.ts          | useChatSocket hook: first-frame JWT auth, auto-reconnect, send(); ChatMessage/Conversation types |

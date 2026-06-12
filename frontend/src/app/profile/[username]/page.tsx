@@ -155,7 +155,10 @@ export default function PublicProfilePage() {
 
   return (
     <div className="h-[100dvh] bg-surface-0 flex justify-center">
-      <div className="w-full max-w-[430px] h-[100dvh] relative overflow-y-auto pb-24 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+      <div className="w-full max-w-[430px] h-[100dvh] relative">
+        {/* Scrolling moved to an inner div so the floating dock and the
+            followers sheet stay pinned while the content scrolls. */}
+        <div className="h-full overflow-y-auto pb-24 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
 
         {/* Header */}
         <div className="flex items-center px-4 pt-4 pb-2">
@@ -264,16 +267,16 @@ export default function PublicProfilePage() {
           )}
         </div>
 
-        {/* Tab bar */}
-        <div className="flex border-b border-edge mt-2">
+        {/* Tab bar — frosted segmented capsule */}
+        <div className="mx-3 mt-2 h-11 rounded-full backdrop-blur-xl bg-white/[0.06] flex items-center p-1 gap-1">
           {(["posts", "saved", "liked"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2.5 text-sm font-medium capitalize cursor-pointer transition-colors duration-150 ${
+              className={`flex-1 h-9 rounded-full text-sm capitalize cursor-pointer transition-colors duration-150 ${
                 activeTab === tab
-                  ? "text-ink border-b-2 border-lamp"
-                  : "text-ink-muted"
+                  ? "bg-white/[0.12] text-ink font-semibold"
+                  : "text-ink-muted font-medium hover:text-ink-dim"
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -291,16 +294,17 @@ export default function PublicProfilePage() {
             <PrivateTabContent canSee={canSeePrivateContent} isOwnProfile={isOwnProfile} posts={likedPosts} lockedMessage="Follow to see liked posts" privateMessage="Liked posts are private" />
           )}
         </div>
+        </div>
 
         {/* Followers / Following bottom sheet */}
         {listOpen && (
           <div className="fixed inset-0 z-40 flex justify-center" onClick={() => setListOpen(null)}>
             <div className="absolute inset-0 bg-surface-0/70" />
             <div
-              className="absolute bottom-0 w-full max-w-[430px] max-h-[70dvh] bg-surface-1 border-t border-edge rounded-t-sheet flex flex-col"
+              className="stage-sheet-in absolute inset-x-3 bottom-3 max-w-[406px] mx-auto max-h-[70dvh] rounded-3xl bg-surface-1/95 backdrop-blur-xl flex flex-col overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-edge">
+              <div className="flex items-center justify-between px-5 pt-4 pb-2">
                 <p className="text-ink text-sm font-semibold capitalize">{listOpen}</p>
                 <button onClick={() => setListOpen(null)} className="btn-icon" aria-label="Close">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -323,7 +327,7 @@ export default function PublicProfilePage() {
                       key={u.username}
                       href={`/profile/${u.username}`}
                       onClick={() => setListOpen(null)}
-                      className="flex items-center gap-3 px-2 py-2 rounded-field hover:bg-surface-2 transition-colors duration-150"
+                      className="flex items-center gap-3 px-2 py-2 rounded-2xl hover:bg-white/[0.06] transition-colors duration-150"
                     >
                       <Avatar username={u.username} avatarUrl={u.avatar_url} size={40} verified={u.is_verified} />
                       <span className="flex items-center gap-1.5 text-ink text-sm font-medium">
