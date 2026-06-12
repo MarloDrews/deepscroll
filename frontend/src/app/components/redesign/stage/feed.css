@@ -1,1 +1,22 @@
 /* Stage (questions + stories) — feed styles. Owned by the stage design build. */
+
+/* Skeleton pulse for the loading slabs; static under reduced motion. */
+@keyframes stage-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.stage-pulse {
+  animation: stage-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-pulse {
+    animation: none;
+  }
+}
