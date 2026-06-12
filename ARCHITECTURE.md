@@ -94,6 +94,7 @@ frontend/
       savedPosts.ts             isPostSaved, savePost, unsavePost, getSavedPostIds; localStorage key "deepscroll_saved"; server-safe; TODO: replace with backend endpoint
   src/lib/
     formats.ts                  single source of format identity: FORMAT_IDS, FORMAT_STYLES (label, badge, Circuit ink hex, rgb, text/dot/border/indicator classes from fmt-* tokens), formatStyle() with neutral fallback, LEGACY_SVG_ACCENT_MAP (old accent hex → new ink, used by SvgBlock)
+    redesign.ts                 temporary design-exploration scoping (redesign/explore-3): designForTab/designForFormat → folio|console|stage|null; null = baseline (academy, for-you, following, all non-feed routes)
   src/components/
     SvgBlock.tsx                shared visual_svg renderer; user content → UTF-8-safe base64 <img>, seed → dangerouslySetInnerHTML; render-time re-palette of legacy accent hexes to Circuit inks; className/color props for per-section layout
     SectionLabel.tsx            unified section header (h3, text-xs uppercase tracking-widest, zinc-500 default, color override)
