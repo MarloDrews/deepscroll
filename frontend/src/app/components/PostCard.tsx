@@ -11,6 +11,9 @@ import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCou
 import { updatePostInFeedCaches } from "@/app/lib/swr"
 import { fcNum, fcStr, type Post } from "@/types/post"
 import { formatStyle } from "@/lib/formats"
+import { designForTab } from "@/lib/redesign"
+import { designModule } from "./redesign/registry"
+import type { PostCardViewProps } from "./redesign/types"
 
 export type { Post }
 
@@ -70,6 +73,11 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
 
   const style = formatStyle(post.format)
   const fc = post.feed_card
+  // Design exploration dispatch: variant components replace the inner card
+  // view; null design or null slot always renders the baseline JSX below.
+  const mod = designModule(designForTab(activeTabId))
+  const CardView = mod?.Card
+  const SheetView = mod?.CommentsSheet
 
   useEffect(() => {
     apiFetch(`/api/posts/${post.id}/likes`)
@@ -215,13 +223,38 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
     }
   }
 
+  // View props handed to a design-variant card. Handlers are pre-wrapped
+  // with stopPropagation so a variant can never accidentally schedule the
+  // card's delayed navigate().
+  const view: PostCardViewProps = {
+    post,
+    fc,
+    style,
+    visible,
+    liked,
+    likesCount,
+    saved,
+    saveCount,
+    commentsCount,
+    animatingLike,
+    animatingSave,
+    onLikeAnimEnd: () => setAnimatingLike(false),
+    onSaveAnimEnd: () => setAnimatingSave(false),
+    onToggleLike: (e) => { e.stopPropagation(); handleToggleLike() },
+    onSave: handleSaveClick,
+    onOpenComments: (e) => { e.stopPropagation(); setShowComments(true) },
+    onShare: handleShare,
+  }
+
   return (
     <div
       ref={cardRef}
       onClick={handleCardClick}
       // --accent drives every format-colored detail inside the card.
       style={{ cursor: "pointer", ["--accent" as string]: style.accent }}
-      className="h-[100dvh] relative overflow-hidden shrink-0 snap-start [scroll-snap-stop:always] flex flex-col bg-surface-0 pl-5 pr-5 pt-12 pb-8"
+      // Invariant wrapper: the vertical snap feed and scroll restore depend
+      // on these classes — design variants only ever change what is inside.
+      className="h-[100dvh] relative overflow-hidden shrink-0 snap-start [scroll-snap-stop:always] bg-surface-0"
     >
       {/* Double-tap heart overlay */}
       {showHeartAnim && (
@@ -238,6 +271,10 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
         </div>
       )}
 
+      {CardView ? (
+        <CardView {...view} />
+      ) : (
+        <div className="h-full flex flex-col pl-5 pr-5 pt-12 pb-8">
       {/* Format indicator row */}
       <div className="flex items-center justify-between relative z-10">
         <div className="flex items-center gap-2">
@@ -601,18 +638,31 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           </button>
         </div>
       </div>
+        </div>
+      )}
 
       {showComments && (
-        <CommentsBottomSheet
-          postId={post.id}
-          onClose={() => setShowComments(false)}
-          onCountChange={(n) => {
-            setCommentsCount(n)
-            // Feed lists are cached for the session; without this the count
-            // would revert to the cached value when the user navigates back.
-            updatePostInFeedCaches(post.id, { comment_count: n })
-          }}
-        />
+        SheetView ? (
+          <SheetView
+            postId={post.id}
+            onClose={() => setShowComments(false)}
+            onCountChange={(n) => {
+              setCommentsCount(n)
+              updatePostInFeedCaches(post.id, { comment_count: n })
+            }}
+          />
+        ) : (
+          <CommentsBottomSheet
+            postId={post.id}
+            onClose={() => setShowComments(false)}
+            onCountChange={(n) => {
+              setCommentsCount(n)
+              // Feed lists are cached for the session; without this the count
+              // would revert to the cached value when the user navigates back.
+              updatePostInFeedCaches(post.id, { comment_count: n })
+            }}
+          />
+        )
       )}
 
       <Toast message="Link copied!" visible={toastVisible} />
