@@ -1,12 +1,14 @@
 // Stage (questions + stories) — comments + detail chrome slot wiring.
-// Null slots render baseline.
 
 import type { DetailSlots } from "../types"
+import StageCommentsSheet from "./StageCommentsSheet"
+import StageCommentsList from "./StageCommentsList"
+import { StageDetailBack, StageDetailBar, StageDetailHeader } from "./StageDetailChrome"
 
 export const stageDetail: DetailSlots = {
-  CommentsSheet: null,
-  DetailBack: null,
-  DetailHeader: null,
-  DetailBar: null,
-  CommentsList: null,
+  CommentsSheet: StageCommentsSheet,
+  DetailBack: StageDetailBack,
+  DetailHeader: StageDetailHeader,
+  DetailBar: StageDetailBar,
+  CommentsList: StageCommentsList,
 }
