@@ -16,16 +16,17 @@ interface FeedHeaderProps {
   activeTab: string
   onTabClick: (index: number) => void
   onSearch: () => void
-  // Refs stay owned by the feed page: the scroll-sync listeners that position
-  // the indicator live there, next to the horizontal pager they read from.
-  tabRefs: MutableRefObject<Record<string, HTMLButtonElement | null>>
+  // Refs stay owned by the feed page (via the useSwipeTabs hook, which holds
+  // the scroll-sync listeners that position the indicator); buttons are
+  // keyed by tab index.
+  tabRefs: MutableRefObject<(HTMLButtonElement | null)[]>
   indicatorRef: RefObject<HTMLDivElement | null>
   tabStripRef: RefObject<HTMLDivElement | null>
 }
 
 // Stage feed header — a floating frosted capsule detached from the top edge,
 // with a separate frosted search circle to its right. The sliding indicator
-// is the active pill fill itself: the scroll-sync JS in page.tsx interpolates
+// is the active pill fill itself: the useSwipeTabs scroll-sync interpolates
 // its left and width between tab buttons. The capsule stays neutral; the only
 // accent is the format dot on the active tab label.
 export default function FeedHeader({
@@ -71,7 +72,7 @@ export default function FeedHeader({
             return (
               <button
                 key={tab.id}
-                ref={(el) => { tabRefs.current[tab.id] = el }}
+                ref={(el) => { tabRefs.current[i] = el }}
                 onClick={() => onTabClick(i)}
                 className={`snap-center shrink-0 px-4 h-11 flex items-center justify-center cursor-pointer transition-colors duration-200 ${
                   isActive ? "text-ink font-semibold" : "text-ink-muted font-medium"

@@ -11,6 +11,7 @@ import EmptyState from "@/components/EmptyState"
 import type { Post } from "@/types/post"
 import { FORMAT_IDS, FORMAT_STYLES } from "@/lib/formats"
 import { useAuth } from "@/app/lib/auth"
+import { useSwipeTabs } from "@/app/lib/useSwipeTabs"
 
 const TABS: FeedTab[] = [
   // Non-format tabs carry no accent dot; the capsule itself stays neutral.
@@ -127,15 +128,18 @@ function TabPage({
 
 export default function Home() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState("for-you")
-  const [activatedTabs, setActivatedTabs] = useState<Set<string>>(new Set(["for-you"]))
   const [slugs, setSlugs] = useState<string[]>([])
-  const outerRef        = useRef<HTMLDivElement>(null)
-  const activeTabRef    = useRef("for-you")
-  const tabRefs         = useRef<Record<string, HTMLButtonElement | null>>({})
-  const indicatorRef    = useRef<HTMLDivElement>(null)
+  // The swipe pager, sliding indicator and active/activated tab state all
+  // live in the shared hook; the indicator is the neutral pill fill whose
+  // color never changes — the per-post accent switches hard with the
+  // settled card, not the chrome.
+  const { activeIndex, activatedIndices, pagerRef, indicatorRef, tabRefs, selectTab } =
+    useSwipeTabs({ count: TABS.length })
+  const activeTab = TABS[activeIndex].id
   const tabStripRef     = useRef<HTMLDivElement>(null)
   const isFirstTabCenter = useRef(true)
+  const selectTabRef = useRef(selectTab)
+  selectTabRef.current = selectTab
 
   // Check localStorage on mount, store interests, and restore active tab from sessionStorage
   useEffect(() => {
@@ -150,128 +154,35 @@ export default function Home() {
     if (savedTab) {
       const tabIndex = TABS.findIndex((t) => t.id === savedTab)
       if (tabIndex !== -1) {
-        activeTabRef.current = savedTab
-        setActiveTab(savedTab)
-        setActivatedTabs(new Set(["for-you", savedTab]))
         sessionStorage.removeItem("feedActiveTab")
-        requestAnimationFrame(() => {
-          if (outerRef.current) {
-            outerRef.current.scrollLeft = tabIndex * outerRef.current.clientWidth
-          }
-        })
+        selectTabRef.current(tabIndex, { behavior: "instant" })
       }
     }
   }, [router])
 
   // Align the active tab: first tab snaps left, last tab snaps right, middle tabs center.
   useEffect(() => {
-    const button = tabRefs.current[activeTab]
+    const button = tabRefs.current[activeIndex]
     if (!button) return
     const strip = tabStripRef.current
-    const tabIndex = TABS.findIndex((t) => t.id === activeTab)
     const behavior: ScrollBehavior = isFirstTabCenter.current ? "instant" : "smooth"
     isFirstTabCenter.current = false
 
-    if (tabIndex === 0) {
+    if (activeIndex === 0) {
       strip?.scrollTo({ left: 0, behavior })
-    } else if (tabIndex === TABS.length - 1) {
+    } else if (activeIndex === TABS.length - 1) {
       strip?.scrollTo({ left: strip.scrollWidth, behavior })
     } else {
       button.scrollIntoView({ behavior, inline: "center", block: "nearest" })
     }
-  }, [activeTab])
-
-  // Real-time indicator + state update on outer feed scroll
-  useEffect(() => {
-    const el = outerRef.current
-    if (!el) return
-
-    // The indicator is the neutral pill fill: its left and width interpolate
-    // between tab button geometry mid-swipe. Its color never changes — the
-    // per-post accent switches hard with the settled card, not the chrome.
-    function updateIndicator() {
-      if (!el || !indicatorRef.current) return
-      const progress   = el.scrollLeft / el.clientWidth
-      const leftIndex  = Math.max(0,              Math.floor(progress))
-      const rightIndex = Math.min(TABS.length - 1, Math.ceil(progress))
-      const fraction   = progress - Math.floor(progress)
-
-      const leftBtn  = tabRefs.current[TABS[leftIndex].id]
-      const rightBtn = tabRefs.current[TABS[rightIndex].id]
-      if (!leftBtn || !rightBtn) return
-
-      const width = leftBtn.offsetWidth + (rightBtn.offsetWidth - leftBtn.offsetWidth) * fraction
-      const halfInd = width / 2
-      const leftX  = leftBtn.offsetLeft  + leftBtn.offsetWidth  / 2 - halfInd
-      const rightX = rightBtn.offsetLeft + rightBtn.offsetWidth / 2 - halfInd
-      const x      = leftX + (rightX - leftX) * fraction
-
-      indicatorRef.current.style.transition = "none"
-      indicatorRef.current.style.width = `${width}px`
-      indicatorRef.current.style.left = `${x}px`
-    }
-
-    function onSettled() {
-      if (!el) return
-      // Restore a brief transition so the final snap feels smooth
-      if (indicatorRef.current) {
-        indicatorRef.current.style.transition =
-          "left 0.15s ease-out, width 0.15s ease-out"
-      }
-      const index = Math.round(el.scrollLeft / el.clientWidth)
-      const tab = TABS[index]
-      if (!tab || tab.id === activeTabRef.current) return
-      activeTabRef.current = tab.id
-      setActiveTab(tab.id)
-      setActivatedTabs((prev) => new Set([...prev, tab.id]))
-    }
-
-    // Set initial indicator position
-    updateIndicator()
-
-    el.addEventListener("scroll", updateIndicator, { passive: true })
-
-    if ("onscrollend" in el) {
-      el.addEventListener("scrollend", onSettled, { passive: true })
-      return () => {
-        el.removeEventListener("scroll", updateIndicator)
-        el.removeEventListener("scrollend", onSettled)
-      }
-    }
-
-    // Fallback: 50ms debounce for older browsers.
-    // Cast needed: lib.dom assumes scrollend always exists, narrowing el to never here.
-    const legacyEl = el as HTMLDivElement
-    let timer: ReturnType<typeof setTimeout>
-    function onScroll() {
-      clearTimeout(timer)
-      timer = setTimeout(onSettled, 50)
-    }
-    legacyEl.addEventListener("scroll", onScroll, { passive: true })
-    return () => {
-      legacyEl.removeEventListener("scroll", updateIndicator)
-      legacyEl.removeEventListener("scroll", onScroll)
-      clearTimeout(timer)
-    }
-  }, [])
-
-  function handleTabClick(index: number) {
-    const tab = TABS[index]
-    activeTabRef.current = tab.id
-    setActiveTab(tab.id)
-    setActivatedTabs((prev) => new Set([...prev, tab.id]))
-    outerRef.current?.scrollTo({
-      left: index * (outerRef.current.clientWidth),
-      behavior: "smooth",
-    })
-  }
+  }, [activeIndex, tabRefs])
 
   return (
     <PhoneFrame>
       <FeedHeader
         tabs={TABS}
         activeTab={activeTab}
-        onTabClick={handleTabClick}
+        onTabClick={selectTab}
         onSearch={() => router.push("/search")}
         tabRefs={tabRefs}
         indicatorRef={indicatorRef}
@@ -280,15 +191,15 @@ export default function Home() {
 
       {/* Horizontal strip — one full-width page per tab */}
       <div
-        ref={outerRef}
+        ref={pagerRef}
         className="h-full flex flex-row overflow-x-scroll overflow-y-hidden snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
       >
-        {TABS.map((tab) => (
+        {TABS.map((tab, i) => (
           <TabPage
             key={tab.id}
             tab={tab}
             slugs={slugs}
-            isActivated={activatedTabs.has(tab.id)}
+            isActivated={activatedIndices.has(i)}
           />
         ))}
       </div>
