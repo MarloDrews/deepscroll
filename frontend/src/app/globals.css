@@ -264,6 +264,18 @@ body::before {
   }
 }
 
+/* Read-aloud tracking, painted by src/lib/readAloud via the CSS Custom
+   Highlight API. The sentence is a soft wash of the post's format accent;
+   the spoken word is a stronger step of the same accent. Browsers without
+   ::highlight() show no tracking; speech still plays. */
+::highlight(read-aloud-sentence) {
+  background-color: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+::highlight(read-aloud-word) {
+  background-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--color-ink);
+}
+
 @keyframes heart-pop {
   0%   { transform: scale(1); }
   35%  { transform: scale(1.35); }

@@ -85,6 +85,17 @@ interface Props {
   postId: number
 }
 
+// Sections that are visible metadata or navigation rather than prose;
+// read-aloud skips them via data-no-read so only real content is spoken.
+const NO_READ_SECTIONS = new Set([
+  "at_a_glance",
+  "quiz",
+  "quiz_badge",
+  "paper_card",
+  "related_posts",
+  "sources",
+])
+
 export default function SectionRenderer({ sections, isUserContent, postId }: Props) {
   const sorted = [...sections].sort((a, b) => a.order - b.order)
 
@@ -94,6 +105,7 @@ export default function SectionRenderer({ sections, isUserContent, postId }: Pro
     <div className="flex flex-col divide-y divide-edge font-serif">
       {sorted.map((section, i) => {
         const c = section.content
+        const rendered = (() => {
         switch (section.type) {
           case "essence":
             return <EssenceSection key={i} content={c as string} />
@@ -257,6 +269,11 @@ export default function SectionRenderer({ sections, isUserContent, postId }: Pro
             console.warn(`SectionRenderer: unknown section type "${section.type}"`)
             return null
         }
+        })()
+        if (rendered && NO_READ_SECTIONS.has(section.type)) {
+          return <div key={i} data-no-read>{rendered}</div>
+        }
+        return rendered
       })}
     </div>
   )
