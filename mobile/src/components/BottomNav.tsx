@@ -8,9 +8,9 @@ import { Frosted } from "./stage"
 
 // Port of frontend/src/app/components/BottomNav.tsx (Stage): a frosted pill
 // dock floating inset from every edge; the active item is a filled neutral
-// circle — functional, never glow. Feed/Stats/Profile navigate like the web
-// (Profile goes to the own public profile, settings live behind its gear);
-// Chat/Create still report "coming soon" until those screens exist.
+// circle — functional, never glow. Feed/Stats/Profile/Chat navigate like the
+// web (Profile goes to the own public profile, settings live behind its gear);
+// only Create still reports "coming soon" until that screen exists.
 
 const ICON_PROPS = {
   width: 20,
@@ -22,7 +22,7 @@ const ICON_PROPS = {
   strokeLinejoin: "round",
 } as const
 
-type ActiveTab = "feed" | "stats" | "profile"
+type ActiveTab = "feed" | "stats" | "profile" | "chat"
 
 function NavButton({
   onPress,
@@ -87,8 +87,11 @@ export default function BottomNav({
           }}
         >
           {/* Chat */}
-          <NavButton onPress={onComingSoon}>
-            <Svg {...ICON_PROPS} stroke={inactive}>
+          <NavButton
+            onPress={active === "chat" ? () => {} : () => router.push("/chat")}
+            active={active === "chat"}
+          >
+            <Svg {...ICON_PROPS} stroke={iconColor("chat")}>
               <Path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
             </Svg>
           </NavButton>
