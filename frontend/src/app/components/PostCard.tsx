@@ -7,6 +7,7 @@ import Toast from "./Toast"
 import { queueEvent, hasPendingLike, cancelPendingLike } from "@/app/lib/eventQueue"
 import { apiFetch } from "@/app/lib/api"
 import { savePost, unsavePost, isPostSaved } from "@/app/lib/savedPosts"
+import { requestAutoRead } from "@/lib/readAloud/autostart"
 import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCount, isLikeSent, markLikeSent, unmarkLikeSent } from "@/app/lib/likedPosts"
 import { updatePostInFeedCaches } from "@/app/lib/swr"
 import { fcNum, fcStr, type Post } from "@/types/post"
@@ -335,20 +336,24 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
         >
           {/* Format marker floating above the slab — dot and label both carry
               the per-format accent so the format is legible at a glance. The
-              read-aloud placeholder sits at the row's right end — the post
+              read-aloud button sits at the row's right end — the post
               block's top-right corner: it belongs to the post, not to the
               social action rail. (Inside the slab surface it would collide
-              with the books cover / people portrait layouts.) */}
+              with the books cover / people portrait layouts.) It opens the
+              detail page with reading already started. */}
           <div className="flex items-center gap-2 mb-3 px-2">
             <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-(--accent)" />
             <span className="text-xs font-mono lowercase tracking-widest text-(--accent)">
               {style.badge.toLowerCase()}
             </span>
             <button
-              disabled
-              aria-disabled="true"
-              aria-label="Read aloud (coming soon)"
-              className="ml-auto -my-2 w-8 h-8 flex items-center justify-center text-ink-dim opacity-40 cursor-default"
+              onClick={(e) => {
+                e.stopPropagation()
+                requestAutoRead(post.id)
+                navigate()
+              }}
+              aria-label="Read aloud"
+              className="ml-auto -my-2 w-8 h-8 flex items-center justify-center text-ink-dim hover:text-ink cursor-pointer transition-all duration-150 active:scale-90"
             >
               <SpeakerIcon className="w-5 h-5" />
             </button>

@@ -93,6 +93,31 @@ export function SendIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+// Read-aloud transport controls on the post detail page.
+export function PauseIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M9 5.25v13.5M15 5.25v13.5" />
+    </svg>
+  )
+}
+
+export function StopIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" {...props}>
+      <rect x="6.75" y="6.75" width="10.5" height="10.5" rx="2" />
+    </svg>
+  )
+}
+
 export function SpeakerIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
