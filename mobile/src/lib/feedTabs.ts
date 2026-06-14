@@ -1,9 +1,9 @@
-import { FORMAT_IDS, FORMAT_STYLES, type FormatId } from "./formats"
+import { type FormatId } from "./formats"
 
-// The 9 feed tabs (Following + For You + 7 formats), ported from the TABS
-// constant in frontend/src/app/page.tsx (web tab order; For You is the
-// default open tab). The two non-format tabs use a near-white accent so the
-// sliding indicator reads neutral on them.
+// The 3 feed tabs (Following + For You + Train). Format-specific tabs were
+// removed from the feed; format filtering now lives only in the search view.
+// The non-format tabs use a near-white accent so the sliding indicator reads
+// neutral on them.
 
 export interface FeedTabDef {
   id: string
@@ -19,11 +19,5 @@ export const DEFAULT_TAB_INDEX = 1
 export const TABS: FeedTabDef[] = [
   { id: "following", label: "Following", format: null, accent: "#eceeff", rgb: [236, 238, 255] },
   { id: "for-you", label: "For You", format: null, accent: "#eceeff", rgb: [236, 238, 255] },
-  ...FORMAT_IDS.map((id) => ({
-    id: id as string,
-    label: FORMAT_STYLES[id].label,
-    format: id as FormatId,
-    accent: FORMAT_STYLES[id].accent,
-    rgb: FORMAT_STYLES[id].rgb,
-  })),
+  { id: "train", label: "Train", format: null, accent: "#eceeff", rgb: [236, 238, 255] },
 ]

@@ -143,6 +143,7 @@ const FeedTabBar = forwardRef<FeedTabBarHandle, Props>(function FeedTabBar(
                     paddingHorizontal: 16,
                     flexDirection: "row",
                     alignItems: "center",
+                    justifyContent: "center",
                     gap: 6,
                   }}
                 >
@@ -161,15 +162,28 @@ const FeedTabBar = forwardRef<FeedTabBarHandle, Props>(function FeedTabBar(
                       }}
                     />
                   )}
-                  <Text
-                    style={{
-                      fontFamily: active ? fonts.sansSemiBold : fonts.sansMedium,
-                      fontSize: 14,
-                      color: active ? colors.ink : colors["ink-muted"],
-                    }}
-                  >
-                    {tab.label}
-                  </Text>
+                  {/* The label width must not change with active state, or
+                      activating a tab would reflow the strip and the indicator
+                      (which reads measured widths) would no longer match. An
+                      invisible semibold copy reserves the widest width; the
+                      visible text is centered over it and only swaps weight. */}
+                  <View style={{ alignItems: "center", justifyContent: "center" }}>
+                    <Text
+                      style={{ fontFamily: fonts.sansSemiBold, fontSize: 14, opacity: 0 }}
+                    >
+                      {tab.label}
+                    </Text>
+                    <Text
+                      style={{
+                        position: "absolute",
+                        fontFamily: active ? fonts.sansSemiBold : fonts.sansMedium,
+                        fontSize: 14,
+                        color: active ? colors.ink : colors["ink-muted"],
+                      }}
+                    >
+                      {tab.label}
+                    </Text>
+                  </View>
                 </Pressable>
               )
             })}
@@ -183,16 +197,21 @@ const FeedTabBar = forwardRef<FeedTabBarHandle, Props>(function FeedTabBar(
         <Pressable
           onPress={onSearchPress}
           style={({ pressed }) => ({
-            flex: 1,
+            width: STRIP_HEIGHT,
+            height: STRIP_HEIGHT,
             alignItems: "center",
             justifyContent: "center",
             transform: [{ scale: pressed ? 0.95 : 1 }],
           })}
         >
+          {/* The Svg fills the circle and the viewBox centers/scales the
+              icon. react-native-svg does not reliably honor the parent's flex
+              centering (it pins to the top-left), so we center via the viewBox
+              instead: the 24-unit icon art sits centered in a 44-unit box. */}
           <Svg
-            width={20}
-            height={20}
-            viewBox="0 0 24 24"
+            width={STRIP_HEIGHT}
+            height={STRIP_HEIGHT}
+            viewBox="-10 -10 44 44"
             fill="none"
             stroke={colors["ink-dim"]}
             strokeWidth={2}

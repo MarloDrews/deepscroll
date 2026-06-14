@@ -1,4 +1,4 @@
-import { memo, useRef, useState } from "react"
+import { memo, useRef } from "react"
 import { Pressable, Text, View, useWindowDimensions } from "react-native"
 import { Image } from "expo-image"
 import { useRouter } from "expo-router"
@@ -13,18 +13,17 @@ import { fcNum, fcStr, type Post } from "../types/post"
 import { formatStyle } from "../lib/formats"
 import { resolveImageUrl } from "../config"
 import { usePostActions } from "../lib/usePostActions"
-import { sharePost } from "../lib/share"
 import { colors, fills, fonts, radius } from "../theme/tokens"
 import { SlabAccent, SlabGlow } from "./stage"
-import CommentsBottomSheet from "./CommentsBottomSheet"
 import VerifiedBadge from "./VerifiedBadge"
-import { HeartIcon, BookmarkIcon, CommentIcon, ShareIcon, SpeakerIcon } from "./icons"
+import { HeartIcon, SpeakerIcon } from "./icons"
 
 // Full-screen Stage feed card, ported from frontend PostCard.tsx: format
 // marker floating above a borderless frosted slab, format-colored glow
-// behind it, bare-glyph action rail at the right edge, interest tags as
-// floating pills bottom-left. Tap opens the post detail; double tap likes
-// (web 300ms double-tap rule) with the heart-boom overlay.
+// behind it, interest tags as floating pills bottom-left. The like/comment/
+// save/share buttons live on the post detail view, not the feed. Tap opens
+// the post detail; double tap likes (web 300ms double-tap rule) with the
+// heart-boom overlay.
 // Every card is exactly `height` tall so FlatList paging snaps one card per
 // swipe without measuring.
 
@@ -301,99 +300,30 @@ function CardBody({ post }: { post: Post }) {
   )
 }
 
-// One action rail entry: bare glyph in a 44px tap target with a fixed-height
-// mono count slot below, invisible at zero so button centers keep one
-// uniform interval (web rail). Press is a springy scale-down.
-function RailButton({
-  onPress,
-  icon,
-  count,
-  countColor,
-  countVisible,
-}: {
-  onPress: () => void
-  icon: React.ReactNode
-  count?: number
-  countColor?: string
-  countVisible?: boolean
-}) {
-  return (
-    <View style={{ alignItems: "center" }}>
-      <Pressable
-        onPress={onPress}
-        hitSlop={4}
-        style={({ pressed }) => ({
-          width: 44,
-          height: 44,
-          alignItems: "center",
-          justifyContent: "center",
-          transform: [{ scale: pressed ? 0.9 : 1 }],
-        })}
-      >
-        {icon}
-      </Pressable>
-      {count !== undefined && (
-        <Text
-          style={{
-            height: 12,
-            fontFamily: fonts.mono,
-            fontSize: 11,
-            lineHeight: 12,
-            color: countColor ?? colors["ink-dim"],
-            opacity: countVisible ? 1 : 0,
-          }}
-        >
-          {count}
-        </Text>
-      )}
-    </View>
-  )
-}
-
 function PostCard({ post, height }: { post: Post; height: number }) {
   const style = formatStyle(post.format)
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { width: windowWidth } = useWindowDimensions()
-  const { liked, likesCount, saved, like, toggleLike, toggleSave } = usePostActions(
-    post.id,
-    post.like_count
-  )
-  const [commentsCount, setCommentsCount] = useState(post.comment_count)
-  const [showComments, setShowComments] = useState(false)
-  // Saves are local-only (no backend endpoint yet), so the count can only
-  // reflect this user's own save state.
-  const saveCount = saved ? 1 : 0
+  const { liked, like } = usePostActions(post.id, post.like_count)
 
   const lastTapRef = useRef(0)
   const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Web heart-pop (rail glyph scale burst) + heart-boom (center overlay).
-  const popScale = useSharedValue(1)
+  // Web heart-boom (center overlay) for the double-tap like.
   const boomScale = useSharedValue(0)
   const boomOpacity = useSharedValue(0)
 
-  const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: popScale.value }] }))
   const boomStyle = useAnimatedStyle(() => ({
     opacity: boomOpacity.value,
     transform: [{ scale: boomScale.value }],
   }))
 
   function animateLike() {
-    popScale.value = withSequence(
-      withTiming(1.35, { duration: 112 }),
-      withTiming(0.9, { duration: 112 }),
-      withTiming(1, { duration: 96 })
-    )
     boomScale.value = 0
     boomOpacity.value = 1
     boomScale.value = withSequence(withTiming(1.3, { duration: 300 }), withTiming(1, { duration: 300 }))
     boomOpacity.value = withSequence(withTiming(1, { duration: 300 }), withTiming(0, { duration: 300 }))
-  }
-
-  function handleRailLike() {
-    if (!liked) animateLike()
-    toggleLike()
   }
 
   // Web double-tap rule: a second tap within 300ms likes; otherwise navigate
@@ -507,76 +437,6 @@ function PostCard({ post, height }: { post: Post; height: number }) {
         <HeartIcon size={96} color={colors.lamp} filled />
       </Animated.View>
 
-      {/* Interest tags — floating frosted pills bottom-left, clear of the
-          rail, level with it just above the nav dock; wrap-reverse keeps the
-          first row hugging the bottom edge. */}
-      {post.interests.length > 0 && (
-        <View
-          className="flex-row"
-          style={{
-            position: "absolute",
-            left: 16,
-            right: 80,
-            bottom: insets.bottom + 72,
-            flexWrap: "wrap-reverse",
-            gap: 8,
-          }}
-        >
-          {post.interests.slice(0, 2).map((name) => (
-            <View
-              key={name}
-              style={{
-                backgroundColor: fills.tag,
-                borderRadius: 999,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-              }}
-            >
-              <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: colors["ink-dim"] }}>{name}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-
-      {/* Action rail — bare glyphs floating at the right edge */}
-      <View style={{ position: "absolute", right: 8, bottom: insets.bottom + 72, alignItems: "center" }}>
-        <RailButton
-          onPress={handleRailLike}
-          icon={
-            <Animated.View style={popStyle}>
-              <HeartIcon size={28} color={liked ? colors.like : colors["ink-dim"]} filled={liked} />
-            </Animated.View>
-          }
-          count={likesCount}
-          countColor={liked ? colors.like : colors["ink-dim"]}
-          countVisible={likesCount > 0 || liked}
-        />
-        <RailButton
-          onPress={() => setShowComments(true)}
-          icon={<CommentIcon size={28} color={colors["ink-dim"]} />}
-          count={commentsCount}
-          countVisible={commentsCount > 0}
-        />
-        <RailButton
-          onPress={toggleSave}
-          icon={<BookmarkIcon size={28} color={saved ? colors.save : colors["ink-dim"]} filled={saved} />}
-          count={saveCount}
-          countColor={saved ? colors.save : colors["ink-dim"]}
-          countVisible={saveCount > 0 || saved}
-        />
-        <RailButton
-          onPress={() => sharePost(post)}
-          icon={<ShareIcon size={28} color={colors["ink-dim"]} />}
-        />
-      </View>
-
-      {showComments && (
-        <CommentsBottomSheet
-          postId={post.id}
-          onClose={() => setShowComments(false)}
-          onCountChange={setCommentsCount}
-        />
-      )}
     </Pressable>
   )
 }

@@ -15,15 +15,16 @@ import { Frosted, MessageSlab, PulsingSlab, SlabAccent, SlabGlow, ghostPillStyle
 import SectionRenderer from "../../components/SectionRenderer"
 import CommentsBottomSheet from "../../components/CommentsBottomSheet"
 import VerifiedBadge from "../../components/VerifiedBadge"
-import { HeartIcon, BackIcon } from "../../components/icons"
+import { sharePost } from "../../lib/share"
+import { HeartIcon, BookmarkIcon, ShareIcon, BackIcon } from "../../components/icons"
 
 // Port of frontend/src/app/post/[id]/page.tsx (Stage): full-screen detail
 // that slides up over the feed (Stack animation), swipe right to close (same
 // dx > 80 && dx > |dy| rule as the web touch handler). Floating frosted back
 // circle, header slab with the format glow + accent edge, and a floating
-// pill comment bar carrying only comment + like — save/share live on the
-// feed card's action rail, like the web. The AccentProvider replaces the
-// web's --accent CSS variable for everything below the header.
+// pill bar carrying the comment, like, save, and share actions — these live
+// inside the opened post, not on the feed card. The AccentProvider replaces
+// the web's --accent CSS variable for everything below the header.
 
 export default function PostDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -35,7 +36,7 @@ export default function PostDetailScreen() {
   const [notFound, setNotFound] = useState(false)
   const [showComments, setShowComments] = useState(false)
 
-  const { liked, toggleLike } = usePostActions(postId, 0)
+  const { liked, toggleLike, saved, toggleSave } = usePostActions(postId, 0)
 
   const isClosingRef = useRef(false)
 
@@ -231,9 +232,9 @@ export default function PostDetailScreen() {
           </ScrollView>
           </GestureDetector>
 
-          {/* Floating pill comment bar — detached from every edge, carrying
-              only comment + like (web detail bar). The comment pill opens
-              the shared bottom sheet. */}
+          {/* Floating pill action bar — detached from every edge, carrying
+              the comment, like, save, and share actions for the post. The
+              comment pill opens the shared bottom sheet. */}
           <Frosted
             borderRadius={999}
             style={{ position: "absolute", left: 12, right: 12, bottom: insets.bottom + 12, zIndex: 10 }}
@@ -277,6 +278,38 @@ export default function PostDetailScreen() {
                 })}
               >
                 <HeartIcon size={20} color={liked ? colors.like : colors["ink-dim"]} filled={liked} />
+              </Pressable>
+
+              <Pressable
+                onPress={toggleSave}
+                hitSlop={4}
+                style={({ pressed }) => ({
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: saved ? colors.save + "1A" : fills.chrome,
+                  transform: [{ scale: pressed ? 0.95 : 1 }],
+                })}
+              >
+                <BookmarkIcon size={20} color={saved ? colors.save : colors["ink-dim"]} filled={saved} />
+              </Pressable>
+
+              <Pressable
+                onPress={() => sharePost(post)}
+                hitSlop={4}
+                style={({ pressed }) => ({
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: fills.chrome,
+                  transform: [{ scale: pressed ? 0.95 : 1 }],
+                })}
+              >
+                <ShareIcon size={20} color={colors["ink-dim"]} />
               </Pressable>
             </View>
           </Frosted>
