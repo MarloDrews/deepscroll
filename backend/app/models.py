@@ -86,6 +86,13 @@ class User(Base):
     bio           = Column(String, nullable=True)
     avatar_url    = Column(String, nullable=True)
 
+    # Single unified knowledge score (the "Knowledge score" and the Train Elo are
+    # the same number). NULL until the user's first scored answer, then it behaves
+    # like a 1000-start Elo. answered_count drives the provisional/stable K-factor
+    # and counts every scored answer (post quizzes + Train), see app/elo.py.
+    knowledge_rating         = Column(Float, nullable=True)
+    knowledge_answered_count = Column(Integer, nullable=False, default=0)
+
     posts = relationship("Post", back_populates="author", foreign_keys="Post.author_id")
 
 
@@ -108,15 +115,9 @@ class Follow(Base):
     following = relationship("User", foreign_keys=[following_id])
 
 
-class UserElo(Base):
-    __tablename__ = "user_elo"
-    __table_args__ = (UniqueConstraint("user_id", "format", name="uq_user_elo"),)
-
-    id             = Column(Integer, primary_key=True)
-    user_id        = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    format         = Column(String, nullable=False)
-    rating         = Column(Float, nullable=False, default=1000.0)
-    answered_count = Column(Integer, nullable=False, default=0)
+# NOTE: the old per-format `user_elo` table has been replaced by the single
+# `users.knowledge_rating` column (see User above). The legacy table is left in
+# the database for now (non-destructive) but is no longer modeled or used.
 
 
 class QuizAnswer(Base):

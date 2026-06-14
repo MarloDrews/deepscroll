@@ -142,7 +142,7 @@ export default function MyStatsTab({
       />
       {eloFormats.length === 0 ? (
         <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: colors["ink-muted"] }}>
-          Answer post quizzes to build your score. Correct answers raise it, wrong answers lower it.
+          Answer post quizzes or train to build your score. Correct answers raise it, wrong answers lower it.
         </Text>
       ) : (
         <ProgressBarList

@@ -18,8 +18,8 @@ backend/
   app/
     database.py                 engine (PostgreSQL via DATABASE_URL env var; pool_recycle=1200 + connect_timeout=10 on PG only — pool_pre_ping measured and rejected, +1 round trip per request), SessionLocal, Base, get_db dependency
     main.py                     FastAPI app, CORS origins from FRONTEND_ORIGIN env (default localhost:3000, "*" stripped), 10 MB request body cap middleware, router registration, create_all on startup; no StaticFiles mount (files served from Supabase Storage)
-    models.py                   ORM models: Interest, Post (feed_card JSON not null, sections JSON not null, is_user_content Boolean not null default False, author_id FK→users nullable; indexes on format/status/created_at; author_username, author_is_verified and author_avatar_url as properties), Event (user_id nullable FK; indexes: (post_id,event_type) composite, user_id, created_at — apply to the live DB once via scripts/add_indexes.py), User (posts relationship, is_verified Integer default 0, is_private boolean default false, bio string nullable, avatar_url string nullable), Follow (follower_id FK→users, following_id FK→users, status "pending"|"accepted", created_at; UniqueConstraint uq_follow), UserElo (user_id+format unique, rating float, answered_count), QuizAnswer (user_id+post_id+question_index unique, chosen_index, is_correct, rating_delta), Comment, post_interests join table
-    elo.py                      Elo knowledge score: start 1000, floor 100, K=32 first 30 answers per format then 16, question rating 800/1000/1200 from post_difficulty; elo_summary() returns global (average of per-format ratings, None until first answer) + per-format ratings in one query
+    models.py                   ORM models: Interest, Post (feed_card JSON not null, sections JSON not null, is_user_content Boolean not null default False, author_id FK→users nullable; indexes on format/status/created_at; author_username, author_is_verified and author_avatar_url as properties), Event (user_id nullable FK; indexes: (post_id,event_type) composite, user_id, created_at — apply to the live DB once via scripts/add_indexes.py), User (posts relationship, is_verified Integer default 0, is_private boolean default false, bio string nullable, avatar_url string nullable, knowledge_rating float nullable + knowledge_answered_count int — single unified knowledge score), Follow (follower_id FK→users, following_id FK→users, status "pending"|"accepted", created_at; UniqueConstraint uq_follow), QuizAnswer (user_id+post_id+question_index unique, chosen_index, is_correct, rating_delta), Comment, post_interests join table (legacy user_elo table no longer modeled — replaced by users.knowledge_rating)
+    elo.py                      single unified knowledge score on users.knowledge_rating (= profile Knowledge score = Train Elo): start 1000, floor 100, K=32 first 30 answers then 16, question rating 800/1000/1200 from difficulty; apply_answer(user) for quizzes, apply_answer_timed(user) adds the marathon time bonus (FAST_MS/SLOW_MS/TIME_BONUS_MAX); elo_summary() returns the rating (None until first answer) + empty formats dict for response-shape compatibility
     auth.py                     hash_password, verify_password, create_access_token, decode_access_token, get_current_user, get_optional_user (returns User|None, used for optional auth)
     schemas.py                  Pydantic v2 models: 15 section types with Literal discriminator → AnySection union; BooksFeedCard; PostCreate (Books required sections: essence/quiz_badge/voices/at_a_glance/heart/core_ideas/takeaway/quiz/sources; image_url recursive check for Supabase storage URL prefix); PostOut (feed_card dict, sections list[dict], is_user_content bool, like_count int, comment_count int; strips answer_index+explanation from quiz sections so answers never reach the client); PostListOut (PostOut subclass for list endpoints: serializes sections as [] — no list view renders sections, detail page refetches GET /api/posts/{id}); UserOut (incl. avatar_url), InterestOut, EventIn, UploadResponse, SvgUploadResponse
     sanitize.py                 validate_image() — sync (runs in threadpool via sync def endpoints; reads file.file), chunked read, magic-byte check, animated-GIF reject, Pillow re-encode; sanitize_svg() / sanitize_svg_text() — defusedxml XXE check, lxml element+attribute whitelist, dangerous-pattern rejection
@@ -35,7 +35,8 @@ backend/
       auth.py                   POST /api/auth/register (10/hr per IP; username must match ^[A-Za-z0-9._-]{3,30}$ — forward-only), POST /api/auth/login (10/5min per email + 30/5min per IP), GET /api/auth/me, PATCH /api/auth/me (update username/password/is_private/bio; same username rule), POST /api/auth/me/avatar (multipart, validate_image pipeline, 10/hr), DELETE /api/auth/me (soft delete: sets is_active=False)
       follows.py                POST /api/users/{username}/follow (60/hr); DELETE /api/users/{username}/follow; POST /api/users/{username}/follow/accept; DELETE /api/users/{username}/follow/reject; GET /api/users/{username}/followers; GET /api/users/{username}/following (private lists visible to owner + accepted followers); GET /api/users/{username}/follow-requests (auth, own only); GET /api/users/{username}/profile (no auth, returns counts + follow_status; follower/following/post counts in one multi-subselect SELECT); all user payloads include avatar_url
       search.py                 GET /api/search — Python-side search across post.title, feed_card.essence, feed_card.author, heart section content, core_ideas title+body (matching reads ORM sections pre-serialization; response is PostListOut with sections []); ranked by title-match then recency; limit 50; GET /api/search/users — username substring search, prefix matches first, limit 20, follow_status per row when authed; both: q max 100 chars, 60/min per user or IP
-      quiz.py                   POST /api/quiz/answer (optional auth; validates against stored answer_index; first authed answer per question updates Elo, own posts never scored, 60/min); GET /api/quiz/state/{post_id} (auth, answered questions with corrections); GET /api/users/{username}/elo (public, global + per-format ratings)
+      quiz.py                   POST /api/quiz/answer (optional auth; validates against stored answer_index; first authed answer per question updates the unified knowledge score, own posts never scored, 60/min); GET /api/quiz/state/{post_id} (auth, answered questions with corrections); GET /api/users/{username}/elo (public, {global_rating, formats:{}})
+      train.py                  POST /api/train/answer (auth, 120/min) — applies one Train marathon answer to the SAME users.knowledge_rating via apply_answer_timed; returns {rating, delta, global_rating}; mock phase trusts client-decided correctness (no server question bank yet)
       comments.py               GET /api/posts/{id}/comments?count=true → {count} or full list (CommentOut flattens user → username/is_verified/avatar_url); POST /api/posts/{id}/comments (auth, 30/5min); DELETE /api/comments/{id} (auth, own comment only); pending posts 404 for non-authors
       uploads.py                POST /api/upload/image (10/hr, validate_image, uploads to Supabase bucket "uploads", returns public URL); POST /api/upload/svg (10/hr, sanitize_svg, returns svg_content string inline — not stored)
       admin.py                  PATCH /api/admin/users/{user_id}/verify — sets is_verified=1; caller must have is_verified>0; 403 otherwise
@@ -170,9 +171,13 @@ mobile/                         React Native app (Expo SDK 56, TypeScript, expo-
   src/lib/relativeTime.ts       relativeTime(iso) port, unchanged
   src/lib/follow.ts             toggleFollow(username, status) request helper shared by public profile + search rows (DELETE when accepted/pending, else POST; returns new status); callers keep their own optimistic state
   src/lib/chatSocket.ts         useChatSocket hook + ChatMessage/ChatParticipant/Conversation types + MESSAGE_MAX_CHARS; port of frontend chatSocket.ts: one RN WebSocket (WS_URL from config + getAuthToken, never hardcoded), first-frame JWT auth, 3s reconnect plus AppState foreground reconnect, send(conversationId, body)
+  src/lib/train/mockQuestions.ts  PLACEHOLDER pool of 24 broad general-knowledge MarathonQuestion objects (~8 per difficulty); replaced by uploaded questions later; answerIndex client-side (mock phase only)
+  src/lib/train/elo.ts          marathon Elo math (adaptive difficulty + GUEST-ONLY local simulation): START_ELO/ELO_FLOOR/K_FAST/K_SLOW/DIFFICULTY_RATING/FAST_MS/SLOW_MS/TIME_BONUS_MAX; expectedScore/kFactor/timeFactor/computeDelta/applyDelta/pickDifficulty (Elo-weighted bucket); logged-in scoring is server-side now
+  src/lib/train/trainApi.ts     question selection still mock (fetchNextQuestion: pickDifficulty bucket then random unseen, nearest-rating fallback); submitAnswer({loggedIn}) POSTs to /api/train/answer for logged-in players (server returns authoritative rating/delta), falls back to local computeDelta/applyDelta for guests; shapes AnswerResult
+  src/types/train.ts            Difficulty (1|2|3 -> 800/1000/1200) + MarathonQuestion + AnswerResult; top note: answerIndex client-side only for mock phase, must move server-side (mirror PostOut stripping answer_index)
   src/types/post.ts             Post/Section/SectionType/feed-card types + fcStr/fcNum, identical to frontend/src/types/post.ts
   src/app/_layout.tsx           root layout: loads Newsreader/Source Sans 3/Geist Mono via useFonts, awaits initAuthToken, holds splash until ready, wraps Stack in AuthProvider, dark Stack on surface-0, GestureHandlerRootView
-  src/app/index.tsx             home: 9-tab feed container; interests gate (AsyncStorage -> redirect /onboarding, pulsing-slab placeholder), full-screen PagerView (9 FeedTab pages, collapsable=false, lazy activation set) with FeedTabBar capsule (search circle -> /search) + BottomNav dock floating over it + Toast; measured pager height drives card height
+  src/app/index.tsx             home: 3-tab feed container; interests gate (AsyncStorage -> redirect /onboarding, pulsing-slab placeholder), full-screen PagerView (FeedTab pages, collapsable=false, lazy activation set) with FeedTabBar capsule (search circle -> /search) + BottomNav dock floating over it + Toast; measured pager height drives card height; Train tab (id "train") renders <Marathon onExit=back-to-ForYou/> instead of FeedTab, gated on activation (empty surface-0 page until first opened)
   src/app/post/[id].tsx         Stage post detail port of web post/[id]/page.tsx: slide_from_bottom Stack animation, gesture-handler Pan swipe-right-to-close (dx>80 && dx>|dy|), floating frosted back circle, header slab inset mx-12 with SlabGlow halo + SlabAccent edge (format marker/Books cover/title/author/attribution/frosted interest pills), AccentProvider wraps SectionRenderer, floating pill action bar (comment pill opening CommentsBottomSheet + like/save/share circles — like red when liked, save accent when saved, share via sharePost; all four post actions live here, not on the feed card), pulsing-slab loading + MessageSlab not-found
   src/app/login.tsx             port of web login page: centered card, email+password fields, inline error in bad color, PrimaryButton, link to /register; redirects to / when logged in
   src/app/register.tsx          port of web register page: email+username+password, otherwise same pattern as login.tsx
@@ -184,6 +189,7 @@ mobile/                         React Native app (Expo SDK 56, TypeScript, expo-
   src/app/chat/index.tsx        conversation list port of web chat/page.tsx: GET /api/chat/conversations re-fetched on focus (useFocusEffect), ConversationAvatar (group glyph / DM Avatar), last-message preview + relativeTime + group subtitle, login/empty/pulsing-slab loading states, full-screen New-chat Modal (debounced /api/search/users, multi-select chips, optional group name, POST /api/chat/conversations); BottomNav active=chat
   src/app/chat/[id].tsx         conversation view port of web chat/[id]/page.tsx: history via GET messages + live receive via useChatSocket (dedupe by id, no optimistic insert - the server echoes the sender), own-right white/14% bubbles / others-left surface-2 bubbles with group sender labels, frosted back circle + connection status, pill input + circular arrow-up send, KeyboardAvoidingView, login/not-found/loading states
   src/components/PostCard.tsx   memoized full-screen Stage card; per-format layouts (books/people/facts/concepts/questions/stories/academy + fallback) mirroring web PostCard; format marker row (accent dot + lowercase mono label + disabled read-aloud speaker) above a borderless frosted slab (white/4% radius 24) with SlabAccent + SlabGlow halo behind; accent teaser dots + 17px ink teasers; CardFooter avatar byline + neutral DotScale + "N min" mono meta (reading time + difficulty only); no visible action buttons in the feed (like/comment/save/share moved to the post detail bar); tap -> /post/{id}, double-tap (300ms) -> like with reanimated heart-boom overlay; via usePostActions
+  src/components/train/Marathon.tsx  self-contained Train marathon (intro->question->feedback->question|summary): frosted Stage slabs + SlabGlow, intro header ("Train" title beside a highlighted lamp-tinted rating container, top-right) then a blurred teaser question (PREVIEW_QUESTION in a BlurTargetView + BlurView blurMethod dimezisBlurView on Android / backdrop blur on iOS) with the Start button centered on top, mono top strip (rating/StreakStat flame brightens with streak + resets on wrong/answered), Newsreader prompt, spring-animated OptionRow shared by question+feedback (press spring + correct-reveal pop; QuizSection good/bad coloring), elapsed-time ElapsedBar toward SLOW_MS (visual only), rating TickingNumber eloBefore->eloAfter ~500ms + Geist Mono delta chip, expo-haptics success/warning, all motion gated on reduced-motion (instant fallback), token-only colors, PrimaryButton Start/Next/Train again + ghostPill Back-to-feed, guests play but rating not persisted (GuestNote -> /login), trainStorage persistence, PulsingSlab loading only until first question loads (kept on screen through submit/next so the card never flashes to the dark background) + MessageSlab friendly exhausted-pool/error ghost-retry, full-height ScrollView (safe-area top pad clears FeedTabBar, pb-24 clears dock); seam summarised in top comment; optional onExit prop
   src/components/SafeSvg.tsx    SvgBlock counterpart: seed -> inline SvgXml with legacy-hex re-palette; user content -> expo-image with svg+xml data URI (no script execution); optional color prop for currentColor strokes
   src/components/SectionRenderer.tsx  port of web SectionRenderer: sorts by order, dispatches all 80 section types, isUserContent to SVG sections, postId to QuizSection; divide-y becomes per-section borderTop
   src/components/sections/      80 section ports mirroring frontend sections/ 1:1; primitives.tsx supplies SectionBlock (px-6 py-8), SectionLabel (.label-caps), Prose (.prose-post 17/29 serif), sans/mono style builders, SvgFigure (viewBox aspect parse + SafeSvg + max-width), CaptionedImage (resolveImageUrl), makeLabeledProse factory (the ~30 label+paragraph sections are one-liners), NumberBubble
@@ -191,7 +197,7 @@ mobile/                         React Native app (Expo SDK 56, TypeScript, expo-
   src/components/CommentsBottomSheet.tsx  Stage floating sheet port: detached 12px inset card (radius 24, surface-1/95) with reanimated spring-in (translateY 48 + scale 0.97, overshoot bezier), backdrop, drag handle (up=75%, down=50%/close), bubble comment rows (28px avatar + surface-2 bubble, delete own inline), pill input + circular arrow-up submit (no statusBarTranslucent so Android adjustResize keeps input above keyboard)
   src/components/VerifiedBadge.tsx  react-native-svg port of web VerifiedBadge (level colors + official variant)
   src/components/MathText.tsx   $...$ parser port; math segments render as Geist Mono text (no KaTeX/HTML in RN - known fidelity gap for academy/formalism)
-  src/components/icons.tsx      Stage glyph set (heart/comment/bookmark/share/arrow-up/speaker/back), path data copied from web icons.tsx: strokeWidth 1.8 soft outlines, filled prop turns closed shapes solid
+  src/components/icons.tsx      Stage glyph set (heart/comment/bookmark/share/arrow-up/speaker/back/flame), path data copied from web icons.tsx: strokeWidth 1.8 soft outlines, filled prop turns closed shapes solid; FlameIcon is the marathon streak glyph
   src/components/stage.tsx      Stage primitives: SlabGlow (Svg radial accent halo, 8% -> transparent 70%), SlabAccent (3px left bar + 48px top tint), Frosted (BlurView chrome pill — translucent fallback on Android), PulsingSlab (stage-pulse loading), MessageSlab + ghostPillStyle for slab states
   src/components/PrimaryButton.tsx  web Stage .btn-primary recipe (flat lamp-tinted pill) as Pressable; label/onPress/disabled; plain object style — nativewind's css-interop drops Pressable style callback functions (issue #1105), so phase-5 components never use them (pre-phase-5 files still do and lose their pressed/layout styles)
   src/components/FeedTab.tsx    one pager page: lazy fetch on first activation (GET /api/feed?interests&format; Following -> /api/feed/following with login/empty states); posts reset on user change; vertical paging FlatList from phase 1; Stage states (pulsing-slab loading, MessageSlab empty/login/error, ghost-pill retry)
@@ -271,6 +277,8 @@ Join table linking posts ↔ interests (many-to-many).
 | is_private    | Boolean  | default false; true = follow requests require approval |
 | bio           | String?  | up to 160 chars; shown on public profile  |
 | avatar_url    | String?  | Supabase Storage public URL set by POST /api/auth/me/avatar |
+| knowledge_rating         | Float? | unified knowledge score (= Train Elo); NULL until first scored answer, then 1000-start Elo, floor 100 |
+| knowledge_answered_count | Integer | scored answers (quizzes + Train) driving the K-factor; default 0 |
 
 ### follows
 | column       | type              | description                                         |
@@ -309,14 +317,11 @@ Unique constraint: (conversation_id, user_id)
 | body            | Text             | plain text; 1-2000 chars enforced    |
 | created_at      | DateTime         | default now, indexed                 |
 
-### user_elo
-| column         | type     | description                                  |
-|----------------|----------|----------------------------------------------|
-| user_id        | FK→users |                                              |
-| format         | String   | one Elo rating per (user, format)            |
-| rating         | Float    | starts 1000, floor 100                       |
-| answered_count | Integer  | scored answers in this format (drives K)     |
-Unique constraint: (user_id, format)
+### user_elo (DEPRECATED)
+Legacy per-format Elo table, replaced by the single users.knowledge_rating column.
+No longer read or written by app code; left in the live DB (non-destructive) and
+backfilled into users.knowledge_rating by scripts/add_knowledge_columns.py. Safe to
+drop manually once confirmed.
 
 ### quiz_answers
 | column         | type     | description                                  |
@@ -367,9 +372,10 @@ GET  /api/feed/following  Authorization: Bearer <token>                         
 GET  /api/feed/user/{username}                                                          → [PostOut]  published posts by user  limit 50  404 if user not found
 POST /api/auth/me/avatar  Authorization: Bearer <token>  multipart file field "file"    → UserOut with new avatar_url  10/hr  same validate_image pipeline as post images
 GET  /api/search/users  ?q=...   auth optional                                          → [{username, is_verified, is_private, bio, avatar_url, is_self, follow_status}]  limit 20  prefix matches first  follow_status only when authed
-POST /api/quiz/answer   auth optional  body: {post_id, question_index, chosen_index}    → {correct, correct_index, explanation, already_answered, scored, elo: {format, rating, delta, global_rating} | null}  Elo only for authed first-time answers on others' posts  60/min  400 bad index  404 missing post
+POST /api/quiz/answer   auth optional  body: {post_id, question_index, chosen_index}    → {correct, correct_index, explanation, already_answered, scored, elo: {format, rating, delta, global_rating} | null}  rating==global_rating (unified score)  Elo only for authed first-time answers on others' posts  60/min  400 bad index  404 missing post
 GET  /api/quiz/state/{post_id}  Authorization: Bearer <token>                           → {answers: [{question_index, chosen_index, correct, correct_index, explanation}]}  restores answered quiz UI
-GET  /api/users/{username}/elo                                                          → {global_rating: int|null, formats: {fmt: {rating, answered_count}}}  404 if user not found
+GET  /api/users/{username}/elo                                                          → {global_rating: int|null, formats: {}}  unified score; empty formats kept for shape compat  404 if user not found
+POST /api/train/answer  Authorization: Bearer <token>  body: {difficulty, correct, answer_ms} → {rating, delta, global_rating}  applies one Train answer to the same users.knowledge_rating (with time bonus)  120/min  mock phase trusts client correctness
 GET  /api/chat/conversations  Authorization: Bearer <token>                             → [{id, is_group, name, participants[{username, avatar_url, is_verified}], last_message|null, created_at}]  sorted by last activity
 POST /api/chat/conversations  Authorization: Bearer <token>  body: {usernames[], name?} → conversation 201  DM deduped per pair  403 if a target has no accepted follow either direction  20/hr
 GET  /api/chat/conversations/{id}/messages  ?before_id&limit  Authorization: Bearer     → [{id, conversation_id, sender_id, sender_username, body, created_at}] ascending  404 for non-participants
@@ -378,14 +384,18 @@ WS   /api/chat/ws             first frame {type:"auth", token}  → {type:"auth_
 
 ## ELO KNOWLEDGE SCORE
 
-Standard Elo: R' = R + K * (S - E), E = 1 / (1 + 10^((Q - R) / 400)). Each quiz question is an
-opponent rated by the post's difficulty (1→800, 2→1000, 3→1200; default 1000). Correct answers
-gain points, wrong answers always lose points so guessing has a cost. K=32 for the first 30
-answers in a format (fast convergence), K=16 after (stable). Ratings start at 1000, floored at
-100, one rating per format; the global score is the average of per-format ratings. A question
-can only ever be scored once per user (DB unique constraint) and answering your own post never
-moves your rating, so replays and self-quizzing cannot farm Elo. answer_index/explanation are
-stripped from API post payloads; correctness is decided only server-side.
+A user has ONE unified knowledge score (users.knowledge_rating) — the profile "Knowledge score"
+and the Train tab Elo are the same number. Standard Elo: R' = R + K * (S - E),
+E = 1 / (1 + 10^((Q - R) / 400)). Each question is an opponent rated by difficulty
+(1→800, 2→1000, 3→1200; default 1000). Correct answers gain points, wrong answers always lose
+points so guessing has a cost. K=32 for the first 30 scored answers (fast convergence), K=16
+after (stable). Rating starts at 1000 (NULL until the first answer), floored at 100. Two writers:
+POST /api/quiz/answer (post quizzes; each question scores once per user via DB unique constraint,
+own posts never move the rating; answer_index/explanation stripped from payloads, correctness
+decided server-side) and POST /api/train/answer (Train marathon; adds a speed bonus on correct
+answers; mock phase trusts client correctness until a server question bank exists). The legacy
+per-format user_elo table is deprecated; backfilled into users.knowledge_rating as the average of
+each user's per-format ratings.
 
 ## CHAT / WEBSOCKET DESIGN
 

@@ -27,10 +27,12 @@ def _get_quiz_items(post: Post) -> list[dict]:
 
 
 def _elo_payload(db: Session, user_id: int, fmt: str, delta: float) -> dict:
-    global_rating, ratings = elo_summary(db, user_id)
+    # The score is now a single unified rating, so `rating` and `global_rating`
+    # are the same number; `format` is kept for response-shape compatibility.
+    global_rating, _ = elo_summary(db, user_id)
     return {
         "format": fmt,
-        "rating": ratings.get(fmt, {}).get("rating"),
+        "rating": global_rating,
         "delta": round(delta, 1),
         "global_rating": global_rating,
     }
@@ -91,7 +93,7 @@ def answer_quiz_question(
     delta = 0.0
     if not is_own_post:
         difficulty = (post.feed_card or {}).get("post_difficulty")
-        _, delta = apply_answer(db, current_user.id, post.format, difficulty, correct)
+        delta = apply_answer(db, current_user, difficulty, correct)
         result["scored"] = True
 
     db.add(QuizAnswer(
