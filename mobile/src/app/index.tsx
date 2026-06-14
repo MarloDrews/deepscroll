@@ -8,6 +8,7 @@ import { DEFAULT_TAB_INDEX, TABS } from "../lib/feedTabs"
 import { colors } from "../theme/tokens"
 import { PulsingSlab } from "../components/stage"
 import FeedTab from "../components/FeedTab"
+import Marathon from "../components/train/Marathon"
 import FeedTabBar, { type FeedTabBarHandle } from "../components/FeedTabBar"
 import BottomNav from "../components/BottomNav"
 import Toast, { useToast } from "../components/Toast"
@@ -100,13 +101,24 @@ export default function HomeScreen() {
           {TABS.map((tab, i) => (
             // collapsable={false} keeps Android from flattening page views.
             <View key={tab.id} collapsable={false} style={{ flex: 1 }}>
-              <FeedTab
-                tab={tab}
-                slugs={slugs}
-                activated={activated.has(i)}
-                pageHeight={pageHeight}
-                onComingSoon={onComingSoon}
-              />
+              {tab.id === "train" ? (
+                // The Train tab hosts the marathon instead of a card feed. Gate
+                // on activation so it does not mount/run until first opened (the
+                // empty page keeps swiping cheap, like FeedTab's own placeholder).
+                activated.has(i) ? (
+                  <Marathon onExit={() => goToTab(DEFAULT_TAB_INDEX)} />
+                ) : (
+                  <View style={{ flex: 1, backgroundColor: colors["surface-0"] }} />
+                )
+              ) : (
+                <FeedTab
+                  tab={tab}
+                  slugs={slugs}
+                  activated={activated.has(i)}
+                  pageHeight={pageHeight}
+                  onComingSoon={onComingSoon}
+                />
+              )}
             </View>
           ))}
         </PagerView>

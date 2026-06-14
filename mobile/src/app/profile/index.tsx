@@ -500,7 +500,7 @@ export default function ProfileSettingsScreen() {
               <View>
                 <Text style={rowLabel}>Knowledge score</Text>
                 <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: colors["ink-muted"], marginTop: 2 }}>
-                  Answer quizzes to raise it
+                  Answer quizzes or train to raise it
                 </Text>
               </View>
               <Text style={{ fontFamily: fonts.mono, fontSize: 24, color: colors.lamp }}>

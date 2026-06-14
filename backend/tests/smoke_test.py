@@ -164,9 +164,23 @@ def main():
     r = client.get("/api/users/alice/elo")
     d = r.json()
     check("public elo", r.status_code == 200 and d["global_rating"] is not None)
-    check("per-format elo", d["formats"]["books"]["answered_count"] == 2)
+    # The score is unified onto a single rating, so there is no per-format breakdown.
+    check("no per-format elo", d["formats"] == {})
     r = client.get("/api/users/bob/elo")
     check("unscored user has no global elo", r.json()["global_rating"] is None)
+
+    # --- Train answer moves the same unified knowledge score ---
+    before = client.get("/api/users/alice/elo").json()["global_rating"]
+    r = client.post("/api/train/answer", headers=a_h,
+                    json={"difficulty": 3, "correct": True, "answer_ms": 1000})
+    td = r.json()
+    check("train answer ok", r.status_code == 200, str(td))
+    check("train delta positive", td["delta"] > 0, str(td))
+    after = client.get("/api/users/alice/elo").json()["global_rating"]
+    check("train moved knowledge score", after >= before)
+    check("train requires auth", client.post(
+        "/api/train/answer", json={"difficulty": 2, "correct": True, "answer_ms": 0}
+    ).status_code in (401, 403))
 
     # --- Bad inputs rejected ---
     r = client.post("/api/quiz/answer", json={"post_id": post_id, "question_index": 99, "chosen_index": 0})

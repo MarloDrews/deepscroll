@@ -101,6 +101,19 @@ export function SpeakerIcon({ size = 24, color }: IconProps) {
   )
 }
 
+// Streak flame — soft outline fire (heroicons fire), solid via the filled prop.
+export function FlameIcon({ size = 24, color, filled }: IconProps) {
+  return (
+    <Svg viewBox="0 0 24 24" width={size} height={size}>
+      <StrokedPath
+        d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.048 8.287 8.287 0 0 0 9 9.6a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Zm-5.013 7.74a3.75 3.75 0 0 0 5.272 5.117 5.99 5.99 0 0 0-1.925-3.546 5.974 5.974 0 0 1-2.133-1.001 5.99 5.99 0 0 0-1.214 4.43Z"
+        color={color}
+        filled={filled}
+      />
+    </Svg>
+  )
+}
+
 export function BackIcon({ size = 24, color }: IconProps) {
   return (
     <Svg viewBox="0 0 24 24" width={size} height={size}>
