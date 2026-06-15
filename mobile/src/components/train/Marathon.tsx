@@ -24,7 +24,8 @@ import { apiFetch } from "../../lib/api"
 import { fetchNextQuestion, submitAnswer } from "../../lib/train/trainApi"
 import { mockQuestions } from "../../lib/train/mockQuestions"
 import { SLOW_MS, START_ELO } from "../../lib/train/elo"
-import type { AnswerResult, MarathonQuestion } from "../../types/train"
+import type { AnswerResult, ChoiceQuestion, MarathonQuestion } from "../../types/train"
+import NumberSlider from "./NumberSlider"
 import { colors, fills, fonts, radius } from "../../theme/tokens"
 import {
   Frosted,
@@ -64,10 +65,13 @@ const labelCaps: TextStyle = {
   color: colors["ink-muted"],
 }
 
-// A real question used purely as the blurred teaser on the intro. It is never
-// answerable there (a BlurView sits over it); picking a mid-difficulty one
-// keeps the preview legible-looking through the blur.
-const PREVIEW_QUESTION = mockQuestions[8]
+// A real multiple-choice question used purely as the blurred teaser on the
+// intro. It is never answerable there (a BlurView sits over it); we pick a
+// choice question (not a numeric/slider one) so the teaser shows the familiar
+// option pills through the blur.
+const PREVIEW_QUESTION = mockQuestions.find(
+  (q): q is ChoiceQuestion => q.kind !== "numeric",
+)!
 
 interface Props {
   // Optional exit hook for the summary's secondary button (Prompt 4 may switch
@@ -278,7 +282,6 @@ export default function Marathon({ onExit }: Props) {
 
   // Per-session progress.
   const [answeredIds, setAnsweredIds] = useState<string[]>([])
-  const [answeredCount, setAnsweredCount] = useState(0)
   const [streak, setStreak] = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
   const [results, setResults] = useState<AnswerResult[]>([])
@@ -286,6 +289,8 @@ export default function Marathon({ onExit }: Props) {
   // Active question + the result/choice driving the feedback view.
   const [current, setCurrent] = useState<MarathonQuestion | null>(null)
   const [selected, setSelected] = useState<number | null>(null)
+  // The live slider value for a numeric question (the player's pending answer).
+  const [sliderValue, setSliderValue] = useState(0)
   const [lastResult, setLastResult] = useState<AnswerResult | null>(null)
   const questionStartMs = useRef(0)
   const retry = useRef<() => void>(() => {})
@@ -338,6 +343,15 @@ export default function Marathon({ onExit }: Props) {
       setCurrent(q)
       setSelected(null)
       setLastResult(null)
+      // Numeric questions start the slider at a random step within their limits
+      // (so it never anchors on the midpoint / a hintable spot, and the player
+      // always has to move it to commit).
+      if (q.kind === "numeric") {
+        const step = q.step ?? 1
+        const steps = Math.floor((q.max - q.min) / step)
+        const rand = q.min + Math.round(Math.random() * steps) * step
+        setSliderValue(Math.min(q.max, Math.max(q.min, rand)))
+      }
       questionStartMs.current = Date.now()
       setStage("question")
     } catch {
@@ -353,8 +367,34 @@ export default function Marathon({ onExit }: Props) {
     loadQuestion(answeredIds, sessionElo)
   }
 
+  // Shared bookkeeping once an answer is scored (same for choice and slider).
+  function applyResult(result: AnswerResult) {
+    if (!current) return
+    const nextStreak = result.correct ? streak + 1 : 0
+
+    setLastResult(result)
+    setSessionElo(result.eloAfter)
+    setAnsweredIds([...answeredIds, current.id])
+    setLifetimeAnswered(lifetimeAnswered + 1)
+    setStreak(nextStreak)
+    setBestStreak((b) => Math.max(b, nextStreak))
+    setResults((r) => [...r, result])
+
+    // No client persistence: logged-in scores are saved server-side by
+    // /api/train/answer; guests are pure practice and never persisted.
+
+    // Haptic feedback: success for correct, warning for wrong.
+    Haptics.notificationAsync(
+      result.correct
+        ? Haptics.NotificationFeedbackType.Success
+        : Haptics.NotificationFeedbackType.Warning,
+    ).catch(() => {})
+
+    setStage("feedback")
+  }
+
   async function handleSelect(index: number) {
-    if (!current || stage !== "question" || busy || selected !== null) return
+    if (!current || current.kind === "numeric" || stage !== "question" || busy || selected !== null) return
     const answerMs = Date.now() - questionStartMs.current
     setSelected(index)
     setBusy(true)
@@ -371,34 +411,34 @@ export default function Marathon({ onExit }: Props) {
         answeredCountInSession: lifetimeAnswered,
         loggedIn: !!user,
       })
-
-      const nextIds = [...answeredIds, current.id]
-      const nextStreak = result.correct ? streak + 1 : 0
-      const nextLifetime = lifetimeAnswered + 1
-
-      setLastResult(result)
-      setSessionElo(result.eloAfter)
-      setAnsweredIds(nextIds)
-      setAnsweredCount((c) => c + 1)
-      setLifetimeAnswered(nextLifetime)
-      setStreak(nextStreak)
-      setBestStreak((b) => Math.max(b, nextStreak))
-      setResults((r) => [...r, result])
-
-      // No client persistence: logged-in scores are saved server-side by
-      // /api/train/answer; guests are pure practice and never persisted.
-
-      // Haptic feedback: success for correct, warning for wrong.
-      Haptics.notificationAsync(
-        result.correct
-          ? Haptics.NotificationFeedbackType.Success
-          : Haptics.NotificationFeedbackType.Warning,
-      ).catch(() => {})
-
-      setStage("feedback")
+      applyResult(result)
     } catch {
       setSelected(null)
       retry.current = () => handleSelect(index)
+      setError("Could not submit your answer.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Submit the slider's current value for a numeric question.
+  async function handleSubmitNumeric() {
+    if (!current || current.kind !== "numeric" || stage !== "question" || busy) return
+    const answerMs = Date.now() - questionStartMs.current
+    setBusy(true)
+    setError("")
+    try {
+      const result = await submitAnswer({
+        question: current,
+        chosenValue: sliderValue,
+        answerMs,
+        currentElo: sessionElo,
+        answeredCountInSession: lifetimeAnswered,
+        loggedIn: !!user,
+      })
+      applyResult(result)
+    } catch {
+      retry.current = () => handleSubmitNumeric()
       setError("Could not submit your answer.")
     } finally {
       setBusy(false)
@@ -414,7 +454,6 @@ export default function Marathon({ onExit }: Props) {
   function trainAgain() {
     // Keep the carried-over rating + lifetime count; reset only the session.
     setAnsweredIds([])
-    setAnsweredCount(0)
     setStreak(0)
     setBestStreak(0)
     setResults([])
@@ -455,7 +494,41 @@ export default function Marathon({ onExit }: Props) {
       <View style={{ flexDirection: "row", justifyContent: "space-around", alignItems: "center" }}>
         <Stat label="Rating" value={Math.round(sessionElo)} />
         <StreakStat streak={streak} reduceMotion={reduceMotion} />
-        <Stat label="Answered" value={answeredCount} />
+      </View>
+    )
+  }
+
+  // The answer surface differs by question kind: option pills for choice,
+  // the tactile slider for numeric. Rendered in both question and feedback.
+  function renderAnswerArea() {
+    if (!current) return null
+    if (current.kind === "numeric") return renderSlider()
+    return renderOptions()
+  }
+
+  // The numeric slider, interactive while answering and locked (with the correct
+  // value revealed) in feedback. The Submit button only shows while answering.
+  function renderSlider() {
+    if (!current || current.kind !== "numeric") return null
+    const answered = stage === "feedback" && !!lastResult
+    return (
+      <View style={{ gap: 16 }}>
+        <NumberSlider
+          min={current.min}
+          max={current.max}
+          step={current.step ?? 1}
+          unit={current.unit}
+          value={sliderValue}
+          onChange={setSliderValue}
+          disabled={answered || busy}
+          showResult={answered}
+          correct={lastResult?.correct}
+          correctValue={lastResult?.correctValue}
+          reduceMotion={reduceMotion}
+        />
+        {stage === "question" ? (
+          <PrimaryButton label="Submit" onPress={handleSubmitNumeric} disabled={busy} />
+        ) : null}
       </View>
     )
   }
@@ -463,7 +536,7 @@ export default function Marathon({ onExit }: Props) {
   // Options are rendered (positionally) in both stages so OptionRow instances
   // persist; the correct row pops once when feedback reveals it.
   function renderOptions() {
-    if (!current) return null
+    if (!current || current.kind === "numeric") return null
     const interactive = stage === "question"
     return (
       <View style={{ gap: 10 }}>
@@ -614,7 +687,7 @@ export default function Marathon({ onExit }: Props) {
           </View>
         </Frosted>
 
-        {renderOptions()}
+        {renderAnswerArea()}
       </View>
     )
   }
@@ -670,7 +743,7 @@ export default function Marathon({ onExit }: Props) {
           </View>
         </Frosted>
 
-        {renderOptions()}
+        {renderAnswerArea()}
 
         {lastResult.explanation ? (
           <Text style={sans(14, colors["ink-dim"], { lineHeight: 21 })}>{lastResult.explanation}</Text>

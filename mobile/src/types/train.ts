@@ -13,19 +13,40 @@
 // 1 -> 800, 2 -> 1000, 3 -> 1200 (mirrors backend DIFFICULTY_RATING).
 export type Difficulty = 1 | 2 | 3
 
-export interface MarathonQuestion {
+// Fields every question shares, regardless of how it is answered.
+interface BaseQuestion {
   id: string // stable unique id
   prompt: string // the question text (broad, general-knowledge, not topic-specific)
-  options: string[] // 2-5 options, multiple choice only
-  answerIndex: number // index into options (CLIENT-SIDE for now; see top-of-file note)
   difficulty: Difficulty
   explanation?: string // shown after answering
   topic?: string // optional coarse tag, NOT used for filtering the marathon
 }
 
+// Multiple-choice question: pick one of 2-5 options.
+export interface ChoiceQuestion extends BaseQuestion {
+  kind?: "choice" // optional so existing untagged questions stay valid
+  options: string[] // 2-5 options
+  answerIndex: number // index into options (CLIENT-SIDE for now; see top-of-file note)
+}
+
+// Numeric question: the answer is a single number the player dials in on a
+// slider. min/max are the slider's limits (defined per task), step is the snap
+// increment, unit is an optional suffix shown next to the value (e.g. "C", "%").
+export interface NumericQuestion extends BaseQuestion {
+  kind: "numeric"
+  answerValue: number // the correct number (CLIENT-SIDE for now; see top-of-file note)
+  min: number // slider lower limit
+  max: number // slider upper limit
+  step?: number // snap increment, defaults to 1
+  unit?: string // optional suffix shown after the number
+}
+
+export type MarathonQuestion = ChoiceQuestion | NumericQuestion
+
 export interface AnswerResult {
   correct: boolean
-  correctIndex: number
+  correctIndex?: number // choice questions: the correct option index
+  correctValue?: number // numeric questions: the correct number
   explanation?: string
   eloBefore: number
   eloAfter: number

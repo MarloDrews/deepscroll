@@ -63,17 +63,26 @@ export async function fetchNextQuestion(params: {
 
 export async function submitAnswer(params: {
   question: MarathonQuestion
-  chosenIndex: number
   answerMs: number
   currentElo: number
   answeredCountInSession: number
   loggedIn: boolean // logged-in answers score on the server; guests simulate locally
+  // Exactly one is set, matching the question kind: chosenIndex for choice
+  // questions, chosenValue for numeric (slider) questions.
+  chosenIndex?: number
+  chosenValue?: number
 }): Promise<AnswerResult> {
-  const { question, chosenIndex, answerMs, currentElo, answeredCountInSession, loggedIn } = params
-  // Mock phase: correctness is decided here against the client-side answerIndex.
+  const { question, chosenIndex, chosenValue, answerMs, currentElo, answeredCountInSession, loggedIn } = params
+  // Mock phase: correctness is decided here against the client-side answer.
   // This MUST move server-side once a real Train question backend exists (see the
   // note at the top of ../../types/train.ts).
-  const correct = chosenIndex === question.answerIndex
+  const numeric = question.kind === "numeric"
+  const correct = numeric
+    ? chosenValue === question.answerValue
+    : chosenIndex === question.answerIndex
+  // Per-kind correct answer to show in feedback (only one applies).
+  const correctIndex = numeric ? undefined : question.answerIndex
+  const correctValue = numeric ? question.answerValue : undefined
   const eloBefore = Math.round(currentElo)
 
   if (loggedIn) {
@@ -91,7 +100,8 @@ export async function submitAnswer(params: {
     const data: { rating: number; delta: number } = await r.json()
     return {
       correct,
-      correctIndex: question.answerIndex,
+      correctIndex,
+      correctValue,
       explanation: question.explanation,
       eloBefore,
       eloAfter: Math.round(data.rating),
@@ -111,7 +121,8 @@ export async function submitAnswer(params: {
   })
   return {
     correct,
-    correctIndex: question.answerIndex,
+    correctIndex,
+    correctValue,
     explanation: question.explanation,
     eloBefore,
     eloAfter: applyDelta(currentElo, delta),

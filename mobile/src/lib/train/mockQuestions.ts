@@ -9,34 +9,49 @@ import type { MarathonQuestion } from "../../types/train"
 // `topic` tag is coarse and informational only; the marathon never filters on
 // it. Roughly 8 questions per difficulty (1/2/3), 24 total.
 //
-// answerIndex is included here only because this is the mock phase; see the
-// note at the top of mobile/src/types/train.ts.
+// Questions come in two kinds (see mobile/src/types/train.ts): the default
+// multiple-choice (options + answerIndex) and `kind: "numeric"`, whose answer is
+// a single number the player dials in on a slider. Numeric questions carry their
+// own slider limits (min/max), snap step, and optional unit.
+//
+// The answer (answerIndex / answerValue) is included here only because this is
+// the mock phase; see the note at the top of mobile/src/types/train.ts.
 
 export const mockQuestions: MarathonQuestion[] = [
   // -------- Difficulty 1 (opponent rating 800): easy, near-universal --------
   {
     id: "geo-continents",
+    kind: "numeric",
     prompt: "How many continents are there on Earth?",
-    options: ["5", "6", "7", "8"],
-    answerIndex: 2,
+    answerValue: 7,
+    min: 1,
+    max: 12,
+    step: 1,
     difficulty: 1,
     explanation: "By the common model: Africa, Antarctica, Asia, Europe, North America, Oceania, South America.",
     topic: "geography",
   },
   {
     id: "sci-water-state",
+    kind: "numeric",
     prompt: "At sea level, water boils at roughly what temperature?",
-    options: ["50 C", "100 C", "150 C", "200 C"],
-    answerIndex: 1,
+    answerValue: 100,
+    min: 0,
+    max: 200,
+    step: 5,
+    unit: " C",
     difficulty: 1,
     explanation: "Pure water boils at 100 C (212 F) at standard atmospheric pressure.",
     topic: "science",
   },
   {
     id: "math-half-of-50",
+    kind: "numeric",
     prompt: "What is half of 50?",
-    options: ["20", "25", "30", "100"],
-    answerIndex: 1,
+    answerValue: 25,
+    min: 0,
+    max: 100,
+    step: 1,
     difficulty: 1,
     explanation: "50 divided by 2 is 25.",
     topic: "math",
@@ -70,9 +85,12 @@ export const mockQuestions: MarathonQuestion[] = [
   },
   {
     id: "logic-days-week",
+    kind: "numeric",
     prompt: "How many days are there in a week?",
-    options: ["5", "6", "7", "10"],
-    answerIndex: 2,
+    answerValue: 7,
+    min: 1,
+    max: 14,
+    step: 1,
     difficulty: 1,
     explanation: "A week has seven days.",
     topic: "everyday",
@@ -108,18 +126,24 @@ export const mockQuestions: MarathonQuestion[] = [
   },
   {
     id: "hist-ww2-end",
+    kind: "numeric",
     prompt: "In which year did World War II end?",
-    options: ["1939", "1942", "1945", "1950"],
-    answerIndex: 2,
+    answerValue: 1945,
+    min: 1930,
+    max: 1960,
+    step: 1,
     difficulty: 2,
     explanation: "World War II ended in 1945.",
     topic: "history",
   },
   {
     id: "math-percent-of-200",
+    kind: "numeric",
     prompt: "What is 15% of 200?",
-    options: ["15", "30", "45", "300"],
-    answerIndex: 1,
+    answerValue: 30,
+    min: 0,
+    max: 100,
+    step: 5,
     difficulty: 2,
     explanation: "15% of 200 is 0.15 x 200 = 30.",
     topic: "math",
@@ -173,9 +197,12 @@ export const mockQuestions: MarathonQuestion[] = [
   },
   {
     id: "hist-french-revolution",
+    kind: "numeric",
     prompt: "The French Revolution began in which year?",
-    options: ["1776", "1789", "1804", "1815"],
-    answerIndex: 1,
+    answerValue: 1789,
+    min: 1700,
+    max: 1850,
+    step: 1,
     difficulty: 3,
     explanation: "The French Revolution began in 1789 with the storming of the Bastille.",
     topic: "history",
@@ -227,9 +254,12 @@ export const mockQuestions: MarathonQuestion[] = [
   },
   {
     id: "logic-clock-angle",
-    prompt: "At 3:00, what is the angle between the hour and minute hands of a clock?",
-    options: ["45 degrees", "60 degrees", "90 degrees", "120 degrees"],
-    answerIndex: 2,
+    kind: "numeric",
+    prompt: "At 3:00, what is the angle (in degrees) between the hour and minute hands of a clock?",
+    answerValue: 90,
+    min: 0,
+    max: 180,
+    step: 15,
     difficulty: 3,
     explanation: "At 3:00 the minute hand points to 12 and the hour hand to 3, a quarter turn (90 degrees) apart.",
     topic: "logic",
