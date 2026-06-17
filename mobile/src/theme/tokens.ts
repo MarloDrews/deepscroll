@@ -30,15 +30,17 @@ export const colors = {
   good: "#6abf84",
   bad: "#c05870",
 
-  // Format inks (hexes also live in src/lib/formats.ts per format)
-  "fmt-books": "#6b9eff",
-  "fmt-facts": "#5bc8bc",
-  "fmt-people": "#c47dcc",
-  "fmt-concepts": "#9b8ae0",
-  "fmt-questions": "#72bb80",
-  "fmt-stories": "#8a88e8",
-  "fmt-academy": "#5ba8e0",
-  "fmt-neutral": "#7888a8",
+  // Format inks — mobile source of truth for format colors. src/lib/formats.ts
+  // derives each format's accent + rgb from these. Keep in sync by hand with
+  // --color-fmt-* in frontend/src/app/globals.css.
+  "fmt-books": "#dfc186",
+  "fmt-facts": "#6e9cd8",
+  "fmt-people": "#dd7eca",
+  "fmt-concepts": "#9e7edd",
+  "fmt-questions": "#8ae0e0",
+  "fmt-stories": "#db8076",
+  "fmt-academy": "#7edd9e",
+  "fmt-neutral": "#7e8699",
 } as const
 
 // Stage translucent white fills (web globals.css layers these over the
