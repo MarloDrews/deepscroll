@@ -19,6 +19,9 @@ user_uploads/
 # Performance audit artifacts
 .perf/
 
+# Verification artifacts (screenshots, scratch scripts, export checks)
+.verify/
+
 # Logs
 *.log
 .claude/skills/ui-ux-pro-max
