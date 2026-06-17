@@ -50,14 +50,14 @@
   /* Format inks — web source of truth for format colors. Hexes are mirrored by
      hand in src/lib/formats.ts (accent + rgb) and in mobile/src/theme/tokens.ts;
      update all together. */
-  --color-fmt-books: #6b9eff;
-  --color-fmt-facts: #5bc8bc;
-  --color-fmt-people: #c47dcc;
-  --color-fmt-concepts: #9b8ae0;
-  --color-fmt-questions: #72bb80;
-  --color-fmt-stories: #8a88e8;
-  --color-fmt-academy: #5ba8e0;
-  --color-fmt-neutral: #7888a8;
+  --color-fmt-books: #dfc186;
+  --color-fmt-facts: #6e9cd8;
+  --color-fmt-people: #dd7eca;
+  --color-fmt-concepts: #9e7edd;
+  --color-fmt-questions: #8ae0e0;
+  --color-fmt-stories: #db8076;
+  --color-fmt-academy: #7edd9e;
+  --color-fmt-neutral: #7e8699;
 
   /* Radii (in-content blocks; chrome surfaces use rounded-2xl/3xl/full) */
   --radius-card: 0.875rem;                /* section-body cards */
