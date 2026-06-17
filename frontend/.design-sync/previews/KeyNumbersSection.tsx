@@ -1,6 +1,6 @@
 import { KeyNumbersSection } from 'plexive'
 
-function Stage({ children, accent = '#5bc8bc' }: { children: React.ReactNode; accent?: string }) {
+function Stage({ children, accent = '#6e9cd8' }: { children: React.ReactNode; accent?: string }) {
   return (
     <div
       style={{

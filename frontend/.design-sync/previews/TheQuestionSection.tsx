@@ -1,6 +1,6 @@
 import { TheQuestionSection } from 'plexive'
 
-function Stage({ children, accent = '#72bb80' }: { children: React.ReactNode; accent?: string }) {
+function Stage({ children, accent = '#8ae0e0' }: { children: React.ReactNode; accent?: string }) {
   return (
     <div
       style={{
