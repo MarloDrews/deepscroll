@@ -140,7 +140,7 @@
     {
       "type": "bigger_picture",
       "order": 10,
-      "content": "All of this points to a question biology still has not answered. Heart muscle seems to fail after roughly a set number of contractions, no matter how many years that takes, as though the cell keeps count of beats and ignores the calendar. The usual suspects in aging, worn telomeres, oxidative damage, tiring mitochondria, all run faster in tissue with a faster metabolism. Whatever is wearing out seems tied to the pace of living, not the passage of time. That is why living longer has mostly meant keeping the heart going longer: more years, the same rate of wear. Getting the cell to spend slower is the hard part, and nobody has done it."
+      "content": "So the real variable in a lifespan is the rate, not the calendar. If a body spends a roughly fixed budget of beats, how long it lives comes down mostly to how fast it spends, and aging tracks the pace of living rather than the count of years. Every gain humans have made in lifespan, clean water, antibiotics, safe surgery, bought more years at the same pace, not a slower one, more time on the same rate of wear. We have learned to keep the meter running longer, never yet to make it tick slower."
     },
     {
       "type": "quiz",
@@ -249,9 +249,9 @@
       "content": {
         "body": "The pattern is solid as a statistical regularity, but why it holds is not settled. Heart rate and lifespan both scale with body mass, yet the mechanism that ties a life to a rough beat budget is still argued over, with metabolic rate, cellular wear, and oxidative damage all proposed and none fully closing the case. The clearest clue is the exceptions: the species that break the budget are exactly where the open questions live.",
         "items": [
-          "Why some species, naked mole rats and certain primates among them, run far more lifetime beats than their size predicts.",
-          "How much of the human figure is biology and how much is medicine and safety extending lives the body was not built for.",
-          "Whether a single mechanism explains the relationship, or several unrelated ones happen to line up."
+          "Why do some species, naked mole rats and certain primates among them, run far more lifetime beats than their size predicts?",
+          "How much of the human figure is biology, and how much is medicine and safety extending lives the body was not built for?",
+          "Does one mechanism explain the relationship, or do several unrelated ones happen to line up?"
         ]
       }
     },

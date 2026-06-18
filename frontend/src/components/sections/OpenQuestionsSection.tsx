@@ -16,7 +16,7 @@ export default function OpenQuestionsSection({ content }: Props) {
         <ul className="flex flex-col gap-3 mt-4">
           {content.items.map((line, i) => (
             <li key={i} className="flex items-start gap-3">
-              <span className="text-(--accent) text-sm mt-0.5 shrink-0">•</span>
+              <span className="text-(--accent) font-semibold text-sm mt-0.5 shrink-0">?</span>
               <span className="prose-post">{line}</span>
             </li>
           ))}
