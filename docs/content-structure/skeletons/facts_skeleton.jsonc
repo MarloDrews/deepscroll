@@ -1,254 +1,353 @@
 // facts_skeleton.jsonc
 // Deepscroll — Facts format skeleton.
-// Every REQUIRED section must be present. OPTIONAL sections: include only if
-// they add real value for this specific fact. Sections render in `order` field
-// order. The fact itself is the hook — the visual is constitutive, not
-// decorative. Goal: a reader who finds the topic interesting reads from
-// headline to bigger_picture without effort, pulled by substance.
-// See DEEPSCROLL_CONTENT_STRUCTURE.md for full spec, STYLE_GUIDE_LONGFORM.md
-// for prose rules. Accent color: cyan-400 #22d3ee.
+// Thesis: the fact is the hook and the visual is constitutive, not decorative.
+// A reader who finds the topic interesting should read from headline to
+// bigger_picture without effort, pulled by substance. Accent: the facts
+// format color (var(--accent) at runtime; values live in SVG_STANDARD.md).
+//
+// ─── OUTPUT CONTRACT ─────────────────────────────────────────────────
+// Output valid JSON only. Strip every // comment and use no trailing commas.
+// Fill or omit each placeholder; never emit an empty string. Drop every
+// unused OPTIONAL section object entirely, do not leave it in with blank
+// fields. Optional content fields are omitted (key removed), not nulled.
+//
+// ─── ORDER CONTRACT ──────────────────────────────────────────────────
+// Keep each section's `type` and `order` exactly as given. The renderer
+// sorts by `order`, so the gaps left by dropped OPTIONAL sections are
+// expected. Do not renumber to close them.
+//
+// ─── POST SHAPE ──────────────────────────────────────────────────────
+// Always present (the spine): headline, quiz_badge, see_it, surprises,
+// bigger_picture, quiz, sources. Beyond the spine, include an OPTIONAL
+// section only where this specific fact passes that section's own Include
+// test. Do not include every optional every time; that is the main way
+// these posts bloat. Guideline: 8 to 11 sections. A rich fact that earns it
+// can run 10 to 15 reading minutes; a thin fact that fills only the spine is
+// a valid short post, never padded to hit a number.
+//
+// ─── VISUAL PLAN ─────────────────────────────────────────────────────
+// Guideline: 4 to 6 visual anchors in a rich post, distributed so that no
+// run of two or more text sections passes without one. A wall of plain
+// text is the fastest way to tire a reader, so density matters as much as
+// count. Never two visuals back-to-back with no prose between them (two in
+// one section separated by a text item is fine). Visual-capable sections:
+// see_it (always, HARD), tangible, story (a diagram and/or key_figure
+// portraits), angles. The mid-post run of surprises, tangible, how_we_know
+// must not be visual-free; tangible carries the visual there. key_figure
+// portraits in story count as anchors and are encouraged when a verifiable,
+// properly licensed image exists (Wikimedia Commons, attribution required);
+// never invent an image URL. How a visual looks: SVG_STANDARD.md. Captions
+// and labels: STYLE_GUIDE_LONGFORM.md.
+//
+// ─── CROSS-SECTION RULE ──────────────────────────────────────────────
+// see_it, tangible, and key_numbers all present the same quantity in
+// different forms (visual, analogy, table). Rarely use more than two of
+// the three. A reader who meets the same number three ways disengages.
+// Pick the forms the fact actually needs.
+//
+// ─── PROSE ───────────────────────────────────────────────────────────
+// Zero em-dashes in user-facing text. Full prose rules: STYLE_GUIDE_LONGFORM.md.
+// Schema and rationale: DEEPSCROLL_CONTENT_STRUCTURE.md. Diagrams: SVG_STANDARD.md.
 
 {
+  // ─── GRAPH FIELDS ───────────────────────────────────────────────────
+  // Cross-format. Full rules: SKELETON_COMMENT_STANDARD.md, section 10.
+  // The system assigns the UUID and slug; the generator writes only these.
+  "tags": [],         // HARD: 1-4 slugs from the fixed taxonomy ONLY, never
+                      // invent one. First is primary and matches feed_card.field.
+  "connections": [    // REQUIRED, may be empty. Every real link to another post
+                      // that is NOT a key_figure. People links live in
+                      // key_figures, not here. Never invent a target.
+    {
+      "format": "",       // books|facts|people|concepts|questions|stories|academy
+      "ref": "",          // target natural identity, stated from known facts:
+                          // people "Name (birth_year)", books "Title by Author",
+                          // else the title/concept name. Latent until matched.
+      "featured": false   // true = show in "read next" (cap 3, shared with
+                          // featured key_figures).
+    }
+  ],
+
   // ─── FEED CARD ──────────────────────────────────────────────────────
-  // What the user sees before tapping. The fact is the card. No cover
-  // image, no marketing wrap. Headline + 3 teasers + meta. The number in
-  // the headline carries the visual weight.
+  // JOB: make the fact itself do the pulling before any tap. The number
+  //      carries the visual weight. No marketing wrap.
   "feed_card": {
-    "field": "",              // string — topic field shown small above the
-                              // headline (e.g. "Astronomy", "Biology",
-                              // "Linguistics", "Deep Time"). One or two words.
-    "headline": "",           // string — the fact stated cleanly, ~10–20 words.
-                              // Position the key number or central finding
-                              // for emphasis; if there's a number, it renders
-                              // in cyan-400 #22d3ee. No preamble, no "Did you
-                              // know", no question mark.
-    "mini_visual_svg": null,  // string | null — OPTIONAL. Only if a tiny SVG
-                              // makes the fact instantly graspable on the card
-                              // (e.g. a scale, a silhouette). Most facts work
-                              // without it. Per SVG_STANDARD.md.
-    "teasers": ["", "", ""],  // array[3], ~5–10 words each. Vary structure:
-                              // e.g. one about evidence ("How we measured it"
-                              // or "How the proof works"), one counter-
-                              // intuition ("Why instinct fails here"), one
-                              // consequence ("What it changed"). Never
-                              // category labels.
-    "post_reading_time_min": 0, // integer — honest minutes, no undersell
-    "post_difficulty": 1        // 1=accessible, 2=moderate, 3=demanding
+    "field": "",              // string. Guideline: one or two words, the topic
+                              // field shown small above the headline
+                              // ("Astronomy", "Biology", "Deep Time").
+    "headline": "",           // string. Guideline: 8-16 words, the fact stated
+                              // cleanly, the key number positioned for emphasis.
+                              // Avoid: "Did you know", preamble, question marks.
+    "mini_visual_svg": null,  // string | null. OPTIONAL, keep the null when
+                              // unused (this is a reserved card slot). Fill only
+                              // if a tiny SVG makes the fact graspable on the
+                              // card itself. Per SVG_STANDARD.md.
+    "teasers": ["", "", ""],  // HARD: exactly 3. Guideline: 5-10 words each,
+                              // vary structure (one evidence, one counter-
+                              // intuition, one consequence). Avoid: category labels.
+    "post_reading_time_min": 0, // integer. Guideline: honest minutes, no undersell.
+    "post_difficulty": 1        // HARD: 1, 2, or 3 (1=accessible, 2=moderate,
+                                // 3=demanding).
   },
 
   // ─── SECTIONS ───────────────────────────────────────────────────────
   "sections": [
 
-    // ── PART 1 — THE PUNCH (~60s read) ───────────────────────────────
+    // ── PART 1: THE PUNCH (~45s) ──────────────────────────────────────
 
     {
-      "type": "headline",  // REQUIRED — large typography, the punch
+      "type": "headline",   // The Headline (REQUIRED)
       "order": 1,
-      "content": ""        // string — same as feed_card.headline. The fact,
-                           // no rephrasing. Renders large with the key number
-                           // in cyan-400.
+      // JOB: hit the reader with the fact, large. This is the post title.
+      //      A reader who reads only this already has the fact.
+      "content": ""  // string. Same fact as feed_card.headline, no rephrasing.
+                     // The key number renders in the format accent.
     },
 
     {
-      "type": "quiz_badge",  // REQUIRED
+      "type": "quiz_badge",   // Quiz Badge (REQUIRED)
       "order": 2,
-      "content": ""          // string — format: "🎯 N questions at the end,
-                             // earn Elo" (N matches quiz length).
+      // JOB: signal that a graded quiz waits at the end, so the reader has a
+      //      reason to scroll past the payoff to earn Elo. Retention signal,
+      //      not content. Belongs to the header zone, render compact.
+      "content": ""  // string. Format: "🎯 N questions at the end, earn Elo".
+                     // HARD: N matches the quiz array length below exactly.
     },
 
     {
-      "type": "see_it",  // REQUIRED — "See It"
+      "type": "see_it",   // See It (REQUIRED)
       "order": 3,
-      // For facts, the main visual is constitutive: it makes the insight
-      // tangible at first glance. SVG for diagrams, scales, comparisons,
-      // timelines, maps. image_url for historical photos, archival images,
-      // satellite views. At least one of visual_svg or image_url required.
+      // JOB: make the fact tangible at first glance. The visual is the proof,
+      //      not an illustration. A reader who stops here has seen the fact,
+      //      not just read it.
+      // HARD: at least one of visual_svg or image_url present.
       "content": {
-        "visual_svg": "",         // string | omit — per SVG_STANDARD.md,
-                                  // cyan-400 #22d3ee accent
-        "image_url": "",          // string | omit — Wikimedia Commons preferred
-        "image_caption": "",      // string — one sentence, what is shown
-        "image_attribution": ""   // string | omit — required if image_url present
+        "visual_svg": "",         // string | omit. Per SVG_STANDARD.md (accent
+                                  // is var(--accent)). For diagrams, scales,
+                                  // comparisons, timelines, maps.
+        "image_url": "",          // string | omit. Wikimedia Commons preferred.
+                                  // For photos, archival images, satellite views.
+        "image_caption": "",      // string | omit. With image_url only, one
+                                  // sentence on what is shown.
+        "image_attribution": ""   // string | omit. HARD: required if image_url present.
+      }
+    },
+
+    // ── PART 2: THE TURN (the aha, immediately) ───────────────────────
+
+    {
+      "type": "surprises",   // Why It Surprises Us (REQUIRED)
+      "order": 4,
+      // JOB: name the single intuition this fact breaks. This is the post's
+      //      turning point and it sits right after the visual on purpose; a
+      //      reader who stops here leaves with the reframe, not just a number.
+      // Owns: the reframe (what we expected, what is true, why the gap).
+      //   Not here: where it leads or what it means (belongs to bigger_picture).
+      "content": ""  // string. Guideline: 3-5 sentences. Show the breakage.
+                     // Avoid: "this is surprising because" openings.
+    },
+
+    // ── PART 3: GROUND IT (consolidate, build trust) ──────────────────
+
+    {
+      "type": "tangible",   // Make It Tangible (OPTIONAL)
+      "order": 5,
+      // JOB: turn a non-human scale into something the body can feel. Lands
+      //      harder now that the reader knows why the fact matters. This
+      //      section also breaks the mid-post text run, so it carries the
+      //      visual that keeps surprises -> how_we_know from being a wall.
+      // Include when: the fact lives at cosmic, microscopic, deep-time, or
+      //   vast money/energy scale.
+      // Skip when: the fact already sits at human scale.
+      "content": {
+        "items": [
+          ""   // string per item. Guideline: 2-3 items, each one sentence,
+               // ideally surprising. Avoid: repeating the same "that's like"
+               // framing across items.
+        ],
+        "visual_svg": ""  // string | omit. A scale, timeline, or single-bar
+                          // graphic that makes the comparison visible. Per
+                          // SVG_STANDARD.md. Include it unless see_it already
+                          // carries the same comparison (cross-section rule);
+                          // it must show a different cut, not repeat see_it.
       }
     },
 
     {
-      "type": "key_numbers",  // OPTIONAL — compact reference card
-      "order": 4,
-      // Include when the fact has multiple quantitative points worth seeing
-      // side by side. Skip for single-number facts (headline already carries
-      // it). Keep to 3–6 entries; more becomes a table.
-      "content": [
-        {
-          "label": "",   // string — what this number is, max ~4 words
-          "value": "",   // string — the number with appropriate precision
-          "unit": ""     // string | omit — units only if not obvious from label
-        }
-      ]
-    },
-
-    {
-      "type": "tangible",  // OPTIONAL — "Make It Tangible"
-      "order": 5,
-      // 2–3 concrete comparisons for facts at non-human scale (cosmic,
-      // microscopic, deep time, vast money/energy). Each is ONE sentence,
-      // ideally surprising. Skip when the fact already lives at human scale.
-      // Do not repeat "That's like…" across items; vary the framing.
-      "content": [
-        ""
-      ]
-    },
-
-    // ── PART 2 — WHY IT'S TRUE ────────────────────────────────────────
-
-    {
-      "type": "how_we_know",  // OPTIONAL
+      "type": "how_we_know",   // How We Know (OPTIONAL)
       "order": 6,
-      "content": ""           // string — 3–5 sentences. The methodology, the
-                              // proof sketch, or the chain of evidence.
-                              // Builds trust before depth. Concrete: name the
-                              // technique, instrument, or argument. Skip for
-                              // cultural/political constructs (those weren't
-                              // measured, they were established).
+      // JOB: earn trust by naming how the fact was established, now that the
+      //      reader is hooked. A reader who stops here knows it is rigorous,
+      //      not a coincidence.
+      // Include when: the fact is empirical or mathematical and there is a
+      //   concrete method, instrument, or proof to name.
+      // Skip when: the fact is a cultural or political construct that was
+      //   established by convention, not measured.
+      "content": ""  // string. Guideline: 3-5 sentences. Name the technique,
+                     // instrument, or argument concretely.
     },
 
-    // ── PART 3 — DEPTH & MEANING (~3–6 min, the core) ────────────────
-
     {
-      "type": "surprises",  // REQUIRED — "Why It Surprises Us"
+      "type": "key_numbers",   // Key Numbers (OPTIONAL)
       "order": 7,
-      "content": ""         // string — 3–5 sentences. Name the SPECIFIC
-                            // intuition the fact breaks. What did we expect,
-                            // what is actually true, why the gap? This is
-                            // what turns trivia into insight. Avoid "this
-                            // is surprising because" — show the breakage.
-    },
-
-    {
-      "type": "angles",  // OPTIONAL — "Multiple Angles"
-      "order": 8,
-      // array[3–7]. Each angle covers one dimension of the fact: a
-      // consequence, a mechanism, an edge case, a related finding, a
-      // comparison to something adjacent. Skip for narrow point-facts
-      // with nothing to subdivide. Each angle stands alone as a mini-
-      // section the reader could stop at.
+      // JOB: let the reader scan several independent quantities side by side.
+      // Include when: the fact has multiple distinct numbers worth comparing
+      //   at a glance (a data-dense fact).
+      // Skip when: see_it and tangible already carry the magnitude. A single-
+      //   number fact never needs this; the headline already holds it.
       "content": [
         {
-          "title": "",       // string — a claim with a verb, 4–10 words.
-                             // Never a label. Vary title structure across
-                             // angles (do not all start with the same word).
-          "body": "",        // string — 2–4 sentences of prose, concrete
-                             // before abstract
-          "visual_svg": "",  // string | omit — per SVG_STANDARD.md
-          "image_url": ""    // string | omit
+          "label": "",   // string. Guideline: max 4 words, what this number is.
+          "value": "",   // string. The number at appropriate precision.
+                         // Avoid: revealing a figure that a later section
+                         // (angles, bigger_picture) is built to pay off.
+          "unit": ""     // string | omit. Only if not obvious from the label.
         }
+        // Guideline: 3-6 entries. More than 6 becomes a table.
       ]
     },
 
+    // ── PART 4: DEPTH & MEANING (the core, ~3-6 min) ──────────────────
+
     {
-      "type": "story",  // REQUIRED — "The Story Behind It"
-      "order": 9,
-      // Discovery + prehistory merged. Who found this out, when, how. For
-      // constructs: how the convention came about. There is always a story
-      // here — even ancient knowledge has a moment of first measurement.
+      "type": "story",   // The Story Behind It (OPTIONAL)
+      "order": 8,
+      // JOB: who found this out, when, and what was believed before. A reader
+      //      who stops here has the human history of the fact.
+      // Include when: there is an attributable discovery or a real before-and-
+      //   after shift in what people believed.
+      // Skip when: the fact is a definitional constant, ancient or folk
+      //   knowledge with no first-measurement moment, or a gradual consensus
+      //   with no turning point. A manufactured "history" is worse than none.
+      // Owns: discovery history and the people in it.
+      //   Not here: consequences or edge cases of the fact (belongs to angles).
       "content": {
-        "body": "",            // string — 4–7 sentences. Open with a concrete
-                               // moment or scene, not "the history begins
-                               // in…". What was believed before? What
-                               // changed it? Avoid hagiography.
-        "key_figures": [       // OPTIONAL — 1–4 people central to the
-                               // discovery. Skip if no individual is
-                               // attributable (e.g. ancient knowledge).
+        "body": "",            // string. Guideline: 4-7 sentences. Open on a
+                               // concrete moment or scene. Avoid: "the history
+                               // begins in" openings and hagiography.
+        "key_figures": [       // OPTIONAL array. Guideline: 1-4 people central
+                               // to the discovery. Omit the key entirely if no
+                               // individual is attributable.
           {
-            "name": "",        // string
-            "role": "",        // string — concrete function ("co-discoverer",
-                               // "first to measure precisely"), not honorific
-                               // labels ("renowned scientist")
-            "one_line": "",    // string | omit — one sentence on their
-                               // specific contribution to THIS fact
-            "lifespan": "",    // string | omit — format "1879–1955"
-            "image_url": ""    // string | omit — Wikimedia portrait preferred
+            "name": "",        // string.
+            "role": "",        // string. Concrete function ("first to measure
+                               // precisely"). Avoid: honorifics ("renowned scientist").
+            "one_line": "",    // string | omit. One sentence on their specific
+                               // contribution to THIS fact.
+            "lifespan": "",    // string | omit. Display form "1879-1955" or "born 1940".
+            "birth_year": 0,   // integer | omit. The graph match key for the
+                               // people edge. Omit if genuinely unknown; never guess.
+            "featured": false, // OPTIONAL. true = surface this person in "read
+                               // next" (cap 3, shared with featured connections).
+            "image_url": ""    // string | omit. Wikimedia portrait preferred,
+                               // attribution required; never invent a URL.
           }
         ],
-        "visual_svg": "",      // string | omit — e.g. a timeline of discovery
-        "image_url": ""        // string | omit — historical artifact, photo,
-                               // archival image
+        "visual_svg": "",      // string | omit. E.g. a discovery timeline.
+        "image_url": ""        // string | omit. Historical artifact or photo.
       }
     },
 
     {
-      "type": "bigger_picture",  // REQUIRED — "The Bigger Picture"
-      "order": 10,
-      "content": ""              // string — 3–6 sentences. The climax before
-                                 // the quiz. What this fact means
-                                 // scientifically, philosophically, or
-                                 // practically. Where it leads, what it
-                                 // opened up, what it closed off. Do not
-                                 // recap earlier sections — push further.
-                                 // The reader who stops here should feel
-                                 // they got the payoff.
+      "type": "angles",   // Multiple Angles (OPTIONAL)
+      "order": 9,
+      // JOB: give the reader the genuinely distinct wrinkles of the fact:
+      //      consequences, edge cases, limits, adjacent comparisons. A reader
+      //      who stops here feels the fact has more sides than expected.
+      // Include when: the fact has at least two dimensions as strong as the
+      //   headline itself.
+      // Skip when: you cannot name two that hold their own. A padded angle is
+      //   worse than no section.
+      // Owns: consequences and edge cases.
+      //   Not here: who discovered it and when (belongs to story). Never
+      //   restate the discovery as an angle.
+      "content": [
+        {
+          "title": "",       // string. Guideline: 4-10 words, a claim with a
+                             // verb. Avoid: label titles and repeating the same
+                             // opening word across angles.
+          "body": "",        // string. Guideline: 2-4 sentences, concrete first.
+          "visual_svg": "",  // string | omit. Per SVG_STANDARD.md.
+          "image_url": ""    // string | omit.
+        }
+        // Guideline: up to 5 distinct angles. No floor. The last must be as
+        // strong as the first or cut it.
+      ]
     },
 
-    // ── PART 4 — TEST YOURSELF ────────────────────────────────────────
+    {
+      "type": "bigger_picture",   // The Bigger Picture (REQUIRED)
+      "order": 10,
+      // JOB: the payoff. What the fact means and where it leads. This is the
+      //      climax before the quiz; a reader who stops here should feel they
+      //      got the full reward.
+      // Owns: the one overarching implication (what it opened up or closed
+      //   off), not a list of local consequences (those are angles).
+      //   Not here: the reframe (belongs to surprises). Push past it.
+      "content": ""  // string. Guideline: 3-6 sentences. Avoid: recapping
+                     // earlier sections instead of pushing further.
+    },
+
+    // ── PART 5: TEST YOURSELF ─────────────────────────────────────────
 
     {
-      "type": "quiz",  // REQUIRED
+      "type": "quiz",   // Quiz (REQUIRED)
       "order": 11,
-      // array[5–10]. Tests understanding of WHY the fact is true and what
-      // it implies, not trivia (years, names, places). Distractors must be
-      // plausible misconceptions a casual reader would actually pick.
+      // JOB: test understanding of why the fact is true and what it implies.
+      //      Elo-relevant, so quality is a fairness question.
+      // Full quiz style (distractor design, difficulty spread, explanation
+      // style): STYLE_GUIDE_LONGFORM.md, quiz language.
+      // HARD: 5-10 questions. HARD: exactly 4 options each. HARD: answer_index
+      //   0-3 and varied across questions, never always 0.
       "content": [
         {
           "question": "",
-          "options": ["", "", "", ""],  // exactly 4
-          "answer_index": 0,            // 0–3
-          "explanation": ""             // explains the LOGIC of the correct
-                                        // answer; teaches, does not correct
+          "options": ["", "", "", ""],
+          "answer_index": 0,
+          "explanation": ""  // string. Teaches the logic of the correct answer.
+                             // Avoid: trivia questions (years, names, places)
+                             // and "the correct answer is" openings.
         }
       ]
     },
 
-    {
-      "type": "related_posts",  // OPTIONAL — right after quiz
-      "order": 12,
-      "content": [              // array[3]
-        {
-          "post_id": "",        // string — empty if not yet known
-          "title": "",          // string
-          "format": "",         // "books"|"facts"|"people"|"concepts"|
-                                // "questions"|"stories"|"academy"
-          "mini_teaser": ""     // string — one sentence
-        }
-      ]
-    },
+    // NOTE: the old related_posts section is gone. "Read next" is now driven
+    // by featured connections + featured key_figures (top-level connections
+    // field and key_figures.featured). See SKELETON_COMMENT_STANDARD.md s.10.
 
-    // ── PART 5 — AROUND (compact, secondary) ──────────────────────────
+    // ── PART 6: AROUND (compact, secondary) ───────────────────────────
 
     {
-      "type": "misconceptions",  // OPTIONAL — "Common Misconceptions"
+      "type": "misconceptions",   // Common Misconceptions (OPTIONAL)
       "order": 13,
-      // array of {myth, reality}. Each myth must be a specific belief
-      // people actually hold in the wild, not a strawman. Reality is one
-      // sentence that corrects it. Skip if there are no sharp myths to bust.
+      // JOB: bust the specific false beliefs people hold about this fact. This
+      //      is also the home for the honest caveat when a fact is looser than
+      //      its headline suggests (a rule with exceptions, an order of
+      //      magnitude rather than a constant).
+      // Include when: there are sharp, real myths to correct, or the fact
+      //   needs an honest qualifier so the reader is not left overselling it.
+      // Skip when: there is no real myth and no qualifier worth stating.
       "content": [
         {
-          "myth": "",     // string — the false belief, stated as people say it
-          "reality": ""   // string — one sentence, what's actually the case
+          "myth": "",     // string. The false belief as people actually say it.
+                          // Avoid: strawmen nobody holds.
+          "reality": ""   // string. Guideline: one sentence that corrects it.
         }
       ]
     },
 
     {
-      "type": "sources",  // REQUIRED — "Sources & Further Reading"
+      "type": "sources",   // Sources & Further Reading (REQUIRED)
       "order": 14,
-      // array[1–10]. Prefer primary sources (papers, archives, datasets)
-      // over secondary aggregators. Each URL must be reachable.
+      // JOB: let the reader verify and go deeper. Prefer primary sources
+      //      (papers, archives, datasets) over aggregators.
       "content": [
         {
-          "label": "",    // string — human-readable reference
-          "url": "",      // string — full URL
-          "type": ""      // "wikipedia"|"paper"|"book"|"article"|"database"
+          "label": "",    // string. Human-readable reference.
+          "url": "",      // string. Full, reachable URL.
+          "type": ""      // HARD: one of wikipedia|paper|book|article|database.
         }
+        // Guideline: enough sources to back the claims, roughly 1-10.
       ]
     }
 
