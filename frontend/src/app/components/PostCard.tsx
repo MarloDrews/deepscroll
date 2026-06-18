@@ -560,12 +560,14 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
         </div>
       </div>
 
-      {/* Interest tags — floating pills bottom-left, clear of the actions,
-          anchored just above the nav dock (dock top = safe-area + 68px).
-          wrap-reverse keeps the first row hugging the bottom edge so it stays
-          level with the send button even if the tags wrap. */}
+      {/* Interest tags — floating pills bottom-left. The box is one chip tall
+          and bottom-anchored level with the send button, ending before the
+          action column (right-20). The first row fills that width left to
+          right; flex-wrap + content-start let overflow chips spill onto a
+          second row below the box, into the nav band where the dock covers
+          them until scrolled. */}
       {post.interests.length > 0 && (
-        <div className="absolute left-4 right-20 bottom-[calc(env(safe-area-inset-bottom)+72px)] flex flex-wrap-reverse gap-2 z-10">
+        <div className="absolute left-4 right-20 bottom-[calc(env(safe-area-inset-bottom)+72px)] flex flex-wrap content-start gap-2 h-7 z-10">
           {post.interests.map((name) => (
             <span
               key={name}
