@@ -83,6 +83,78 @@ def slug_to_name(slug):
     return slug.replace("-", " ").title()
 
 
+def _slug_from_filename(filename: str) -> str:
+    """Stable per-post identity = the JSON filename without its extension.
+
+    Examples: facts_example.json -> facts_example;
+    banks-create-most-money.json -> banks-create-most-money.
+    """
+    return os.path.splitext(filename)[0]
+
+
+def upsert_post(db, marlo, post_format, data, slug, allow_legacy_adopt):
+    """Create or update one post, keyed on the unique slug.
+
+    allow_legacy_adopt is set only for the example posts: if no row matches the
+    slug yet, adopt the pre-slug example row (same author+format, slug still NULL)
+    and backfill its slug. This is a one-time transition so existing live example
+    posts are updated in place rather than duplicated. Restricting the fallback to
+    slug=None means generated posts (always created with a slug) are never adopted
+    by accident.
+    """
+    feed_card = data["feed_card"]
+    sections = data["sections"]
+    tags = data.get("tags", [])
+    connections = data.get("connections", [])
+    title = _post_title(feed_card)
+
+    existing = db.query(Post).filter_by(slug=slug).first()
+    if existing is None and allow_legacy_adopt:
+        existing = (
+            db.query(Post)
+            .filter_by(author_id=marlo.id, format=post_format, slug=None)
+            .first()
+        )
+
+    if existing:
+        existing.slug = slug
+        existing.title = title
+        existing.feed_card = feed_card
+        existing.sections = sections
+        existing.tags = tags
+        existing.connections = connections
+        existing.status = "published"
+        db.commit()
+        print(f"Updated existing {post_format.title()} post: {title}.")
+        return
+
+    interest_slugs = FORMAT_INTEREST_SLUGS.get(post_format, [])
+    interests = []
+    for interest_slug in interest_slugs:
+        interest = db.query(Interest).filter_by(slug=interest_slug).first()
+        if interest:
+            interests.append(interest)
+        else:
+            print(f"Warning: interest slug '{interest_slug}' not found, skipping")
+
+    post = Post(
+        slug=slug,
+        format=post_format,
+        title=title,
+        feed_card=feed_card,
+        sections=sections,
+        tags=tags,
+        connections=connections,
+        author_id=marlo.id,
+        status="published",
+        is_user_content=False,
+    )
+    post.interests = interests
+    db.add(post)
+    db.commit()
+    print(f"Seeded {post_format.title()} post: {title}.")
+
+
 def _get_or_create_marlo(db) -> User:
     marlo = db.query(User).filter_by(email=SEED_EMAIL).first()
     if marlo:
@@ -151,47 +223,41 @@ for filename in sorted(os.listdir(examples_dir)):
     with open(os.path.join(examples_dir, filename), encoding="utf-8") as f:
         example = json.load(f)
 
-    feed_card = example["feed_card"]
-    sections = example["sections"]
-    tags = example.get("tags", [])
-    connections = example.get("connections", [])
-    title = _post_title(feed_card)
+    upsert_post(
+        db,
+        marlo,
+        post_format,
+        example,
+        slug=_slug_from_filename(filename),
+        allow_legacy_adopt=True,
+    )
 
-    existing = db.query(Post).filter_by(author_id=marlo.id, format=post_format).first()
+# Phase 4: seed all generated posts found in docs/content-structure/generated/<format>/
+# The format comes from the folder name (filenames are descriptive slugs). Each
+# post is keyed on its filename slug, so re-running updates it in place. Reuses the
+# same creator, interest, tag and connection handling as the examples.
+generated_dir = os.path.join(project_root, "docs", "content-structure", "generated")
 
-    if existing:
-        existing.title = title
-        existing.feed_card = feed_card
-        existing.sections = sections
-        existing.tags = tags
-        existing.connections = connections
-        existing.status = "published"
-        db.commit()
-        print(f"Updated existing {post_format.title()} post: {title}.")
-    else:
-        interest_slugs = FORMAT_INTEREST_SLUGS.get(post_format, [])
-        interests = []
-        for slug in interest_slugs:
-            interest = db.query(Interest).filter_by(slug=slug).first()
-            if interest:
-                interests.append(interest)
-            else:
-                print(f"Warning: interest slug '{slug}' not found, skipping")
+if os.path.isdir(generated_dir):
+    for post_format in sorted(os.listdir(generated_dir)):
+        format_dir = os.path.join(generated_dir, post_format)
+        if not os.path.isdir(format_dir):
+            continue
 
-        post = Post(
-            format=post_format,
-            title=title,
-            feed_card=feed_card,
-            sections=sections,
-            tags=tags,
-            connections=connections,
-            author_id=marlo.id,
-            status="published",
-            is_user_content=False,
-        )
-        post.interests = interests
-        db.add(post)
-        db.commit()
-        print(f"Seeded {post_format.title()} post: {title}.")
+        for filename in sorted(os.listdir(format_dir)):
+            if not filename.endswith(".json"):
+                continue
+
+            with open(os.path.join(format_dir, filename), encoding="utf-8") as f:
+                generated = json.load(f)
+
+            upsert_post(
+                db,
+                marlo,
+                post_format,
+                generated,
+                slug=_slug_from_filename(filename),
+                allow_legacy_adopt=False,
+            )
 
 db.close()

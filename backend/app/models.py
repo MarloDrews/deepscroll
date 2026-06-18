@@ -37,6 +37,12 @@ class Post(Base):
     status     = Column(String, nullable=False, default="published", index=True)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
 
+    # Stable per-post identity for seed/official content (the JSON filename stem).
+    # NULL for user-created posts. Unique so the seed upsert can key on it and
+    # re-runs update each post in place instead of duplicating. Added to the live
+    # DB by scripts/add_slug_column.py.
+    slug = Column(String, nullable=True, unique=True, index=True)
+
     # False for official/seed content; True for user submissions.
     # Cannot be derived from author_id because seed posts also have an author.
     is_user_content = Column(Boolean, nullable=False, default=False)
