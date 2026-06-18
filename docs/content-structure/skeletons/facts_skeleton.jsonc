@@ -9,7 +9,8 @@
 // Output valid JSON only. Strip every // comment and use no trailing commas.
 // Fill or omit each placeholder; never emit an empty string. Drop every
 // unused OPTIONAL section object entirely, do not leave it in with blank
-// fields. Optional content fields are omitted (key removed), not nulled.
+// fields. Optional content fields are omitted entirely (the key is removed when
+// unused).
 //
 // ─── ORDER CONTRACT ──────────────────────────────────────────────────
 // Keep each section's `type` and `order` exactly as given. The renderer
@@ -48,10 +49,10 @@
 // The mid-post run of surprises, tangible, how_we_know must not be visual-
 // free; tangible carries the visual there.
 //
-// The feed card is separate and ALWAYS carries a visual anchor (card_visual:
-// a licensed image if one fits, else an emblem SVG). On Facts the anchor is a
-// full-width banner across the top of the card, above the field label; the
-// headline runs full width below it. See SVG_STANDARD.md card rules.
+// The feed card is a typographic card: an accent bar left, a field line (label
+// plus a small glyph at its right end), the serif headline, teasers, footer.
+// (Books and people instead show a cover or portrait.) See SVG_STANDARD.md card
+// rules and LAYOUT_STANDARD.md.
 //
 // How a drawn visual looks: SVG_STANDARD.md. How a sourced image is licensed,
 // attributed, and shown: IMAGE_STANDARD.md. Caption and label wording:
@@ -97,19 +98,18 @@
     "headline": "",           // string. Guideline: 8-16 words, the fact stated
                               // cleanly, the key number positioned for emphasis.
                               // Avoid: "Did you know", preamble, question marks.
-    "card_visual": {          // REQUIRED. A full-width banner across the top of
-                              // the card (above the field label), flat, about
-                              // 4:1. Fill exactly one of the two below; never
-                              // leave both empty. Prefer a wide anchored image;
-                              // fall back to a wide emblem SVG when none fits.
-      "image_url": "",        // string | omit. A real, licensed, attributed
-                              // image that is ABOUT this fact, per
-                              // IMAGE_STANDARD.md. Never stock, never invented.
-                              // Use only a motif that survives a wide flat crop.
-      "image_attribution": "",// string. HARD if image_url present.
-      "svg": ""               // string | omit. A wide banner emblem, viewBox
-                              // 0 0 400 100, per SVG_STANDARD.md card rules.
-                              // Used when no fitting licensed image exists.
+    "card_visual": {          // REQUIRED. Facts is a typographic card: a small
+                              // glyph sits at the right end of the field line.
+                              // Fill "svg" with the field glyph; leave image_url
+                              // empty (card images are used by books and people).
+                              // The glyph belongs to the field, not the post;
+                              // later it comes from a fixed field-to-glyph set
+                              // (ROADMAP.md), so a generator never invents one.
+      "image_url": "",        // string | omit. Not used on Facts cards. (Books and
+                              // people use this for a cover/portrait.)
+      "image_attribution": "",// string | omit. With image_url only.
+      "svg": ""               // string. The small field glyph, compact viewBox
+                              // (e.g. 0 0 56 32), per SVG_STANDARD.md card rules.
     },
     "teasers": ["", "", ""],  // HARD: exactly 3. Guideline: 5-10 words each,
                               // vary structure (one evidence, one counter-
@@ -351,9 +351,9 @@
       ]
     },
 
-    // NOTE: the old related_posts section is gone. "Read next" is now driven
-    // by featured connections + featured key_figures (top-level connections
-    // field and key_figures.featured). See SKELETON_COMMENT_STANDARD.md s.10.
+    // NOTE: "Read next" is driven by featured connections and featured
+    // key_figures (the top-level connections field and key_figures.featured).
+    // See SKELETON_COMMENT_STANDARD.md s.10.
 
     // ── PART 6: AROUND (compact, secondary) ───────────────────────────
 

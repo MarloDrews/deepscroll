@@ -13,58 +13,67 @@ built, its card and detail page follow this document.
 
 ---
 
-## 1. Two card layouts, chosen by the shape of the visual
+## 1. Two card looks, chosen by the format
 
-The visual's shape decides the layout, not the format name.
+The feed card has two looks. Which one a format uses is fixed, not per post.
 
-- **Banner formats** (facts, concepts, questions, stories, academy): the
-  `card_visual` is a **full-width banner across the top**, flat, about 4:1, above
-  the field label. A wide drawn SVG (preferred) or a wide-croppable photo.
-- **Side-cover formats** (books, people): the `card_visual` is a **hochkant cover
-  beside the headline**, a book cover or a portrait. This is the current books and
-  people layout and does not change.
+- **Typographic formats** (facts, concepts, questions, stories, academy): the
+  card is clean and typographic, an accent bar down the left, a field line (label
+  plus a small glyph), the large serif headline, teasers, footer. The glyph is the
+  only drawn mark.
+- **Cover formats** (books, people): the card shows a real image, a hochkant book
+  cover or a portrait, beside the headline. This is the current books and people
+  layout and does not change.
 
-A wide motif bands the top; a tall cover or portrait sits to the side. Nothing is
-forced into the wrong frame.
+Photos earn their place inside the post body (see `IMAGE_STANDARD.md`), not on the
+typographic cards. The cards stay a coherent, typographic Plexive face; the body
+is where real images give the eye a rest.
 
 ---
 
-## 2. Feed card, top to bottom (banner formats)
+## 2. Feed card, top to bottom (typographic formats)
 
-1. **Banner** (`card_visual`), full width, flat, with the card's top rounding.
-2. **Field label**, small, in the accent color ("BIOLOGY").
-3. **Headline**, full width, large serif, the key number emphasized. The star.
-4. **Teasers**, exactly three.
-5. **Footer**: creator (round avatar + name), reading time, difficulty (the
+1. **Field line**: the field label small in the accent color ("BIOLOGY") at the
+   left, and a **small glyph at the right end** of the same line. If the field is
+   long it wraps to two lines and the glyph stays at the right. Accent bar runs
+   down the left edge of the card.
+2. **Headline**, full width, large serif, the key number emphasized. The star.
+3. **Teasers**, exactly three.
+4. **Footer**: creator (round avatar + name), reading time, difficulty (the
    three-dot scale).
 
 The footer carries only creator, reading time, and difficulty. Per-format
 metadata is deliberately not shown on the card; it varies between formats and
 looks inconsistent across the feed.
 
-Side-cover formats use the same parts, with the cover beside the headline instead
-of a banner on top.
+The glyph belongs to the **field**, not the post, and is meant to come from a
+fixed field-to-glyph set (see `ROADMAP.md`). Until that set exists, an example may
+carry one glyph inline in `card_visual.svg`. Cover formats use the same parts with
+the cover or portrait beside the headline instead of a glyph.
 
 ---
 
 ## 3. Detail page header, top to bottom
 
-There is **no mini feed-card** at the top. The headline appears once. The banner
-(or side cover) is what carries continuity from the card the reader tapped.
+The detail header opens straight into the post; the headline appears exactly once.
+Continuity from the tapped card comes from the shared field line, glyph, and accent
+bar.
 
 1. **App top bar**: back, the format label with its accent dot, audio. (App frame.)
-2. **`card_visual`**, the same as on the card: a full-width banner for banner
-   formats, a side cover for books and people, with the page's top rounding.
-3. **Field label**, small, accent.
-4. **Headline**, once, large serif, accent number. The first impression; it owns
+2. **Field line**: field label (accent) with the small glyph at its right end,
+   same as the card.
+3. **Headline**, once, large serif, accent number. The first impression; it owns
    the top of the page.
-5. **Meta row**: round avatar + creator name, then reading time, then difficulty.
+4. **Meta row**: round avatar + creator name, then reading time, then difficulty.
    The creator here and on the card come from one source and always match.
-6. **Quiz badge**.
-7. **Sections**, in their defined order.
-8. **Tags**, at the end, as small chips near the sources. Not in the header: the
+5. **Quiz badge**.
+6. **Sections**, in their defined order.
+7. **Tags**, at the end, as small chips near the sources. Not in the header: the
    field label already orients the reader, and tags are the network and filter
    system, which belongs at the foot of the post.
+
+Cover formats (books, people) may show their cover or portrait in the header; that
+is settled when those formats get their own pass.
 
 ---
 
@@ -79,7 +88,8 @@ source and always match. Never a hardcoded fallback such as the app name.
 
 Hide scrollbars, vertical and any horizontal, for a clean surface. A horizontal
 scrollbar almost always means real overflow, usually an element wider than its
-container (an over-wide banner or body SVG). Fix the overflow at its source; do
+container (an over-wide element such as a body SVG). Fix the overflow at its
+source; do
 not only mask the bar.
 
 ---

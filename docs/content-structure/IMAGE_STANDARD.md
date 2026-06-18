@@ -70,11 +70,11 @@ earn their place by showing something the text cannot.
   image past its native resolution; an obviously pixelated image is worse than
   none.
 - Caption then credit sit below the image, small and muted, the credit smallest.
-- **Card anchor:** on the banner formats (facts, concepts, questions, stories,
-  academy), a full-width strip across the top of the card, flat, about 4:1, with
-  the headline below it; the image must be a motif that survives a wide flat crop.
-  Books and people instead show a hochkant side cover (book cover, portrait)
-  beside the headline.
+- **Card anchor:** only books and people put an image on the feed card, a
+  hochkant book cover or a portrait beside the headline. The five typographic
+  formats (facts, concepts, questions, stories, academy) carry no image on the
+  card; their card is typographic with a small field glyph (see
+  `SVG_STANDARD.md`). Photos on those formats live in the post body, not the card.
 - **Body image:** a rest between blocks of text and drawn graphics. It counts
   toward the post's visual-anchor budget and obeys the no-two-visuals-back-to-back
   rule in the skeleton's VISUAL PLAN.
@@ -86,10 +86,9 @@ earn their place by showing something the text cannot.
 
 ## 6. The three image roles
 
-1. **Card anchor** (feed card): on banner formats, a wide image across the top
-   about the subject, or, when none fits, an emblem SVG instead (see
-   `SVG_STANDARD.md` card rules). On books and people, a hochkant side cover. The
-   card always carries one or the other.
+1. **Card anchor** (feed card): only on books (a cover) and people (a portrait).
+   The five typographic formats carry no card image; they use a small field glyph
+   instead (see `SVG_STANDARD.md` card rules).
 2. **Illustrative image** (in a post body): a photo or artwork that shows the
    subject and gives the eye a rest. Optional, depends on a fitting licensed image
    existing.

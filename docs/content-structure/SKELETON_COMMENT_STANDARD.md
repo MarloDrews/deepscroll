@@ -85,7 +85,7 @@ Keep the JOB and Include/Skip as line comments above the object. Keep field inst
 
 ## 5. Field-comment conventions
 
-**Presence semantics.** Optional content fields are **omitted entirely** when unused. Never emit an empty string and never emit `null` for them. The template shows `""` as a placeholder only; the instruction `| omit` tells the model the empty string is not a valid output. Whole unused OPTIONAL section objects are dropped from the array, not left in with empty fields. `null` is reserved for feed-card slots the card layout always reserves (for example `mini_visual_svg`), where a present-but-empty slot is meaningful to the renderer.
+**Presence semantics.** Optional content fields are **omitted entirely** when unused. The template shows `""` as a placeholder only; the instruction `| omit` tells the model the empty string is not a valid output. Whole unused OPTIONAL section objects are dropped from the array, not left in with empty fields. `null` appears only where a format's skeleton explicitly marks a slot as always present but possibly empty for the renderer; absent that explicit note, an unused optional field is omitted.
 
 **Counts.** Every count is tagged. `HARD:` for anything the UI or scoring depends on (exact option counts, exact array lengths, quiz range). `Guideline:` for everything else, and the comment makes clear the model overshoots or undershoots the guideline when the content earns it. A guideline range is never treated as a cap: "Guideline: 3-5 sentences" means write what the point needs, near that band.
 

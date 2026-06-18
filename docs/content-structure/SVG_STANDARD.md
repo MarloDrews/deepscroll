@@ -259,37 +259,35 @@ at low opacity, numeric labels in `var(--font-mono)`.
 
 ---
 
-## 6. The card visual (full-width banner emblem)
+## 6. The card visual (small field glyph)
 
-The feed card always carries a visual anchor at the top. On the formats that use
-a top banner (facts, concepts, questions, stories, academy) it is a **full-width
-strip across the top of the card, above the field label**, with the headline
-running full width below it. It is filled by a real licensed image when one fits
-the subject and survives a wide flat crop (preferred), or by an emblem SVG when
-none does. Books and people do not use a banner; their card shows a hochkant side
-cover (the book cover, the portrait) beside the headline, unchanged. This section
-covers the banner emblem SVG; the image path is governed by `IMAGE_STANDARD.md`
-(licensing, attribution, display).
+On the five typographic formats (facts, concepts, questions, stories, academy) the
+feed card is clean and typographic: an accent bar down the left, a line with the
+field label and a **small glyph at its right end**, then the large serif headline,
+teasers, footer. The glyph is the only drawn mark on the card, a quiet category
+symbol. Books and people instead show a hochkant cover or portrait (a real image),
+governed by `IMAGE_STANDARD.md`.
 
-A card emblem is **not a shrunk diagram**. At a glance across a flat strip, fine
-labels and data encoding are unreadable. It is a symbol, read in one glance, that
-spans the width.
+The glyph belongs to the post's **field**, not the individual post. It is meant to
+come from a fixed field-to-glyph set (see `ROADMAP.md`); until that set exists, an
+example may carry one glyph inline in `card_visual.svg` so the layout can be seen.
+A generator never invents a per-post glyph.
 
-- **viewBox `0 0 400 100`** (a flat, roughly 4:1 banner), not the body's
-  `0 0 400 300` and not a square. No width or height, transparent, `fill="none"`
-  by default.
-- **One idea, drawn wide.** Reduce the fact to a single motif that reads across
-  the full width: a pulse line with several beats, a wave, an orbit track, a
-  spreading path. A few paths, no clutter.
+A field glyph is **not a shrunk diagram**. At ~24 to 32 px beside the label, fine
+detail is invisible. It is one symbol, read in a glance.
+
+- **Compact viewBox**, roughly 2:1 or square (e.g. `0 0 56 32`), not the body's
+  `0 0 400 300`. No width or height, transparent, `fill="none"` by default.
+- **One idea, a few strokes.** A pulse beat, a spiral, an orbit, a scale, a seed.
+  No more than a handful of paths.
 - **No text labels.** If it needs words to read, it is the wrong mark.
-- **Bolder strokes:** `stroke-width` 3 to 5; a thin line is lost on a wide strip.
-- **Color:** the mark in `var(--accent)`, any secondary geometry in
-  `currentColor` at low opacity. Same flat rules as the body (no gradients,
-  shadows, filters).
+- **Bolder strokes:** `stroke-width` 3 to 4; at this size a thin line vanishes.
+- **Color:** the mark in `var(--accent)`. Same flat rules as the body (no
+  gradients, shadows, filters).
 - Round caps and joins, matching the Stage softness.
 
-It should read as a calm, accent-colored motif banding the top of the card, not
-as a busy illustration competing with the headline below it.
+It should read as a small accent-colored category mark sitting quietly at the end
+of the field line, never competing with the headline below.
 
 ---
 

@@ -32,7 +32,7 @@
     "card_visual": {
       "image_url": "",
       "image_attribution": "",
-      "svg": "<svg viewBox='0 0 400 100' xmlns='http://www.w3.org/2000/svg' fill='none'><path d='M0 50 H40 L48 50 L54 28 L62 74 L68 50 H140 L148 50 L154 28 L162 74 L168 50 H240 L248 50 L254 28 L262 74 L268 50 H340 L348 50 L354 28 L362 74 L368 50 H400' stroke='var(--accent)' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+      "svg": "<svg viewBox='0 0 56 32' xmlns='http://www.w3.org/2000/svg' fill='none'><path d='M2 16 H18 L22 16 L26 6 L32 26 L37 16 H54' stroke='var(--accent)' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>"
     },
     "teasers": [
       "Why shrews and whales share one number",
