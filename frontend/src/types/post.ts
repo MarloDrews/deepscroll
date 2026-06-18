@@ -302,6 +302,11 @@ export interface AuthorsContextItem {
   affiliation?: string
 }
 
+export interface OpenQuestionsContent {
+  body: string
+  items?: string[]
+}
+
 export type SectionType =
   | "essence"
   | "quiz_badge"
@@ -328,6 +333,7 @@ export type SectionType =
   | "story"
   | "bigger_picture"
   | "misconceptions"
+  | "open_questions"
   | "identity"
   | "portrait"
   | "why_they_matter"

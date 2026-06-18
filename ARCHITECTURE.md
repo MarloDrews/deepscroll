@@ -497,6 +497,7 @@ attributes. Never use `dangerouslySetInnerHTML` to render comment text.
 | sections/ContentImage.tsx | shared in-post image per IMAGE_STANDARD: rounded-2xl img (lazy/decoding, object-cover, onError hides figure) + optional caption then smaller muted attribution credit |
 | sections/BiggerPictureSection.tsx | "The Bigger Picture" label; heavier prose in zinc-200 font-medium |
 | sections/MisconceptionsSection.tsx | "Common Misconceptions" label; per-item: myth (line-through, zinc-500) with red ✕, reality (zinc-300) with green ✓ |
+| sections/OpenQuestionsSection.tsx | "Open Questions" label; content {body, items?}; prose body + optional accent-bullet list; no visual |
 | sections/IdentitySection.tsx | People: large lead paragraph (xl, font-semibold) |
 | sections/PortraitSection.tsx | People: full-width image (max-h-420px) with caption + attribution |
 | sections/WhyTheyMatterSection.tsx | People: "Why They Matter" heading + body prose |

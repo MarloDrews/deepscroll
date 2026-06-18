@@ -27,11 +27,16 @@
 // a valid short post, never padded to hit a number.
 //
 // ─── VISUAL PLAN ─────────────────────────────────────────────────────
-// Guideline: 4 to 6 visual anchors in a rich post, distributed so that no
+// Guideline: 4 to 7 visual anchors in a rich post, distributed so that no
 // run of two or more text sections passes without one. A wall of plain
-// text is the fastest way to tire a reader, so density matters as much as
-// count. Never two visuals back-to-back with no prose between them (two in
-// one section separated by a text item is fine).
+// text tires a reader, so density matters as much as count. Be generous
+// where a visual genuinely adds: most visual-capable sections should carry
+// one. Two guards keep it from becoming a metronome: never two visuals
+// back-to-back with no prose between them (two in one section separated by
+// a text item is fine), and every visual must show something new, never
+// repeat a quantity an earlier visual already carried. A visual earns its
+// place by showing what the text cannot; do not place one in a prose
+// section (surprises, bigger_picture) just to fill a rhythm.
 //
 // Three kinds of anchor, all legitimate:
 //   1. Data graphic (SVG). Shows structure or quantity. The backbone; see_it
@@ -39,8 +44,10 @@
 //   2. Illustrative image. A real, licensed, attributed photo or artwork that
 //      is ABOUT the subject (an animal, an object, an archival scene), giving
 //      the eye a rest the way images do in a good nonfiction book. It need not
-//      encode data, but it must be anchored to THIS fact, never generic stock,
-//      never invented. Use the image_url slots in story or angles.
+//      encode data, but it must be anchored to THIS fact. Per IMAGE_STANDARD.md.
+//      When a fitting licensed image exists, prefer to include at least one;
+//      a real photo pulls and aids understanding. Use the image_url slots in
+//      see_it, story, or angles.
 //   3. Portrait. A key figure's face, same licensing rule.
 // Kinds 2 and 3 depend on a fitting licensed image existing; when none does,
 // use none there and lean on the data graphics. Never invent an image URL.
@@ -359,7 +366,7 @@
 
     {
       "type": "misconceptions",   // Common Misconceptions (OPTIONAL)
-      "order": 13,
+      "order": 12,
       // JOB: bust the specific false beliefs people hold about this fact. This
       //      is also the home for the honest caveat when a fact is looser than
       //      its headline suggests (a rule with exceptions, an order of
@@ -374,6 +381,31 @@
           "reality": ""   // string. Guideline: one sentence that corrects it.
         }
       ]
+    },
+
+    {
+      "type": "open_questions",   // Open Questions (OPTIONAL)
+      "order": 13,
+      // JOB: name honestly what is still unsettled or unknown about this fact,
+      //      so the reader leaves with the live frontier, not false closure. A
+      //      natural bridge to Questions-format posts (via connections).
+      // Include when: there is genuine live debate or a real unknown at the
+      //   research frontier of this fact.
+      // Skip when: the fact is settled. Never manufacture a controversy to fill
+      //   the section; an invented "debate" is worse than none.
+      // Owns: the open frontier and honest unknowns.
+      //   Not here: false beliefs people hold, and the loose-qualifier caveat
+      //   (both belong to misconceptions). This is what nobody knows yet, not
+      //   what people get wrong.
+      "content": {
+        "body": "",       // string. Guideline: 2-4 sentences naming what is
+                          // genuinely unresolved and why it is hard. Concrete,
+                          // not "much remains to be discovered" filler.
+        "items": [        // OPTIONAL array. Guideline: 1-3 specific open
+                          // questions, one line each. Omit if the body covers it.
+          ""
+        ]
+      }
     },
 
     {

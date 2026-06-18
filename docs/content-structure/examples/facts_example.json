@@ -227,7 +227,7 @@
     },
     {
       "type": "misconceptions",
-      "order": 13,
+      "order": 12,
       "content": [
         {
           "myth": "A faster heart rate means a less efficient cardiovascular system.",
@@ -242,6 +242,18 @@
           "reality": "Heart muscle and resting rate are no different from those of prehistoric humans. What changed is how long we survive, not the hardware doing the beating."
         }
       ]
+    },
+    {
+      "type": "open_questions",
+      "order": 13,
+      "content": {
+        "body": "The pattern is solid as a statistical regularity, but why it holds is not settled. Heart rate and lifespan both scale with body mass, yet the mechanism that ties a life to a rough beat budget is still argued over, with metabolic rate, cellular wear, and oxidative damage all proposed and none fully closing the case. The clearest clue is the exceptions: the species that break the budget are exactly where the open questions live.",
+        "items": [
+          "Why some species, naked mole rats and certain primates among them, run far more lifetime beats than their size predicts.",
+          "How much of the human figure is biology and how much is medicine and safety extending lives the body was not built for.",
+          "Whether a single mechanism explains the relationship, or several unrelated ones happen to line up."
+        ]
+      }
     },
     {
       "type": "sources",

@@ -24,6 +24,7 @@ import AnglesSection from "./sections/AnglesSection"
 import StorySection from "./sections/StorySection"
 import BiggerPictureSection from "./sections/BiggerPictureSection"
 import MisconceptionsSection from "./sections/MisconceptionsSection"
+import OpenQuestionsSection from "./sections/OpenQuestionsSection"
 import IdentitySection from "./sections/IdentitySection"
 import PortraitSection from "./sections/PortraitSection"
 import WhyTheyMatterSection from "./sections/WhyTheyMatterSection"
@@ -157,6 +158,8 @@ export default function SectionRenderer({ sections, isUserContent, postId }: Pro
             return <BiggerPictureSection key={i} content={c as string} />
           case "misconceptions":
             return <MisconceptionsSection key={i} content={c as any} />
+          case "open_questions":
+            return <OpenQuestionsSection key={i} content={c as any} />
           case "identity":
             return <IdentitySection key={i} content={c as string} />
           case "portrait":
