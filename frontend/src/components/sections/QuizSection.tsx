@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
 import type { QuizItem } from "../../types/post"
@@ -16,9 +16,6 @@ interface AnswerResult {
   correct: boolean
   correctIndex: number
   explanation: string | null
-  // Elo info only present for fresh, scored, authenticated answers
-  delta?: number
-  rating?: number
 }
 
 function optionClass(i: number, result: AnswerResult | undefined): string {
@@ -52,6 +49,8 @@ function QuizCard({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
 
+  // Correctness and the explanation are graded server-side; answer_index and
+  // explanation are stripped from the post payload, so we always ask the API.
   async function answer(chosenIndex: number) {
     if (result || submitting || locked) return
     setSubmitting(true)
@@ -68,8 +67,6 @@ function QuizCard({
         correct: d.correct,
         correctIndex: d.correct_index,
         explanation: d.explanation,
-        delta: d.scored && !d.already_answered ? d.elo?.delta : undefined,
-        rating: d.scored && !d.already_answered ? d.elo?.rating : undefined,
       })
     } catch {
       setError("Could not submit answer. Try again.")
@@ -81,22 +78,9 @@ function QuizCard({
   return (
     <div className="card overflow-hidden">
       <div className="px-4 py-4">
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-[15px] font-medium text-ink leading-snug">
-            <MathText text={item.question} />
-          </p>
-          {result?.delta !== undefined && (
-            <span
-              className={`shrink-0 text-xs font-bold rounded-full px-2 py-0.5 ${
-                result.delta >= 0
-                  ? "bg-good/15 text-good font-mono"
-                  : "bg-bad/15 text-bad font-mono"
-              }`}
-            >
-              {result.delta >= 0 ? "+" : ""}{result.delta}
-            </span>
-          )}
-        </div>
+        <p className="text-[15px] font-medium text-ink leading-snug">
+          <MathText text={item.question} />
+        </p>
         <ol className="mt-3 flex flex-col gap-2">
           {item.options.map((opt, i) => (
             <li key={i}>
@@ -135,6 +119,9 @@ export default function QuizSection({ content, postId }: Props) {
   const { user } = useAuth()
   const [results, setResults] = useState<Record<number, AnswerResult>>({})
   const [stateLoaded, setStateLoaded] = useState(false)
+  // One question at a time. `current` indexes the slide; the slide after the
+  // last question (index === content.length) is the result summary.
+  const [current, setCurrent] = useState(0)
 
   // Restore previously answered questions so they can never be re-scored.
   useEffect(() => {
@@ -164,20 +151,67 @@ export default function QuizSection({ content, postId }: Props) {
     setResults((prev) => ({ ...prev, [index]: result }))
   }
 
-  const answered = Object.keys(results).length
-  const correct = Object.values(results).filter((r) => r.correct).length
-  const allDone = answered === content.length && content.length > 0
-  let lastRating: number | undefined
-  for (const r of Object.values(results)) {
-    if (r.rating !== undefined) lastRating = r.rating
+  // Swipe navigation. The detail page closes on a rightward swipe via a native
+  // listener on its scroll container; React synthetic stopPropagation would not
+  // reach it (React dispatches at the root, after the native bubble fires), so
+  // we attach native listeners here and stop the event before it bubbles up.
+  const pagerRef = useRef<HTMLDivElement>(null)
+  const currentRef = useRef(0)
+  const resultsRef = useRef<Record<number, AnswerResult>>({})
+  currentRef.current = current
+  resultsRef.current = results
+
+  // Advance only after the current question is answered (no auto-advance, and
+  // swiping forward past an unanswered question is blocked); back is always free.
+  function goTo(index: number) {
+    setCurrent(Math.max(0, Math.min(index, content.length)))
   }
+  function canAdvance(from: number) {
+    return from < content.length && !!resultsRef.current[from]
+  }
+
+  useEffect(() => {
+    const el = pagerRef.current
+    if (!el) return
+    let sx = 0
+    let sy = 0
+    function onStart(e: TouchEvent) {
+      e.stopPropagation()
+      sx = e.touches[0].clientX
+      sy = e.touches[0].clientY
+    }
+    function onEnd(e: TouchEvent) {
+      e.stopPropagation()
+      const dx = e.changedTouches[0].clientX - sx
+      const dy = e.changedTouches[0].clientY - sy
+      if (Math.abs(dx) < 48 || Math.abs(dx) <= Math.abs(dy)) return
+      const cur = currentRef.current
+      if (dx < 0) {
+        if (canAdvance(cur)) setCurrent(cur + 1)
+      } else if (cur > 0) {
+        setCurrent(cur - 1)
+      }
+    }
+    el.addEventListener("touchstart", onStart, { passive: true })
+    el.addEventListener("touchend", onEnd, { passive: true })
+    return () => {
+      el.removeEventListener("touchstart", onStart)
+      el.removeEventListener("touchend", onEnd)
+    }
+  }, [content.length])
+
+  if (content.length === 0) return null
+
+  const correct = Object.values(results).filter((r) => r.correct).length
+  const onSummary = current >= content.length
+  const isLast = current === content.length - 1
 
   return (
     <div className="px-6 py-8 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="label-caps">Quiz</h3>
         <span className="text-xs text-ink-muted font-mono">
-          {answered}/{content.length} answered
+          {onSummary ? "Results" : `Question ${current + 1} of ${content.length}`}
         </span>
       </div>
 
@@ -187,30 +221,55 @@ export default function QuizSection({ content, postId }: Props) {
         </p>
       )}
 
-      {content.map((item, i) => (
-        <QuizCard
-          key={i}
-          item={item}
-          index={i}
-          postId={postId}
-          result={results[i]}
-          locked={!stateLoaded}
-          onResult={handleResult}
-        />
-      ))}
-
-      {allDone && (
-        <div className="card px-4 py-3 text-center">
-          <p className="text-sm text-ink font-semibold">
-            {correct}/{content.length} correct
-          </p>
-          {lastRating !== undefined && (
-            <p className="text-xs text-ink-muted mt-1 font-sans">
-              Knowledge score: <span className="text-lamp font-semibold font-mono">{Math.round(lastRating)}</span>
-            </p>
-          )}
+      {/* Horizontal pager: the active slide is shown, the rest sit off-screen
+          and slide in on advance. items-start keeps short slides from being
+          stretched to the tallest slide's height. */}
+      <div ref={pagerRef} className="overflow-hidden">
+        <div
+          className="flex items-start transition-transform duration-300 ease-out"
+          style={{ transform: `translateX(-${current * 100}%)` }}
+        >
+          {content.map((item, i) => (
+            <div key={i} className="w-full shrink-0">
+              <QuizCard
+                item={item}
+                index={i}
+                postId={postId}
+                result={results[i]}
+                locked={!stateLoaded}
+                onResult={handleResult}
+              />
+            </div>
+          ))}
+          {/* Result summary — Elo is a placeholder for now: the score only, no
+              rating math. */}
+          <div className="w-full shrink-0">
+            <div className="card px-4 py-6 flex flex-col items-center gap-1 text-center">
+              <p className="label-caps text-(--accent)">Quiz complete</p>
+              <p className="text-lg text-ink font-semibold">
+                {correct}/{content.length} correct
+              </p>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Navigation: Back is always available once past the first slide; Next
+          appears once the current question is answered (no auto-advance). */}
+      <div className="flex items-center justify-between min-h-9">
+        {current > 0 ? (
+          <button onClick={() => goTo(current - 1)} className="btn-quiet">
+            Back
+          </button>
+        ) : (
+          <span />
+        )}
+        {!onSummary && canAdvance(current) && (
+          <button onClick={() => goTo(current + 1)} className="btn btn-primary px-5 py-2">
+            {isLast ? "See results" : "Next"}
+          </button>
+        )}
+      </div>
     </div>
   )
 }
