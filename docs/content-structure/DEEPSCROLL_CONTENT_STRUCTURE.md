@@ -380,6 +380,17 @@ SOURCE MATERIAL:
 
 **Tone of the card:** The fact itself does the pulling. No tricks around it.
 
+## Top-Level Graph Fields
+
+Beyond `feed_card` and `sections`, a Facts post carries two top-level graph fields (cross-format; full rules in `SKELETON_COMMENT_STANDARD.md` section 10):
+
+| Field | Shape | Description |
+|---|---|---|
+| `tags` | array of `string` (1–4) | Taxonomy slugs from the fixed list only; the first is primary and matches `feed_card.field` |
+| `connections` | array of `{format, ref, featured}` (may be empty) | Links to other posts that are not key figures; `ref` is the target's natural identity; `featured: true` surfaces it in "read next" |
+
+The in-post "read next" list is built from featured `connections` plus featured `story.key_figures` (cap 3 total). There is no `related_posts` section.
+
 ## Detail View Sections
 
 ### Part 1 — The Punch (~60 sec read)
@@ -390,7 +401,7 @@ SOURCE MATERIAL:
 | 2 | `quiz_badge` | **Quiz Badge** | REQUIRED | `string` |
 | 3 | `see_it` | **See It** — the main visual. SVG diagram, size comparison, timeline, map, or structural sketch | REQUIRED | `{visual_svg?, image_url?, image_caption?, image_attribution?}` |
 | 4 | `key_numbers` | **Key Numbers** — compact card with all relevant numbers | OPTIONAL | array of `{label, value, unit?}` |
-| 5 | `tangible` | **Make It Tangible** — 2–3 concrete comparisons ("That's like…", "Equivalent to…") | OPTIONAL | array of `string` |
+| 5 | `tangible` | **Make It Tangible** — 2–3 concrete comparisons ("That's like…", "Equivalent to…") + optional scale/timeline SVG | OPTIONAL | `{items: array of string, visual_svg?}` |
 
 ### Part 2 — Why It's True
 
@@ -404,7 +415,7 @@ SOURCE MATERIAL:
 |---|------|---------|--------|---------------|
 | 7 | `surprises` | **Why It Surprises Us** — the aha moment. Which intuition does the fact break? | REQUIRED | `string` |
 | 8 | `angles` | **Multiple Angles** — 3–7 different aspects/dimensions, each briefly explained. Each angle may have its own visual | OPTIONAL | array of `{title, body, visual_svg?, image_url?}` (length 3–7) |
-| 9 | `story` | **The Story Behind It** — discovery + prehistory merged. Who found this out, when, how? For constructs: "How it came to be" | REQUIRED | `{body, key_figures?: array of {name, role, one_line?, lifespan?, image_url?}, visual_svg?, image_url?}` |
+| 9 | `story` | **The Story Behind It** — discovery + prehistory merged. Who found this out, when, how? For constructs: "How it came to be" | REQUIRED | `{body, key_figures?: array of {name, role, one_line?, lifespan?, birth_year?, featured?, image_url?}, visual_svg?, image_url?}` |
 | 10 | `bigger_picture` | **The Bigger Picture** — what the fact means scientifically, philosophically, practically. Climax before the quiz | REQUIRED | `string` |
 
 ### Part 4 — Test Yourself
@@ -412,7 +423,6 @@ SOURCE MATERIAL:
 | # | Type | Section | Status | Content shape |
 |---|------|---------|--------|---------------|
 | 11 | `quiz` | **Quiz** — 5–10 questions, Elo-relevant | REQUIRED | (shared shape) |
-| 12 | `related_posts` | **Related Mind-Blowers** | OPTIONAL | (shared shape) |
 
 ### Part 5 — Around (compact, secondary)
 
@@ -494,6 +504,10 @@ FEED CARD
   "post_difficulty": 1 | 2 | 3
 }
 
+TOP-LEVEL FIELDS (alongside feed_card and sections)
+- tags: array of 1–4 taxonomy slugs from the fixed list only (never invent one). The first is primary and matches feed_card.field.
+- connections: array (may be empty) of { format, ref, featured } linking to other posts that are not key figures. ref is the target's natural identity (people "Name (birth_year)", books "Title by Author", else the title/concept name). featured: true surfaces it in "read next" (cap 3, shared with featured key_figures). Never invent a target.
+
 SECTIONS
 Include every REQUIRED section. For each OPTIONAL section, include it only if it adds real value for this specific fact. Use this order:
 
@@ -501,16 +515,15 @@ Include every REQUIRED section. For each OPTIONAL section, include it only if it
 2. quiz_badge — REQUIRED. content: string. Format: "🎯 N questions at the end — earn Elo" where N matches your quiz length.
 3. see_it — REQUIRED. content: { visual_svg?, image_url?, image_caption?, image_attribution? }. The main visual that makes the insight tangible. Use SVG for diagrams, scales, timelines, charts. Use image_url for historical images, maps, photos. One of visual_svg or image_url required.
 4. key_numbers — OPTIONAL. content: array of { label, value, unit? }. Include when the fact involves multiple quantitative data points.
-5. tangible — OPTIONAL. content: array of strings. 2–3 concrete comparisons. Include for abstract scales (cosmic, microscopic, deep time). Skip when the fact is already tangible.
+5. tangible — OPTIONAL. content: { items: array of strings (2–3 concrete comparisons), visual_svg? (optional scale/timeline graphic) }. Include for abstract scales (cosmic, microscopic, deep time). Skip when the fact is already tangible.
 6. how_we_know — OPTIONAL. content: string, 3–5 sentences. For empirical facts: methodology/measurement. For mathematical truths: the proof or sketch of it. Skip for cultural/political constructs where there's nothing to "know" — they were established.
 7. surprises — REQUIRED. content: string. Which intuition does the fact break? Why were we wrong before? This is what turns trivia into insight.
 8. angles — OPTIONAL. content: array of length 3–7, each item { title, body (a few sentences), visual_svg?, image_url? }. Different aspects/dimensions of the fact. Include for rich facts with multiple sides; skip for narrow point-facts.
-9. story — REQUIRED. content: { body, key_figures? (array of {name, role, one_line?, lifespan?, image_url?}), visual_svg?, image_url? }. Discovery and prehistory merged. Who found this out, when, how? What was believed before? For constructs: how the convention came about. Always something to say here.
+9. story — REQUIRED. content: { body, key_figures? (array of {name, role, one_line?, lifespan?, birth_year? (integer, graph match key), featured? (surfaces in "read next"), image_url?}), visual_svg?, image_url? }. Discovery and prehistory merged. Who found this out, when, how? What was believed before? For constructs: how the convention came about. Always something to say here.
 10. bigger_picture — REQUIRED. content: string. What the fact means scientifically, philosophically, or practically. Where it leads. The climax before the quiz.
 11. quiz — REQUIRED. content: array of length 5–10, each item { question, options (length 4), answer_index (0–3), explanation (one sentence) }.
-12. related_posts — OPTIONAL. content: array of length 3, each item { post_id (leave empty string if not known), title, format, mini_teaser (one sentence) }.
-13. misconceptions — OPTIONAL. content: array of { myth, reality }. Common false beliefs in this field. Include if there are sharp myths to bust.
-14. sources — REQUIRED. content: array of { label, url, type } where type ∈ "wikipedia", "paper", "book", "article", "database".
+12. misconceptions — OPTIONAL. content: array of { myth, reality }. Common false beliefs in this field. Include if there are sharp myths to bust.
+13. sources — REQUIRED. content: array of { label, url, type } where type ∈ "wikipedia", "paper", "book", "article", "database".
 
 INSTRUCTIONS
 Generate the JSON post based on the source material I paste below. If the material is incomplete, use what you know about the topic to fill in, but cite carefully.
