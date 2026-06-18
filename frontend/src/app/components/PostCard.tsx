@@ -10,9 +10,10 @@ import { savePost, unsavePost, isPostSaved } from "@/app/lib/savedPosts"
 import { requestAutoRead } from "@/lib/readAloud/autostart"
 import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCount, isLikeSent, markLikeSent, unmarkLikeSent } from "@/app/lib/likedPosts"
 import { updatePostInFeedCaches } from "@/app/lib/swr"
-import { fcNum, fcStr, type Post } from "@/types/post"
+import { fcNum, fcStr, type CardVisual, type Post } from "@/types/post"
 import { formatStyle } from "@/lib/formats"
 import Avatar from "@/components/Avatar"
+import SvgBlock from "@/components/SvgBlock"
 import VerifiedBadge from "@/components/VerifiedBadge"
 import { BookmarkIcon, CommentIcon, HeartIcon, SendIcon, SpeakerIcon } from "./icons"
 
@@ -52,6 +53,31 @@ function Teasers({ items }: { items: string[] }) {
       ))}
     </div>
   )
+}
+
+// Feed-card visual anchor: a small square top-right beside the headline. Shows
+// the sourced image (square crop) when present, otherwise the emblem SVG. The
+// emblem's var(--accent) resolves from the card's --accent; the SVG security
+// split (user vs official) is handled by SvgBlock.
+function CardVisualAnchor({ cv, isUserContent }: { cv: CardVisual | undefined; isUserContent: boolean }) {
+  if (!cv) return null
+  if (cv.image_url) {
+    return (
+      <div className="shrink-0 w-[68px] h-[68px] rounded-2xl overflow-hidden bg-white/[0.06]">
+        <img
+          src={cv.image_url}
+          alt=""
+          loading="lazy"
+          className="w-full h-full object-cover"
+          onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none" }}
+        />
+      </div>
+    )
+  }
+  if (cv.svg) {
+    return <SvgBlock svg={cv.svg} isUserContent={isUserContent} className="shrink-0 w-[68px] h-[68px]" />
+  }
+  return null
 }
 
 // Format-colored glow behind a slab — a faint radial wash of the post's
@@ -434,12 +460,17 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           ) : post.format === "facts" && fc ? (
             <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
               <SlabAccent />
-              {fcStr(fc, "field") && (
-                <p className="label-caps text-(--accent)">{fcStr(fc, "field")}</p>
-              )}
-              <h2 className="font-serif text-[1.75rem] font-medium tracking-tight text-ink leading-snug">
-                {fc.headline as string}
-              </h2>
+              <div className="flex gap-4 items-start">
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  {fcStr(fc, "field") && (
+                    <p className="label-caps text-(--accent)">{fcStr(fc, "field")}</p>
+                  )}
+                  <h2 className="font-serif text-[1.75rem] font-medium tracking-tight text-ink leading-snug">
+                    {fc.headline as string}
+                  </h2>
+                </div>
+                <CardVisualAnchor cv={fc.card_visual as CardVisual | undefined} isUserContent={post.is_user_content} />
+              </div>
 
               {Array.isArray(fc.teasers) && (fc.teasers as string[]).length > 0 && (
                 <Teasers items={fc.teasers as string[]} />
