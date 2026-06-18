@@ -93,6 +93,11 @@ export interface KeyNumberItem {
   unit?: string
 }
 
+export interface TangibleContent {
+  items: string[]
+  visual_svg?: string
+}
+
 export interface AngleItem {
   title: string
   body: string

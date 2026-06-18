@@ -144,7 +144,7 @@ export default function SectionRenderer({ sections, isUserContent, postId }: Pro
           case "key_numbers":
             return <KeyNumbersSection key={i} content={c as any} />
           case "tangible":
-            return <TangibleSection key={i} content={c as string[]} />
+            return <TangibleSection key={i} content={c as any} isUserContent={isUserContent} />
           case "how_we_know":
             return <HowWeKnowSection key={i} content={c as string} />
           case "surprises":
