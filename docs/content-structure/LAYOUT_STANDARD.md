@@ -13,21 +13,31 @@ built, its card and detail page follow this document.
 
 ---
 
-## 1. Two card looks, chosen by the format
+## 1. Three card looks, chosen by the format
 
-The feed card has two looks. Which one a format uses is fixed, not per post.
+Which look a format uses is fixed, not per post.
 
-- **Typographic formats** (facts, concepts, questions, stories, academy): the
-  card is clean and typographic, an accent bar down the left, a field line (label
-  plus a small glyph), the large serif headline, teasers, footer. The glyph is the
-  only drawn mark.
 - **Cover formats** (books, people): the card shows a real image, a hochkant book
   cover or a portrait, beside the headline. This is the current books and people
   layout and does not change.
+- **Story format** (stories): a story is a concrete real-world narrative, so it
+  often has a genuine, evocative licensed image (an archival photo, the place, the
+  object, a person involved). When one fits, the card carries it; this is real,
+  on-subject pull, not decoration. When none fits, the card falls back to the
+  typographic look with the field glyph. The exact placement is settled when the
+  stories format is built; the likely choice is a full-width image at the top
+  rather than a side cover, because story headlines are long and a real photo
+  fills a top band well (a thin glyph would not, which is why the typographic
+  formats below carry no top band).
+- **Typographic formats** (facts, concepts, questions, academy): the subject is
+  abstract, so a card photo would be decoration. The card is clean and
+  typographic: an accent bar down the left, a field line (label plus a small
+  glyph), the large serif headline, teasers, footer. The glyph is the only drawn
+  mark; any data graphic for these lives in the post body.
 
-Photos earn their place inside the post body (see `IMAGE_STANDARD.md`), not on the
-typographic cards. The cards stay a coherent, typographic Plexive face; the body
-is where real images give the eye a rest.
+Photos always earn their place inside the post body (see `IMAGE_STANDARD.md`)
+regardless of the card look. The cards stay a coherent Plexive face; the body is
+where real images give the eye a rest.
 
 ---
 
@@ -107,11 +117,58 @@ not only mask the bar.
 
 ---
 
-## 6. Headline alignment
+## 6. Headline treatment
 
-Left-aligned, on both the card and the detail header. It keeps the card and the
-detail page on one axis, sits on the same left edge as the field line, meta row,
-and body, and stays readable for the long multi-line headlines that facts and
-stories carry (the eye finds every line at the same starting edge). Centered can
-read like a title page for a short headline, but the mixed long and short
-headlines across formats make left the consistent choice.
+**Alignment.** Left-aligned, on both the card and the detail header. It keeps the
+card and the detail page on one axis, sits on the same left edge as the field
+line, meta row, and body, and stays readable for the long multi-line headlines
+that facts and stories carry (the eye finds every line at the same starting edge).
+Centered can read like a title page for a short headline, but the mixed long and
+short headlines across formats make left the consistent choice.
+
+**Voice.** Serif (the same family as the card headline), medium weight, with a
+snug rather than tight line-height so a multi-line headline breathes. The card and
+the detail headline share this one type system; they differ only in size, the
+detail one step larger.
+
+**Measure.** A comfortable measure cap (around 24ch, tuned at the rendered look)
+keeps a long headline from running fully edge-to-edge. It still wraps and still
+starts every line at the same left edge; the cap only stops the line from growing
+uncomfortably wide.
+
+**The accent number stays whole.** The emphasized key number or phrase (the accent
+unit) never breaks across a line wrap. "1 billion" moves to the next line together
+rather than splitting "1" from "billion". This is set once in the shared accent
+helper, so it holds for every format and every accent number.
+
+---
+
+## 7. Detail page visual system (cross-format)
+
+The body of a post should read as one system, not a stack of differently styled
+blocks. The cohesion comes from a small shared kit and one through-line, the
+format accent color. Everything below is identical across all seven formats; only
+the accent color changes per format. This keeps the text the star while lifting
+the page above a plain wall.
+
+- **Section labels** carry the emphasis, not size. Each section opens with a small
+  caps label in the accent color. The repeated accent caps label, identical on every
+  section, is the through-line that makes the page read as one system. Labels are not
+  enlarged; the accent does the work, with no extra ornament before the text.
+- **Vertical rhythm** is uniform: one consistent spacing unit between sections. A
+  visual sits tight to the text it belongs to, with no large gap opening between a
+  graphic and its section. White space is the divider; avoid mixing rules, boxes,
+  and spacing as three competing divider systems.
+- **Per section-type affordance, from a shared kit** (so each section is
+  recognizable without being bespoke): simple lists use accent dots; misconceptions
+  use the struck-through myth plus an accent check on the reality; key figures use
+  person cards; open questions use a "?" marker and are phrased as real questions
+  ending in a question mark. The section type chooses from the kit; sections do not
+  invent their own ornament.
+- **The key section.** Exactly one section per format is marked with an accent
+  left-border (a light emphasis: a `border-l-2` accent rule plus an optional faint
+  accent wash, never a full filled block), marking the post's turning point or
+  payoff. It is the one deliberate exception to the otherwise unmarked rhythm, so it
+  must stay rare: one section, one format. Every other section carries no border.
+  Which section is the key section is fixed per format (see `ROADMAP.md`); for facts
+  it is the surprises section (the reframe).

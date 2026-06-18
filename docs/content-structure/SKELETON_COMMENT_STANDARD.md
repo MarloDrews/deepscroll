@@ -57,7 +57,7 @@ Every section comment has the same parts in the same order. The model learns the
 {
   "type": "surprises",   // Why It Surprises Us (REQUIRED)
   "order": 3,
-  // JOB: name the single intuition this fact breaks. This is the post's
+  // JOB: name the single intuition the post breaks. This is the post's
   //      turning point; a reader who stops here should leave with the
   //      reframe, not just the number.
   // (OPTIONAL sections add here:)

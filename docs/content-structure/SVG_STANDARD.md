@@ -21,6 +21,13 @@ Two uses:
 
 - **viewBox is always `0 0 400 300`.** Draw nothing outside the box. Edge
   labels need at least 8px inner padding or they clip.
+- **Fill the viewBox; do not pad it.** The drawn content must extend close to all
+  four edges (keeping only the 8px inner padding above). The frontend renders the
+  SVG at `width:100%; height:auto`, so any large empty band inside the viewBox
+  scales up into a visible gap between sections. Spacing between a graphic and the
+  next section is the layout's job (the uniform section rhythm), never empty space
+  baked into the viewBox. If the art naturally occupies less height, tighten the
+  viewBox to its bounding box rather than leaving dead space.
 - **No `width`/`height` on `<svg>`.** Only the viewBox. The frontend controls
   size with CSS.
 - **Background always transparent.** No `<rect>` behind the drawing. The
@@ -71,7 +78,7 @@ it keeps the graphics ready if a light mode is ever added, with no
 regeneration.
 
 When authoring an SVG **outside** a post container (a preview, a test), give
-the accent a fallback: `var(--accent, #6e9cd8)` using the format hex from the
+the accent a fallback: `var(--accent, #7eb1f3)` using the format hex from the
 table below. Inside a real post, `var(--accent)` alone resolves correctly.
 
 ---
@@ -84,13 +91,13 @@ neon; do not brighten or saturate them.
 
 | Format    | Hex       | RGB (for the glow) | Token                   |
 |-----------|-----------|--------------------|-------------------------|
-| books     | `#dfc186` | `223 193 134`      | `--color-fmt-books`     |
-| facts     | `#6e9cd8` | `110 156 216`      | `--color-fmt-facts`     |
-| people    | `#dd7eca` | `221 126 202`      | `--color-fmt-people`    |
-| concepts  | `#9e7edd` | `158 126 221`      | `--color-fmt-concepts`  |
-| questions | `#8ae0e0` | `138 224 224`      | `--color-fmt-questions` |
-| stories   | `#db8076` | `219 128 118`      | `--color-fmt-stories`   |
-| academy   | `#7edd9e` | `126 221 158`      | `--color-fmt-academy`   |
+| books     | `#cfa857` | `207 168 87`       | `--color-fmt-books`     |
+| facts     | `#7eb1f3` | `126 177 243`      | `--color-fmt-facts`     |
+| people    | `#d993ca` | `217 147 202`      | `--color-fmt-people`    |
+| concepts  | `#b69feb` | `182 159 235`      | `--color-fmt-concepts`  |
+| questions | `#43c3c4` | `67 195 196`       | `--color-fmt-questions` |
+| stories   | `#eb9288` | `235 146 136`      | `--color-fmt-stories`   |
+| academy   | `#73c28d` | `115 194 141`      | `--color-fmt-academy`   |
 | neutral   | `#7e8699` | `126 134 153`      | `--color-fmt-neutral`   |
 
 ---
@@ -261,12 +268,13 @@ at low opacity, numeric labels in `var(--font-mono)`.
 
 ## 6. The card visual (small field glyph)
 
-On the five typographic formats (facts, concepts, questions, stories, academy) the
-feed card is clean and typographic: an accent bar down the left, a line with the
-field label and a **small glyph at its right end**, then the large serif headline,
-teasers, footer. The glyph is the only drawn mark on the card, a quiet category
-symbol. Books and people instead show a hochkant cover or portrait (a real image),
-governed by `IMAGE_STANDARD.md`.
+On the typographic formats (facts, concepts, questions, academy) the feed card is
+clean and typographic: an accent bar down the left, a line with the field label
+and a **small glyph at its right end**, then the large serif headline, teasers,
+footer. The glyph is the only drawn mark on the card, a quiet category symbol.
+Books and people instead show a hochkant cover or portrait; stories shows a real
+image when one fits the narrative and falls back to this glyph when none does.
+Sourced card images are governed by `IMAGE_STANDARD.md`.
 
 The glyph belongs to the post's **field**, not the individual post. It is meant to
 come from a fixed field-to-glyph set (see `ROADMAP.md`); until that set exists, an
@@ -304,6 +312,12 @@ This is how the graphic resolves its colors; it is not an authoring rule.
   so `currentColor` in the SVG resolves to the surrounding text color.
 - **`--accent`:** the post container sets `--accent` to the active format
   color, so `var(--accent)` in the SVG resolves to that format's hex.
+- **Legacy hex repalette:** `SvgBlock.tsx` also rewrites a fixed set of
+  pre-redesign accent hexes to the current format inks at render time (the
+  `LEGACY_SVG_ACCENT_MAP` in `src/lib/formats.ts`). New SVGs should use
+  `var(--accent)` and never a hardcoded hex; the map only exists so older seed
+  SVGs that baked in the old hexes still match the current palette without
+  editing their content JSON.
 - The wrapper gives the SVG a max width (centered) and scales it with
   `width:100%; height:auto`. Never place a background behind it; the slab must
   show through.

@@ -7,11 +7,13 @@ not a spec. The specs live in the standards docs.
 
 ## Field glyph system (deferred, decided)
 
-**Decision.** The five typographic formats (facts, concepts, questions, stories,
-academy) show a small glyph at the right end of the field line on the card and in
-the detail header. The glyph belongs to the **field** (the subject, e.g. Biology,
-Astronomy, True Crime), not to the individual post, and not to the broad theme
-category. These cards are typographic, with a small field glyph as the only mark.
+**Decision.** Facts, concepts, questions, and academy show a small glyph at the
+right end of the field line on the card and in the detail header. Stories shows
+the same glyph as a fallback when no fitting licensed image exists (when one does,
+stories carries the image instead, see `LAYOUT_STANDARD.md`). The glyph belongs to
+the **field** (the subject, e.g. Biology, Astronomy, True Crime), not to the
+individual post, and not to the broad theme category. The glyph is the only drawn
+mark on these typographic cards.
 
 **Why a fixed field list.** A free-text field would mean an unbounded, ever-growing
 set of glyphs and a glyph to draw for every new field, which forces per-post glyph
@@ -53,5 +55,15 @@ the lookup later.
 - Read-only unused-field report for Facts, then prune docs and JSON to match.
 - Key-figure person card text is too small (frontend CSS); enlarge and raise
   contrast.
+- Per-format key section: each format designates the one section marked with the
+  accent left-border (see `LAYOUT_STANDARD.md` section 7). Decide it in each
+  format's own chat. Facts: the surprises section. The others: open.
+- Latent-edge display: a connection may point at a post that does not exist yet
+  (the edge activates when that post is created). Anywhere connections surface,
+  "Read next" now and the graph view later, a connection whose target post does
+  not yet exist must be hidden or shown non-clickable, never a dead link. The
+  stored connection stays; only the display is gated on the target existing.
+- Cover-format detail header: how the book cover (books) and portrait (people) sit
+  at the top of the detail page is settled when those formats get their pass.
 - Assess the 145-tag taxonomy for the three flagged gaps (paleontology, botany,
   microbiology) and the optional one (creativity).

@@ -42,7 +42,7 @@ earn their place by showing something the text cannot.
 
 - Every image carries `image_attribution`. Format:
   `Creator, "Title", License (Source)`.
-  Example: `Charles J. Sharp, "Grey mouse lemur", CC BY-SA 4.0 (Wikimedia Commons)`.
+  Example: `Charles J. Sharp, "Gray Mouse Lemur 1", CC BY-SA 3.0 (Wikimedia Commons)`.
 - Public-domain images still credit the creator and source where known; if the
   creator is unknown, state the collection and "public domain."
 - CC-BY-SA carries a share-alike obligation. It is fine to display with credit;
@@ -70,11 +70,12 @@ earn their place by showing something the text cannot.
   image past its native resolution; an obviously pixelated image is worse than
   none.
 - Caption then credit sit below the image, small and muted, the credit smallest.
-- **Card anchor:** only books and people put an image on the feed card, a
-  hochkant book cover or a portrait beside the headline. The five typographic
-  formats (facts, concepts, questions, stories, academy) carry no image on the
-  card; their card is typographic with a small field glyph (see
-  `SVG_STANDARD.md`). Photos on those formats live in the post body, not the card.
+- **Card anchor:** books and people always put an image on the feed card (a
+  hochkant book cover or a portrait beside the headline). Stories may put a real
+  licensed image on the card when one fits the narrative, falling back to the
+  field glyph when none does. The remaining typographic formats (facts, concepts,
+  questions, academy) carry no card image; their card uses a small field glyph
+  (see `SVG_STANDARD.md`), and any photos for them live in the post body.
 - **Body image:** a rest between blocks of text and drawn graphics. It counts
   toward the post's visual-anchor budget and obeys the no-two-visuals-back-to-back
   rule in the skeleton's VISUAL PLAN.
@@ -86,9 +87,10 @@ earn their place by showing something the text cannot.
 
 ## 6. The three image roles
 
-1. **Card anchor** (feed card): only on books (a cover) and people (a portrait).
-   The five typographic formats carry no card image; they use a small field glyph
-   instead (see `SVG_STANDARD.md` card rules).
+1. **Card anchor** (feed card): books (a cover) and people (a portrait) always;
+   stories when a fitting licensed image exists, else the field glyph. The
+   remaining typographic formats (facts, concepts, questions, academy) use a small
+   field glyph, no card image (see `SVG_STANDARD.md` card rules).
 2. **Illustrative image** (in a post body): a photo or artwork that shows the
    subject and gives the eye a rest. Optional, depends on a fitting licensed image
    existing.
