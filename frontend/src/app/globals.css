@@ -99,6 +99,17 @@ body::before {
   outline-offset: 2px;
 }
 
+/* Hide scrollbars app-wide, both axes, for a clean surface (LAYOUT_STANDARD s.5).
+   Per-container utilities missed the root html/body bars on Windows; this is the
+   cross-browser catch-all. Real horizontal overflow is still fixed at its source,
+   never only masked here. */
+* {
+  scrollbar-width: none; /* Firefox */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chromium, WebKit, Edge */
+}
+
 /* Component vocabulary — the shared visual language every screen uses.
    "Stage" design language: content floating in dark space. Surfaces are
    borderless frosted slabs (translucent white fill + backdrop blur), chrome
