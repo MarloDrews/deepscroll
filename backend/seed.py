@@ -53,7 +53,8 @@ NAME_EXCEPTIONS = {
 SEED_EMAIL = "marlo07drews@gmail.com"
 SEED_USERNAME = "Marlo"
 
-# Add an entry here when a new example format is introduced.
+# Per-format fallback interests, used only when a post has no tags that map to an
+# interest (see _resolve_interests). Add an entry when a new format is introduced.
 FORMAT_INTEREST_SLUGS = {
     "books": ["psychology", "behavioral-economics", "decision-making", "neuroscience"],
     "facts": ["biology", "animals", "everyday-science"],
@@ -63,6 +64,33 @@ FORMAT_INTEREST_SLUGS = {
     "stories": ["history", "crime", "forgotten-history"],
     "academy": ["neuroscience", "philosophy-of-mind", "mathematics", "artificial-intelligence"],
 }
+
+
+def _resolve_interests(db, tags, post_format):
+    """Interests for a post, derived from its own taxonomy tags.
+
+    Tags are drawn from the canonical taxonomy, which is the same vocabulary as
+    the interest slugs, so each tag maps directly to an Interest row. Falls back
+    to the per-format default only when none of the post's tags resolve (e.g. a
+    legacy post with empty tags), so chips always match the post's real subject.
+    """
+    interests = []
+    for tag in tags:
+        interest = db.query(Interest).filter_by(slug=tag).first()
+        if interest:
+            interests.append(interest)
+
+    if interests:
+        return interests
+
+    # Fallback: generic per-format default (previous behavior).
+    for interest_slug in FORMAT_INTEREST_SLUGS.get(post_format, []):
+        interest = db.query(Interest).filter_by(slug=interest_slug).first()
+        if interest:
+            interests.append(interest)
+        else:
+            print(f"Warning: interest slug '{interest_slug}' not found, skipping")
+    return interests
 
 
 def _post_title(feed_card: dict) -> str:
@@ -107,6 +135,7 @@ def upsert_post(db, marlo, post_format, data, slug, allow_legacy_adopt):
     tags = data.get("tags", [])
     connections = data.get("connections", [])
     title = _post_title(feed_card)
+    interests = _resolve_interests(db, tags, post_format)
 
     existing = db.query(Post).filter_by(slug=slug).first()
     if existing is None and allow_legacy_adopt:
@@ -123,19 +152,11 @@ def upsert_post(db, marlo, post_format, data, slug, allow_legacy_adopt):
         existing.sections = sections
         existing.tags = tags
         existing.connections = connections
+        existing.interests = interests
         existing.status = "published"
         db.commit()
         print(f"Updated existing {post_format.title()} post: {title}.")
         return
-
-    interest_slugs = FORMAT_INTEREST_SLUGS.get(post_format, [])
-    interests = []
-    for interest_slug in interest_slugs:
-        interest = db.query(Interest).filter_by(slug=interest_slug).first()
-        if interest:
-            interests.append(interest)
-        else:
-            print(f"Warning: interest slug '{interest_slug}' not found, skipping")
 
     post = Post(
         slug=slug,
