@@ -174,19 +174,8 @@
       ]
     },
 
-    {
-      "type": "related_posts",  // OPTIONAL — right after quiz
-      "order": 11,
-      "content": [              // array[3]
-        {
-          "post_id": "",        // string — empty if not yet known
-          "title": "",          // string
-          "format": "",         // "books"|"facts"|"people"|"concepts"|
-                                // "questions"|"stories"|"academy"
-          "mini_teaser": ""     // string — one sentence
-        }
-      ]
-    },
+    // NOTE: "Read next" is driven by featured connections (the top-level
+    // connections field, featured: true). See SKELETON_COMMENT_STANDARD.md s.10.
 
     // ── PART 6 — CONTEXT (smaller typography, secondary) ─────────────
 

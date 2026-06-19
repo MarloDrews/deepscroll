@@ -44,7 +44,7 @@
 //   Part 2 (The Stakes):   at_a_glance → what_hangs_on_it?
 //   Part 3 (Perspectives): perspectives → where_they_clash → what_science_says?
 //   Part 4 (Your Turn):    your_turn
-//   Part 5 (Test):         quiz → related_posts?
+//   Part 5 (Test):         quiz
 //   Part 6 (Context):      history_of_the_question? → where_the_debate_stands? → sources
 //
 // ━━━ LENGTH RULE (applies to every length range below) ━━━━━━━━━━━━━━━
@@ -54,8 +54,7 @@
 // gets five. Prefer clarity and balance over hitting a number. The only
 // HARD constraints are structural, fixed by the UI and the scoring system:
 // perspectives length 3–5, quiz length 5–10, quiz options length exactly 4
-// per question, your_turn prompts length 3–4, and related_posts length
-// exactly 3 (when included).
+// per question, and your_turn prompts length 3–4.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //
 // VISUALS: Questions is a visual-sparse format, by design. The general
@@ -472,24 +471,8 @@
       ]
     },
 
-    {
-      "type": "related_posts",  // OPTIONAL — "Questions That Connect"
-      "order": 12,
-      // Include when 3 genuinely related posts exist: a neighbouring
-      // question, a person who shaped the debate, or a concept the question
-      // turns on. The three slots ideally span the network: another question
-      // + a thinker + a concept. Skip rather than pad with loose links.
-      "content": [
-        {
-          "post_id": "",      // string — leave empty if not yet assigned.
-          "title": "",        // string
-          "format": "",       // "books"|"facts"|"people"|"concepts"|
-                              // "questions"|"stories"|"academy"
-          "mini_teaser": ""   // string — one sentence on why it connects.
-        }
-        // Exactly 3 items when included (HARD constraint).
-      ]
-    },
+    // NOTE: "Read next" is driven by featured connections (the top-level
+    // connections field, featured: true). See SKELETON_COMMENT_STANDARD.md s.10.
 
     // ── PART 6 — CONTEXT (smaller typography, secondary) ─────────────
     // These sit below the natural end-point. A reader who stopped at the

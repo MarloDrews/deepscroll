@@ -20,8 +20,8 @@
 // GUIDELINES, not hard limits. Exceed them when the content demands it.
 // A pivotal life may need 12 defining moments; a quiet contribution may
 // need 4. Prefer accuracy and depth over hitting a number. The only hard
-// constraints are: quiz length 5–10, related_posts length 3 (when
-// included), options length exactly 4 per quiz question.
+// constraints are: quiz length 5–10, options length exactly 4 per quiz
+// question.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //
 // See DEEPSCROLL_CONTENT_STRUCTURE.md for full spec, STYLE_GUIDE_LONGFORM.md
@@ -401,24 +401,8 @@
       // Repeat object per question. 5 questions minimum.
     },
 
-    {
-      "type": "related_posts",  // OPTIONAL — "People & Ideas Like This"
-      "order": 13,
-      // Include when 3 genuinely relevant posts can be identified. Skip
-      // rather than pad with loosely related content. The three slots
-      // should ideally span formats: e.g. another person post + a books
-      // post + a concepts or facts post.
-      "content": [
-        {
-          "post_id": "",      // string — leave empty if not yet assigned
-          "title": "",        // string
-          "format": "",       // "books"|"facts"|"people"|"concepts"|
-                              // "questions"|"stories"|"academy"
-          "mini_teaser": ""   // string — one sentence on why it connects
-        }
-      ]
-      // Exactly 3 items when included.
-    },
+    // NOTE: "Read next" is driven by featured connections (the top-level
+    // connections field, featured: true). See SKELETON_COMMENT_STANDARD.md s.10.
 
     // ── PART 6 — CONTEXT (smaller typography, secondary) ─────────────
     // These sections sit below the natural end-point. A reader who stopped

@@ -29,7 +29,7 @@
 //   Part 1 (Opening):    cold_open → at_a_glance
 //   Part 2 (The Story):  setting → chapters → the_turn → the_aftermath
 //   Part 3 (Reflection): what_it_means → what_we_learn? → unanswered?
-//   Part 4 (Test):       quiz → related_posts?
+//   Part 4 (Test):       quiz
 //   Part 5 (Context):    cast? → historical_context? → sources
 //
 // ━━━ LENGTH RULE (applies to every length range below) ━━━━━━━━━━━━━━━
@@ -38,8 +38,8 @@
 // gets seven; one that lands in three gets three. Pacing serves the story,
 // not a target number. The only HARD constraints are structural, fixed by
 // the UI and the scoring system: chapters length 3–7, quiz length 5–10,
-// quiz options length exactly 4 per question, related_posts length exactly
-// 3 (when included), and cast length 2–4 (when included).
+// quiz options length exactly 4 per question, and cast length 2–4 (when
+// included).
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //
 // See DEEPSCROLL_CONTENT_STRUCTURE.md (Stories section) for the full spec,
@@ -396,27 +396,9 @@
       ]
     },
 
-    {
-      "type": "related_posts",  // OPTIONAL — "Stories That Echo This". Internal
-      "order": 12,              // links to posts with similar themes, the people
-                                // involved, or the same era. A reader who just
-                                // finished one story is primed for the next.
-                                // Include when 3 genuinely relevant posts exist;
-                                // skip rather than pad with loose links.
-      "content": [
-        {
-          "post_id": "",      // string — leave empty if not yet assigned.
-          "title": "",        // string
-          "format": "",       // "books"|"facts"|"people"|"concepts"|
-                              // "questions"|"stories"|"academy"
-          "mini_teaser": ""   // string — one sentence on why it echoes this
-                              // story (shared theme, a figure who appears in
-                              // both, the same period). Keep it spoiler-safe for
-                              // the linked post too.
-        }
-        // Exactly 3 items when included (HARD constraint).
-      ]
-    },
+    // NOTE: "Read next" is driven by featured connections and featured cast
+    // (the top-level connections field and cast.featured). See
+    // SKELETON_COMMENT_STANDARD.md s.10.
 
     // ── PART 5 — CONTEXT (smaller typography, secondary) ─────────────
     // These sit below the natural end-point. A reader who stopped at the quiz

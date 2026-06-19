@@ -65,7 +65,7 @@
 //   Part 4 (The Findings): key_findings -> figures? -> robustness?
 //   Part 5 (Critical Reading): limitations -> objections?
 //   Part 6 (Why It Matters): implications -> connections_to_other_fields?
-//   Part 7 (Test Yourself): quiz -> related_posts?
+//   Part 7 (Test Yourself): quiz
 //   Part 8 (Context): authors_context? -> historical_context? -> sources
 //
 // ━━━ KaTeX / LaTeX CONVENTION ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -96,8 +96,7 @@
 // one with three gets three. Prefer depth and accuracy over hitting a number.
 // The only HARD constraints are structural, fixed by the UI and the scoring
 // system: key_findings length 3–7, figures length 1–4 (when included), quiz
-// length 5–10 with exactly 4 options per question, and related_posts length
-// exactly 3 (when included).
+// length 5–10 with exactly 4 options per question.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //
 // NAMING NOTE: the build brief listed an `arxiv_url` field. The canonical spec
@@ -677,25 +676,9 @@
       ]
     },
 
-    {
-      "type": "related_posts",  // OPTIONAL — "Papers That Connect". Three related
-      "order": 20,              // papers, key concepts, or central figures the
-                                // reader is primed to follow next. The three
-                                // slots ideally span: another paper + a Concepts
-                                // post for a method used + a People post for a
-                                // central figure in the field.
-      "content": [
-        {
-          "post_id": "",      // string — leave empty if not yet assigned.
-          "title": "",        // string.
-          "format": "",       // "books"|"facts"|"people"|"concepts"|
-                              // "questions"|"stories"|"academy".
-          "mini_teaser": ""   // string — one sentence on why it connects.
-        }
-        // Exactly 3 items when included (HARD constraint). Skip rather than pad
-        // with loose links.
-      ]
-    },
+    // NOTE: "Read next" is driven by featured connections and featured
+    // authors_context (the top-level connections field and
+    // authors_context.featured). See SKELETON_COMMENT_STANDARD.md s.10.
 
     // ── PART 8 — CONTEXT (smaller typography, secondary) ─────────────
     // Below the natural end-point. A reader who stopped at the quiz had the full

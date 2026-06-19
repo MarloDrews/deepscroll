@@ -23,7 +23,7 @@
 //   Part 2 (Mechanism): how_it_works → formal_definition?
 //   Part 3 (Core): real_world_examples → how_to_apply → where_it_breaks
 //   Part 4 (Takeaway): mental_takeaway
-//   Part 5 (Test): quiz → related_posts?
+//   Part 5 (Test): quiz
 //   Part 6 (Context): origin? → nearby_concepts? → sources
 //
 // ━━━ LENGTH RULE (applies to every length range below) ━━━━━━━━━━━━━━━
@@ -33,8 +33,8 @@
 // five; a concept that lands in two gets two. Prefer clarity and depth
 // over hitting a number. The only HARD constraints are structural, fixed
 // by the UI and the scoring system: quiz length 5–10, quiz options length
-// exactly 4 per question, and related_posts length exactly 3 (when
-// included). The 3–6 ranges on how_it_works and real_world_examples are
+// exactly 4 per question. The 3–6 ranges on how_it_works and
+// real_world_examples are
 // strong guidelines, not caps: prefer staying inside them, but a mechanism
 // with two genuine moves gets two, and a concept that shows up across
 // seven domains can list seven.
@@ -400,26 +400,9 @@
       ]
     },
 
-    {
-      "type": "related_posts",  // OPTIONAL — "Concepts That Connect"
-      "order": 12,
-      // Especially valuable for Concepts, because concepts live in networks:
-      // the reader who just understood this one is primed to follow it to a
-      // neighbour. Include when 3 genuinely relevant posts exist. The three
-      // slots ideally span the network: another concept + a person who
-      // developed it + a book that uses it. Skip rather than pad with loose
-      // links.
-      "content": [
-        {
-          "post_id": "",      // string — leave empty if not yet assigned.
-          "title": "",        // string
-          "format": "",       // "books"|"facts"|"people"|"concepts"|
-                              // "questions"|"stories"|"academy"
-          "mini_teaser": ""   // string — one sentence on why it connects.
-        }
-        // Exactly 3 items when included (HARD constraint).
-      ]
-    },
+    // NOTE: "Read next" is driven by featured connections and featured
+    // key_thinkers (the top-level connections field and key_thinkers.featured).
+    // See SKELETON_COMMENT_STANDARD.md s.10.
 
     // ── PART 6 — CONTEXT (smaller typography, secondary) ─────────────
     // These sit below the natural end-point. A reader who stopped at the
