@@ -25,6 +25,11 @@ key on (format, identity_key) and post_edges already has a `kind` column, so no
 edge-schema change and no migration are needed -- aliases are additive (none today
 == today's behavior). The mis-keyed entries surfaced by graph_edges.
 unmatched_latent_edges are exactly what an alias would later resolve.
+
+Build this only on the first real cross-spelling collision between two existing
+posts -- not preemptively (the fold rule is deliberately not expanded to chase
+variants, since no single rule catches all). Until then such edges stay correctly
+latent and surface in scripts/report_unmatched_edges.py.
 """
 
 import unicodedata
