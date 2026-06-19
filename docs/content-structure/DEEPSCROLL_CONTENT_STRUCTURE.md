@@ -82,7 +82,6 @@ These section types are used across multiple formats with **identical** content 
 | Type | Content shape | Purpose |
 |---|---|---|
 | `quiz` | array of `{question, options[4], answer_index, explanation}` | 5–10 multiple-choice questions, affects Elo |
-| `related_posts` | array of `{post_id, title, format, mini_teaser}` (length 3) | Internal links to similar posts |
 | `sources` | array of `{label, url, type}` where type ∈ `wikipedia|paper|book|article|database` | References |
 | `voices` | array of `{quote, attribution}` (length 3–4) | Quotes; header varies per format |
 
@@ -99,20 +98,34 @@ Two fields appear in **every** format's feed card and `at_a_glance` section, wit
 
 ### Person-List Shape
 
-Two section types reference lists of people (`key_figures` in Facts/`story`, `cast` in Stories, `authors_context` in Academy, `key_thinkers` in Concepts/`origin`). They share a **base shape** that may be extended:
+These section types reference lists of people (`key_figures` in Facts/`story`, `cast` in Stories, `authors_context` in Academy, `key_thinkers` in Concepts/`origin`). They share a **base shape** that may be extended:
 
 ```
 {
   name: string,
+  birth_year: integer,     // identity for person-edge matching; omit only if genuinely unknown, never guess
   role: string,            // their function in the context
   one_line?: string,       // optional brief description
-  lifespan?: string,       // optional "1867–1934" or "1929–present"
+  lifespan?: string,       // optional "1867-1934" or "1929-present"
   image_url?: string,      // Wikimedia portrait or similar
-  affiliation?: string     // for academic context
+  affiliation?: string,    // for academic context
+  featured?: boolean       // optional; surfaces this person in the in-post "read next" strip
 }
 ```
 
-Different sections use different subsets of this shape — but never invent new field names for the same concept.
+Different sections use different subsets of this shape, but never invent new field names for the same concept.
+
+Each person-list entry is a **person edge** in the graph: `name` plus `birth_year` is the target identity, and `featured` flags the few surfaced in "read next". Person edges live here only, never duplicated in `connections`.
+
+### Graph Fields (all formats)
+
+`tags` and `connections` are the two top-level graph fields (see the schema table at the top of this section). `tags` are taxonomy slugs that drive thematic clustering at runtime; they are never edges. `connections` is an array of structured edges to non-person posts, each `{ format, ref, featured }`, where `ref` carries the target's identity parts as a structured object, not a pre-joined string. This replaces the former `related_posts` section type.
+
+Person edges are not listed in `connections`; they come from the person-list fields above (`name` plus `birth_year`).
+
+Each format states its own identity in structured form: the People `feed_card` carries `birth_year` (integer); Books carries title plus author; the other formats use the title.
+
+The full per-format `ref` shapes and the edge and identity-matching semantics (latent edges, the derived `identity_key`, the featured cap) live in `SKELETON_COMMENT_STANDARD.md` section 10.
 
 ---
 
@@ -129,6 +142,8 @@ The flexible section model only works if the frontend renderer is **robust**. Th
 4. **Sections render in `order` value, not array position.** This allows reordering without rebuilding posts — just change the `order` values.
 
 5. **REQUIRED is enforced at editor/validation time, not at render time.** A post missing a required section still renders what it has. Validation happens when posts are submitted/edited.
+
+**Note: `related_posts` was removed as a hard cut.** It is no longer a section type; internal links are now edges in `connections` and the person-list fields (see section 3). Any legacy post still carrying a `related_posts` section is handled by rule 1: no renderer exists for that type, so it is skipped and the post still renders.
 
 ### What this allows without DB migration
 
