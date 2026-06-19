@@ -73,6 +73,12 @@
                                 // ("genius", "revolutionary").
     "lifespan": "",             // string — "1867–1934". For living people:
                                 // "born 1942" or "b. 1942".
+    "birth_year": 0,            // integer. The canonical machine-readable identity
+                                // key for this person (graph node = name plus
+                                // birth_year). Must match the birth year stated in
+                                // lifespan and at_a_glance.born; a mismatch
+                                // silently mis-keys the post. Omit only if
+                                // genuinely unknown, never guess.
     "essence": "",              // string — one sentence distilling the life.
                                 // Dense and factual, not a eulogy opener.
                                 // Example: "Polish-French physicist who won
