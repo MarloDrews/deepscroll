@@ -11,6 +11,20 @@ path so they can never drift: _key_from_parts() takes structured parts and retur
 the canonical key. Block 2 resolves a ref by parsing it into the same structured
 parts and calling _key_from_parts() -- it must NOT rebuild a string and normalize
 it separately.
+
+Aliases (extension point, not built)
+------------------------------------
+A post's canonical key stays exactly as _key_from_parts() builds it. To let a post
+also answer to alternate identity strings (e.g. Laozi / Lao Tzu) without renaming
+it, a post could later declare alias strings in the JSON authoring layer (in
+feed_card, or a JSONB column added the same non-breaking way add_graph_columns.py
+added tags/connections). At write those aliases normalize through the SAME
+_key_from_parts() into alternate keys; activation (graph_edges.activate_edges_for)
+would then match latent edges on the canonical key OR any alias key. Edges already
+key on (format, identity_key) and post_edges already has a `kind` column, so no
+edge-schema change and no migration are needed -- aliases are additive (none today
+== today's behavior). The mis-keyed entries surfaced by graph_edges.
+unmatched_latent_edges are exactly what an alias would later resolve.
 """
 
 import unicodedata
