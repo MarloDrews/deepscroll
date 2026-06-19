@@ -60,11 +60,14 @@ export interface QuizItem {
   explanation?: string
 }
 
-export interface RelatedPostItem {
-  post_id: string
-  title: string
+// Server-resolved "read next" edge (PostOut.read_next; produced by the backend
+// graph_edges.resolved_read_next). A resolved entry carries the live target's id;
+// a latent one has target_post_id null and latent true (target not published yet).
+export interface ReadNextItem {
+  target_post_id: number | null
   format: string
-  mini_teaser: string
+  title: string
+  latent: boolean
 }
 
 export interface SourceItem {
@@ -126,11 +129,18 @@ export interface KeyFigure {
   image_attribution?: string
 }
 
+// A connection's target identity. The shape depends on the connection's `format`:
+// people -> { name, birth_year? }, books -> { title, author }, any other -> { title }.
+export type ConnectionRef =
+  | { name: string; birth_year?: number }   // target: people
+  | { title: string; author: string }       // target: books
+  | { title: string }                        // any other format
+
 // Graph edge to another post (top-level on Post). The target may not exist yet
 // (latent edge), so it is identified by natural identity in `ref`, not an id.
 export interface ConnectionItem {
   format: string
-  ref: string
+  ref: ConnectionRef
   featured: boolean
 }
 
@@ -317,7 +327,6 @@ export type SectionType =
   | "core_ideas"
   | "takeaway"
   | "quiz"
-  | "related_posts"
   | "world_context"
   | "author_context"
   | "critique"
@@ -436,6 +445,9 @@ export interface Post {
   sections: Section[]
   tags?: string[]
   connections?: ConnectionItem[]
+  // Server-resolved featured edges for the detail page (only GET /api/posts/{id}
+  // populates it). The client renders this directly; it never re-derives it.
+  read_next?: ReadNextItem[]
   author_id: number | null
   author_username: string | null
   author_is_verified: number | null
