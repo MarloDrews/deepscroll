@@ -197,7 +197,10 @@ at the full quality of the benchmark.
 Work through them one at a time: fully write, verify, validate, and commit one post
 before starting the next. Start each one fresh against the benchmark, and do not
 reuse a previous post's sentences, structure, or framing as a template, or the batch
-turns uniform, which is the very tell we are avoiding. Hold the quality across all of
+turns uniform, which is the very tell we are avoiding. Let most sections end plainly,
+on a fact or mid-thought, and allow at most one earned landing line in a whole post.
+Signing off both the hook and the meaning section on a lyrical line every time is the
+metronome the style guide warns against. Hold the quality across all of
 them; do not let the later ones thin out.
 
 You are running unattended across the batch, so do not pause to ask between posts.
@@ -293,7 +296,11 @@ post, lead with the writing, then the facts.
 1. Quality against the example: is the hook genuinely surprising, the voice alive
    rather than uniform, the one allowed zinger earned, the reframe clear? Is the
    see_it visual showing the fact's shape, or just re-displaying the headline number?
-   Judge it against facts_example.json and name where it falls short of that bar.
+   Watch the closing rhythm in particular: does the post sign off section after
+   section on a short, weighty, quotable line, and do both the opening hook section
+   and the closing meaning section land a lyrical line? One earned landing in a whole
+   post is fine; the rest should end plainly, on a fact or mid-thought. Judge it
+   against facts_example.json and name where it falls short of that bar.
 2. Structure and rules: zero em-dashes, no em-dash-substitute semicolons, no empty
    intensifiers (simply, actually, and the like), no blacklisted vocabulary, no
    banned structures (the contrast frame "does not X, it Y" or "it's not X, it's Y",
@@ -325,6 +332,14 @@ post, lead with the writing, then the facts.
    post rests on and on anything that reads oddly.
 6. Sources: open each URL in the sources section; confirm it is reachable and
    actually supports the claim it is attached to. Note any that do not load.
+7. Across the batch, not just within each post: you are reviewing several posts at
+   once, so look for habits they share that no single post would reveal. The prime
+   one is closing rhythm, if every post signs off its hook and its meaning section on
+   the same kind of lyrical line, the feed will read as same-y even though each post
+   passes alone. Also watch for a recurring sentence shape (the "the same X that does
+   Y is the one that does Z" symmetry, repeated openers, the same analogy structure).
+   Flag any shared tic so step 4 can vary one or two instances, and so the pattern
+   feeds back into the generation prompt.
 
 For each post report a verdict: PASS, or issues grouped as must-fix (rule or factual
 violations) and should-improve (quality), each with a confidence level. For every
