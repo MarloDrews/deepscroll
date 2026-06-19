@@ -81,13 +81,11 @@ const emptyVoice = () => ({ quote: "", attribution: "" })
 const emptyCoreIdea = () => ({ title: "", body: "", in_practice: "", visual_svg: "", image_url: "", quote: "" })
 const emptyQuizItem = () => ({ question: "", options: ["", "", "", ""] as [string, string, string, string], answer_index: "0" as "0"|"1"|"2"|"3", explanation: "" })
 const emptySource = () => ({ label: "", url: "", type: "article" as string })
-const emptyRelated = () => ({ post_id: "", title: "", format: "books", mini_teaser: "" })
 
 type Voice = ReturnType<typeof emptyVoice>
 type CoreIdea = ReturnType<typeof emptyCoreIdea>
 type QuizItem = ReturnType<typeof emptyQuizItem>
 type Source = ReturnType<typeof emptySource>
-type Related = ReturnType<typeof emptyRelated>
 
 const SOURCE_TYPES = ["wikipedia", "paper", "book", "article", "database"]
 
@@ -132,7 +130,6 @@ export default function CreatePage() {
   const [coreIdeas, setCoreIdeas] = useState<CoreIdea[]>(Array.from({ length: 6 }, emptyCoreIdea))
   const [takeaway, setTakeaway] = useState({ framing: "framework" as "framework"|"question", body: "", visual_svg: "" })
   const [quizItems, setQuizItems] = useState<QuizItem[]>(Array.from({ length: 5 }, emptyQuizItem))
-  const [relatedPosts, setRelatedPosts] = useState<Related[]>([emptyRelated(), emptyRelated(), emptyRelated()])
   const [authorContext, setAuthorContext] = useState({ body: "", image_url: "", image_attribution: "", wikipedia_url: "" })
   const [sources, setSources] = useState<Source[]>([emptySource()])
 
@@ -290,15 +287,6 @@ export default function CreatePage() {
         options: q.options.map((o) => o.trim()) as [string, string, string, string],
         answer_index: parseInt(q.answer_index) as 0|1|2|3,
         explanation: q.explanation.trim(),
-      })),
-    })
-
-    const validRelated = relatedPosts.filter((r) => r.title.trim())
-    if (validRelated.length === 3) sections.push({
-      type: "related_posts", order: 11,
-      content: validRelated.map((r) => ({
-        post_id: r.post_id.trim(), title: r.title.trim(),
-        format: r.format, mini_teaser: r.mini_teaser.trim(),
       })),
     })
 
@@ -554,7 +542,6 @@ export default function CreatePage() {
     setCoreIdeas(Array.from({ length: 6 }, emptyCoreIdea))
     setTakeaway({ framing: "framework", body: "", visual_svg: "" })
     setQuizItems(Array.from({ length: 5 }, emptyQuizItem))
-    setRelatedPosts([emptyRelated(), emptyRelated(), emptyRelated()])
     setAuthorContext({ body: "", image_url: "", image_attribution: "", wikipedia_url: "" })
     setSources([emptySource()])
     setSelectedInterests([]); setErrors({}); setServerError("")
@@ -1186,21 +1173,6 @@ export default function CreatePage() {
                 {structure.length < 10 && (
                   <button onClick={() => setStructure([...structure, ""])} className="btn btn-quiet text-lamp text-xs px-1.5 py-1 mt-1">+ Add part</button>
                 )}
-              </Accordion>
-
-              <Accordion title="Related Posts (3)">
-                {relatedPosts.map((r, i) => (
-                  <div key={i} className="mb-3 bg-white/[0.04] rounded-2xl p-3">
-                    <label className="text-ink-faint text-xs mb-1 block">Title</label>
-                    <input type="text" value={r.title} onChange={(e) => { const n = [...relatedPosts]; n[i] = { ...n[i], title: e.target.value }; setRelatedPosts(n) }} placeholder="Related book or post title..." className={`${inputCls} mb-2`} />
-                    <label className="text-ink-faint text-xs mb-1 block">Mini teaser</label>
-                    <input type="text" value={r.mini_teaser} onChange={(e) => { const n = [...relatedPosts]; n[i] = { ...n[i], mini_teaser: e.target.value }; setRelatedPosts(n) }} placeholder="One line about it..." className={`${inputCls} mb-2`} />
-                    <label className="text-ink-faint text-xs mb-1 block">Format</label>
-                    <select value={r.format} onChange={(e) => { const n = [...relatedPosts]; n[i] = { ...n[i], format: e.target.value }; setRelatedPosts(n) }} className={inputCls}>
-                      {["books", "facts", "people", "concepts", "questions", "stories", "academy"].map((f) => <option key={f} value={f}>{f}</option>)}
-                    </select>
-                  </div>
-                ))}
               </Accordion>
 
               <Accordion title="World Context">
