@@ -8,7 +8,6 @@ import StructureSection from "./sections/StructureSection"
 import CoreIdeasSection from "./sections/CoreIdeasSection"
 import TakeawaySection from "./sections/TakeawaySection"
 import QuizSection from "./sections/QuizSection"
-import RelatedPostsSection from "./sections/RelatedPostsSection"
 import WorldContextSection from "./sections/WorldContextSection"
 import AuthorContextSection from "./sections/AuthorContextSection"
 import CritiqueSection from "./sections/CritiqueSection"
@@ -91,7 +90,6 @@ const NO_READ_SECTIONS = new Set([
   "at_a_glance",
   "quiz",
   "paper_card",
-  "related_posts",
   "sources",
 ])
 
@@ -126,8 +124,6 @@ export default function SectionRenderer({ sections, isUserContent, postId }: Pro
             return <TakeawaySection key={i} content={c as any} isUserContent={isUserContent} />
           case "quiz":
             return <QuizSection key={i} content={c as any} postId={postId} />
-          case "related_posts":
-            return <RelatedPostsSection key={i} content={c as any} />
           case "world_context":
             return <WorldContextSection key={i} content={c as string} />
           case "author_context":
