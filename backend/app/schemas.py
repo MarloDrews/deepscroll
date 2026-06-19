@@ -106,13 +106,6 @@ class QuizItem(BaseModel):
         return v
 
 
-class RelatedPostItem(BaseModel):
-    post_id: str
-    title: str
-    format: str
-    mini_teaser: str
-
-
 class SourceItem(BaseModel):
     label: str
     url: str
@@ -209,19 +202,6 @@ class QuizSection(BaseModel):
         return v
 
 
-class RelatedPostsSection(BaseModel):
-    type: Literal["related_posts"]
-    order: int = Field(ge=1)
-    content: list[RelatedPostItem]
-
-    @field_validator("content")
-    @classmethod
-    def validate_related(cls, v: list[RelatedPostItem]) -> list[RelatedPostItem]:
-        if len(v) != 3:
-            raise ValueError("related_posts must have exactly 3 items")
-        return v
-
-
 class WorldContextSection(BaseModel):
     type: Literal["world_context"]
     order: int = Field(ge=1)
@@ -264,7 +244,6 @@ AnySection = Annotated[
         CoreIdeasSection,
         TakeawaySection,
         QuizSection,
-        RelatedPostsSection,
         WorldContextSection,
         AuthorContextSection,
         CritiqueSection,
