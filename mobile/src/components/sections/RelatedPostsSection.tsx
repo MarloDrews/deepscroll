@@ -1,11 +1,12 @@
 import { Pressable, ScrollView, Text, View } from "react-native"
 import { useRouter } from "expo-router"
-import type { RelatedPostItem } from "../../types/post"
+import type { ReadNextItem } from "../../types/post"
 import { SECTION_PADDING_H, SECTION_PADDING_V, sans, sansSemiBold } from "./primitives"
 import { colors, radius } from "../../theme/tokens"
 
 // Port of frontend/src/components/sections/RelatedPostsSection.tsx
-// Horizontal scroll row; cards without a post_id are dimmed "Coming soon".
+// Renders server-resolved read_next edges. Resolved (live target) cards are
+// clickable; latent ones (target_post_id null) are dimmed "Coming soon".
 
 const FORMAT_LABELS: Record<string, string> = {
   books: "Book",
@@ -17,9 +18,11 @@ const FORMAT_LABELS: Record<string, string> = {
   academy: "Academy",
 }
 
-function RelatedCard({ item }: { item: RelatedPostItem }) {
+function RelatedCard({ item }: { item: ReadNextItem }) {
   const router = useRouter()
-  const hasLink = !!item.post_id && item.post_id.trim() !== ""
+  // Resolved (live target) entries are clickable; latent ones (target_post_id
+  // null) stay non-clickable with the "Coming soon" treatment.
+  const hasLink = item.target_post_id != null
   const label = FORMAT_LABELS[item.format] ?? item.format
 
   const inner = (
@@ -40,14 +43,11 @@ function RelatedCard({ item }: { item: RelatedPostItem }) {
       <Text numberOfLines={2} style={sansSemiBold(14, colors.ink, { lineHeight: 19 })}>
         {item.title}
       </Text>
-      <Text numberOfLines={2} style={[sans(12, colors["ink-muted"]), { marginTop: "auto" }]}>
-        {item.mini_teaser}
-      </Text>
     </View>
   )
 
   if (hasLink) {
-    return <Pressable onPress={() => router.push(`/post/${item.post_id}`)}>{inner}</Pressable>
+    return <Pressable onPress={() => router.push(`/post/${item.target_post_id}`)}>{inner}</Pressable>
   }
 
   return (
@@ -60,7 +60,7 @@ function RelatedCard({ item }: { item: RelatedPostItem }) {
   )
 }
 
-export default function RelatedPostsSection({ content }: { content: RelatedPostItem[] }) {
+export default function RelatedPostsSection({ content }: { content: ReadNextItem[] }) {
   return (
     <View style={{ paddingVertical: SECTION_PADDING_V }}>
       <ScrollView
