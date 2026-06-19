@@ -40,6 +40,20 @@ def is_live_node(post) -> bool:
     return post.status == LIVE_STATUS
 
 
+def _latent_allowed(target_format) -> bool:
+    """Only person edges may be stored/shown latent (target unresolved).
+
+    Person identity (name + birth_year) is stable enough to reference a person
+    before their post exists; non-person targets (titles) are spelling-fragile, so
+    an unresolved non-person edge is discarded rather than left latent and noisy.
+    The one place this rule lives, consulted by both the write-path derivation
+    (rebuild_post_edges) and the read-next projection (resolved_read_next) so it
+    can never drift between them. Any non-"people" format -- including a future one
+    -- is non-latent by this rule.
+    """
+    return target_format == "people"
+
+
 def _iter_person_entries(sections):
     """Yield every person dict from the four person-list fields, in any shape.
 
@@ -138,7 +152,11 @@ def rebuild_post_edges(db, post):
     Always clears the post's existing rows first. A non-live post inserts none
     (so going non-live tears its outgoing edges down). A live post inserts one
     row per resolvable connection / person entry, with target_post_id resolved
-    against existing live posts (latent = NULL when the target does not exist).
+    against existing live posts. A person edge whose target does not exist yet is
+    stored latent (target_post_id NULL); a non-person edge whose target does not
+    resolve is discarded silently (_latent_allowed), never stored latent. This
+    also purges a pre-existing non-person latent row: it is deleted above and not
+    re-created here.
     """
     db.query(PostEdge).filter(PostEdge.source_post_id == post.id).delete(
         synchronize_session="fetch"
@@ -151,6 +169,8 @@ def rebuild_post_edges(db, post):
     resolved = _resolve_live_targets(db, {(fmt, key) for fmt, key, _ in specs})
     for fmt, key, featured in specs:
         target = resolved.get((fmt, key))
+        if target is None and not _latent_allowed(fmt):
+            continue  # non-person edge with no live target: discard, never latent
         db.add(
             PostEdge(
                 source_post_id=post.id,
@@ -211,9 +231,11 @@ def resolved_read_next(db, post):
     Built from the authoring layer (featured person-list entries first, then
     featured connections -- mirroring the previous frontend order), capped at 3
     at read time, then resolved against live posts. Resolved entries carry the
-    target's id + canonical title; unmatched ones are kept and marked latent
-    (target_post_id None) rather than dropped. Uses the same key assembly as the
-    edge table, so the projection can never disagree with it.
+    target's id + canonical title. An unmatched PERSON entry is kept and marked
+    latent (target_post_id None, a "Coming soon" item); an unmatched non-person
+    entry contributes nothing, by the same _latent_allowed rule the edge table
+    uses, so the projection can never disagree with it. (Cap precedes resolution,
+    so dropping an unmatched non-person can leave fewer than 3 items.)
     """
     candidates = []  # (format, key, fallback_title)
     for person in _iter_person_entries(post.sections):
@@ -249,10 +271,12 @@ def resolved_read_next(db, post):
             items.append(
                 {"target_post_id": target[0], "format": fmt, "title": target[1], "latent": False}
             )
-        else:
+        elif _latent_allowed(fmt):
             items.append(
                 {"target_post_id": None, "format": fmt, "title": fallback, "latent": True}
             )
+        # else: non-person target missing -> contributes nothing (no latent "Coming
+        # soon" entry); same one rule as the edge table, so the two never disagree.
     return items
 
 
