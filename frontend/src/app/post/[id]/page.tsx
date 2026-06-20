@@ -213,6 +213,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   const style = post ? formatStyle(post.format) : null
+  // Typographic formats (LAYOUT_STANDARD s1) use the banner header: field line +
+  // glyph + serif headline + dek, no slab. Facts and concepts share it.
+  const typographic = !!post && (post.format === "facts" || post.format === "concepts")
 
   return (
     <div className="h-[100dvh] bg-surface-0 flex justify-center">
@@ -299,9 +302,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           )}
 
           {/* Format label in the app top bar — the format with its accent dot,
-              centered between the back and audio controls. Facts uses the banner
-              header, where the format lives here rather than in a slab. */}
-          {post && style && post.format === "facts" && (
+              centered between the back and audio controls. Typographic formats use
+              the banner header, where the format lives here rather than in a slab. */}
+          {post && style && typographic && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-(--accent)" />
               <span className="text-xs font-mono lowercase tracking-widest text-(--accent)">
@@ -320,12 +323,13 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 {/* Readable region for read-aloud: header + sections.
                     Comments stay outside so they are never spoken. */}
                 <div ref={readableRef}>
-                {post.format === "facts" ? (
-                  /* Facts header per LAYOUT_STANDARD: a field line (field label
-                     left, small glyph at its right end, same as the card), the
-                     serif headline once, then the meta row. The format label
-                     lives in the top bar; the headline section is filtered out of
-                     the body below so it never doubles. */
+                {typographic ? (
+                  /* Typographic header per LAYOUT_STANDARD (facts, concepts): a
+                     field line (field label left, small glyph at its right end,
+                     same as the card), the serif headline once, an optional dek,
+                     then the meta row. The format label lives in the top bar; the
+                     headline section is filtered out of the body below so it never
+                     doubles. */
                   <div className="relative">
                     <div className="px-6 pt-4 flex items-start justify-between gap-3">
                       {fcStr(post.feed_card, "field") && (
@@ -339,6 +343,14 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       />
                     </div>
                     <HeadlineSection content={post.title} />
+                    {/* Dek — the one-line plain-language gloss from the feed card,
+                        repeated under the headline (LAYOUT_STANDARD s3). Concepts
+                        carries one_line; facts has none, so this stays facts-free. */}
+                    {fcStr(post.feed_card, "one_line") && (
+                      <p className="px-6 -mt-3 mb-5 text-base italic text-ink-dim leading-snug max-w-[24ch]">
+                        {fcStr(post.feed_card, "one_line")}
+                      </p>
+                    )}
                     {/* Meta row — round avatar + creator, reading time,
                         difficulty. Reads the same author fields as the feed
                         card footer, so the two always match. */}
@@ -460,11 +472,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   </div>
                 )}
 
-                {/* Sections — for facts the headline now lives in the header
-                    above, so drop the headline section to avoid doubling it. */}
+                {/* Sections — for typographic formats the headline now lives in
+                    the header above, so drop any headline section to avoid doubling
+                    it (concepts has none, so this is a no-op there). */}
                 <SectionRenderer
                   sections={
-                    post.format === "facts"
+                    typographic
                       ? post.sections.filter((s) => s.type !== "headline")
                       : post.sections
                   }
@@ -473,9 +486,11 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 />
                 </div>
 
-                {/* Tags at the end (facts) — small chips near the sources
-                    section, the network/filter layer at the foot of the post. */}
-                {post.format === "facts" && post.interests.length > 0 && (
+                {/* Tags at the end (typographic formats) — small chips near the
+                    sources section, the network/filter layer at the foot of the
+                    post. The slab header carries its own tags, so this is only for
+                    the banner-header formats. */}
+                {typographic && post.interests.length > 0 && (
                   <div data-no-read className="px-6 pt-2 pb-6 flex flex-wrap gap-2">
                     {post.interests.map((name) => (
                       <span

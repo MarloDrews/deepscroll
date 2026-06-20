@@ -219,11 +219,11 @@ export default function SectionRenderer({ sections, isUserContent, postId }: Pro
           case "visual_explanation":
             return <VisualExplanationSection key={i} content={c as any} isUserContent={isUserContent} />
           case "how_it_works":
-            return <HowItWorksSection key={i} content={c as any} />
+            return <HowItWorksSection key={i} content={c as any} isUserContent={isUserContent} />
           case "formal_definition":
             return <FormalDefinitionSection key={i} content={c as any} />
           case "real_world_examples":
-            return <RealWorldExamplesSection key={i} content={c as any} />
+            return <RealWorldExamplesSection key={i} content={c as any} isUserContent={isUserContent} />
           case "how_to_apply":
             return <HowToApplySection key={i} content={c as any} isUserContent={isUserContent} />
           case "where_it_breaks":

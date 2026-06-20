@@ -1,16 +1,19 @@
 import SectionLabel from "../SectionLabel"
+import SvgBlock from "../SvgBlock"
 
 interface Step {
   step_number: number
   title: string
   body: string
+  visual_svg?: string
 }
 
 interface Props {
   content: Step[]
+  isUserContent: boolean
 }
 
-export default function HowItWorksSection({ content }: Props) {
+export default function HowItWorksSection({ content, isUserContent }: Props) {
   return (
     <div className="px-6 py-8 flex flex-col gap-8">
       <SectionLabel className="-mb-4">How It Works</SectionLabel>
@@ -22,6 +25,13 @@ export default function HowItWorksSection({ content }: Props) {
           <div className="flex flex-col gap-1.5">
             <h3 className="text-sm font-semibold text-(--accent) leading-snug">{step.title}</h3>
             <p className="prose-post text-ink-dim">{step.body}</p>
+            {step.visual_svg && (
+              <SvgBlock
+                svg={step.visual_svg}
+                isUserContent={isUserContent}
+                className="w-full max-w-[360px] mx-auto mt-2"
+              />
+            )}
           </div>
         </div>
       ))}

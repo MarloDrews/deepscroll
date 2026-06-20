@@ -14,7 +14,10 @@ interface Props {
 
 export default function HowToApplySection({ content, isUserContent }: Props) {
   return (
-    <div className="px-6 py-8 flex flex-col gap-4">
+    // The concepts key section (LAYOUT_STANDARD s7): the one section carrying the
+    // accent left-border plus a faint wash, marking the post's payoff. Mirrors the
+    // facts key section (SurprisesSection).
+    <div className="px-6 py-8 flex flex-col gap-4 border-l-2 border-(--accent) bg-(--accent)/[0.06]">
       <SectionLabel>How to Apply It</SectionLabel>
       <p className="prose-post text-ink-dim">{content.body}</p>
       {content.checklist && content.checklist.length > 0 && (
