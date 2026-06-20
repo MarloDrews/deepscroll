@@ -347,7 +347,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                         repeated under the headline (LAYOUT_STANDARD s3). Concepts
                         carries one_line; facts has none, so this stays facts-free. */}
                     {fcStr(post.feed_card, "one_line") && (
-                      <p className="px-6 -mt-3 mb-5 text-base italic text-ink-dim leading-snug max-w-[24ch]">
+                      <p className="px-6 -mt-2 mb-5 font-serif italic text-base text-ink-body leading-relaxed">
                         {fcStr(post.feed_card, "one_line")}
                       </p>
                     )}
