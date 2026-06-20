@@ -1,5 +1,5 @@
 // facts_skeleton.jsonc
-// Deepscroll — Facts format skeleton.
+// Deepscroll: Facts format skeleton.
 // Thesis: the fact is the hook and the visual is constitutive, not decorative.
 // A reader who finds the topic interesting should read from headline to
 // bigger_picture without effort, pulled by substance. Accent: the facts
@@ -113,8 +113,8 @@
                               // Avoid: "Did you know", preamble, question marks.
     "card_visual": {          // REQUIRED. Facts is a typographic card: a small
                               // glyph sits at the right end of the field line.
-                              // Fill "svg" with the field glyph; leave image_url
-                              // empty (card images are used by books and people).
+                              // Fill "svg" with the field glyph; omit image_url and
+                              // image_attribution for facts (books and people use them).
                               // The glyph belongs to the field, not the post;
                               // later it comes from a fixed field-to-glyph set
                               // (ROADMAP.md), so a generator never invents one.
@@ -148,7 +148,7 @@
 
     {
       "type": "see_it",   // See It (REQUIRED)
-      "order": 3,
+      "order": 2,
       // JOB: make the fact tangible at first glance. The visual is the proof,
       //      not an illustration, and it should reveal the fact's shape or
       //      mechanism, not just re-display the headline number. A reader who
@@ -174,7 +174,7 @@
 
     {
       "type": "surprises",   // Why It Surprises Us (REQUIRED)
-      "order": 4,
+      "order": 3,
       // JOB: name the single intuition this fact breaks. This is the post's
       //      turning point and it sits right after the visual on purpose; a
       //      reader who stops here leaves with the reframe, not just a number.
@@ -188,7 +188,7 @@
 
     {
       "type": "tangible",   // Make It Tangible (OPTIONAL)
-      "order": 5,
+      "order": 4,
       // JOB: turn a non-human scale into something the body can feel. Lands
       //      harder now that the reader knows why the fact matters. This
       //      section also breaks the mid-post text run, so it carries the
@@ -212,7 +212,7 @@
 
     {
       "type": "how_we_know",   // How We Know (OPTIONAL)
-      "order": 6,
+      "order": 5,
       // JOB: earn trust by naming how the fact was established, now that the
       //      reader is hooked. A reader who stops here knows it is rigorous,
       //      not a coincidence.
@@ -226,7 +226,7 @@
 
     {
       "type": "key_numbers",   // Key Numbers (OPTIONAL)
-      "order": 7,
+      "order": 6,
       // JOB: let the reader scan several independent quantities side by side.
       // Include when: the fact has multiple distinct numbers worth comparing
       //   at a glance (a data-dense fact).
@@ -248,7 +248,7 @@
 
     {
       "type": "story",   // The Story Behind It (OPTIONAL)
-      "order": 8,
+      "order": 7,
       // JOB: who found this out, when, and what was believed before. A reader
       //      who stops here has the human history of the fact.
       // Include when: there is an attributable discovery or a real before-and-
@@ -293,7 +293,7 @@
 
     {
       "type": "angles",   // Multiple Angles (OPTIONAL)
-      "order": 9,
+      "order": 8,
       // JOB: give the reader the genuinely distinct wrinkles of the fact:
       //      consequences, edge cases, limits, adjacent comparisons. A reader
       //      who stops here feels the fact has more sides than expected.
@@ -323,7 +323,7 @@
 
     {
       "type": "bigger_picture",   // The Bigger Picture (REQUIRED)
-      "order": 10,
+      "order": 9,
       // JOB: the payoff. What the fact means and where it leads. This is the
       //      climax before the quiz; a reader who stops here should feel they
       //      got the full reward.
@@ -338,7 +338,7 @@
 
     {
       "type": "quiz",   // Quiz (REQUIRED)
-      "order": 11,
+      "order": 10,
       // JOB: test understanding of why the fact is true and what it implies.
       //      Elo-relevant, so quality is a fairness question.
       // Full quiz style (distractor design, difficulty spread, explanation
@@ -365,7 +365,7 @@
 
     {
       "type": "misconceptions",   // Common Misconceptions (OPTIONAL)
-      "order": 12,
+      "order": 11,
       // JOB: bust the specific false beliefs people hold about this fact. This
       //      is also the home for the honest caveat when a fact is looser than
       //      its headline suggests (a rule with exceptions, an order of
@@ -384,7 +384,7 @@
 
     {
       "type": "open_questions",   // Open Questions (OPTIONAL)
-      "order": 13,
+      "order": 12,
       // JOB: name honestly what is still unsettled or unknown about this fact,
       //      so the reader leaves with the live frontier, not false closure. A
       //      natural bridge to Questions-format posts (via connections).
@@ -409,7 +409,7 @@
 
     {
       "type": "sources",   // Sources & Further Reading (REQUIRED)
-      "order": 14,
+      "order": 13,
       // JOB: let the reader verify and go deeper. Prefer primary sources
       //      (papers, archives, datasets) over aggregators.
       "content": [

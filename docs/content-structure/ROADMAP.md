@@ -57,7 +57,8 @@ the lookup later.
   contrast.
 - Per-format key section: each format designates the one section marked with the
   accent left-border (see `LAYOUT_STANDARD.md` section 7). Decide it in each
-  format's own chat. Facts: the surprises section. The others: open.
+  format's own chat. Facts: the surprises section. Concepts: the
+  how_to_apply section. The others: open.
 - Latent-edge display: only a person edge can point at a post that does not exist
   yet, activating when that person's post is created. Non-person connections to a
   missing target are not stored at all. Anywhere edges surface, "Read next" now
@@ -66,8 +67,9 @@ the lookup later.
   stays, and only its display is gated on the target existing.
 - Cover-format detail header: how the book cover (books) and portrait (people) sit
   at the top of the detail page is settled when those formats get their pass.
-- Assess the 145-tag taxonomy for the three flagged gaps (paleontology, botany,
-  microbiology) and the optional one (creativity).
+- Taxonomy (resolved): paleontology, botany, microbiology, and the optional
+  `creativity` field have all been added; the taxonomy now holds 149 slugs in
+  `backend/seed.py`, with no remaining flagged gaps.
 - Skeleton spec pointers (post-slim): the header line in the concepts, people,
   books, questions, stories, and academy skeletons still sends the reader to
   DEEPSCROLL_CONTENT_STRUCTURE.md for the full per-format spec, but the slim moved
@@ -75,8 +77,9 @@ the lookup later.
   shared shapes, and the rationale. Reword each pointer to the facts skeleton's
   form ("Schema and rationale: DEEPSCROLL_CONTENT_STRUCTURE.md") when that format
   gets its pass. The facts skeleton is already correct.
-- Detail-header dek: LAYOUT_STANDARD section 2 gives the feed card a one-line dek
-  for short-title formats, but the detail header (section 3) has none, so the
-  one-line gloss does not persist on the detail page. Decide per short-title
-  format (concepts first) whether the detail header repeats the dek or relies on
-  the opening section, then update LAYOUT_STANDARD section 3.
+- Detail-header dek: LAYOUT_STANDARD section 3 now carries an optional
+  detail-header dek (added for concepts, which repeats the card dek because its
+  body opens on a scene, not a definition). Still open: decide
+  repeat-or-rely-on-opening for the other short-title formats (questions,
+  academy, people, books) in each format's own pass, and reflect the choice in
+  LAYOUT_STANDARD section 3.

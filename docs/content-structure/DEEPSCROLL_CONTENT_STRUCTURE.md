@@ -115,13 +115,13 @@ These section types reference lists of people (`key_figures` in Facts/`story`, `
 
 Different sections use different subsets of this shape, but never invent new field names for the same concept.
 
-Each person-list entry is a **person edge** in the graph: `name` plus `birth_year` is the target identity, and `featured` flags the few surfaced in "read next". Person edges live here only, never duplicated in `connections`.
+Each person-list entry is a **person edge** in the graph: `name` plus `birth_year` is the target identity, and `featured` flags the few surfaced in "read next". For a format that has a person-list, its person edges live here, not in `connections`; a person in the list is never duplicated there.
 
 ### Graph Fields (all formats)
 
-`tags` and `connections` are the two top-level graph fields (see the schema table at the top of this section). `tags` are taxonomy slugs that drive thematic clustering at runtime; they are never edges. `connections` is an array of structured edges to non-person posts, each `{ format, ref, featured }`, where `ref` carries the target's identity parts as a structured object, not a pre-joined string. This replaces the former `related_posts` section type.
+`tags` and `connections` are the two top-level graph fields (see the schema table at the top of this section). `tags` are taxonomy slugs that drive thematic clustering at runtime; they are never edges. `connections` is an array of structured edges, each `{ format, ref, featured }`, where `ref` carries the target's identity parts as a structured object, not a pre-joined string. This replaces the former `related_posts` section type.
 
-Person edges are not listed in `connections`; they come from the person-list fields above (`name` plus `birth_year`).
+When a format has a person-list field (`key_figures`, `key_thinkers`, `cast`, `authors_context`), its person edges live there, not in `connections`. The two formats with no person-list, People and Books, link a person through a `connections` entry with `format: "people"` and `ref { name, birth_year }`. So `connections` carries every non-person link, plus person links only for those person-list-less formats; a person already in a person-list is never duplicated.
 
 Each format states its own identity in structured form: the People `feed_card` carries `birth_year` (integer); Books carries title plus author; the other formats use the title.
 

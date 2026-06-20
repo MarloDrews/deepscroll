@@ -40,8 +40,10 @@ deviations.
 
 ## A1. Voice and address
 
-Third person, assertive, no first-person "I" or "we". Address the reader as
-"you" where it is natural, not as a tic. Warm but not chummy; confident without
+Third person, assertive, no first-person "I" and no editorial or authorial
+"we", the "in this post we'll explore" tic. The inclusive "we" that means
+people in general is fine where it reads naturally. Address the reader as "you"
+where it is natural, not as a tic. Warm but not chummy; confident without
 performing confidence. The voice of someone who knows the subject well and
 respects the reader's intelligence, talking to one person, not lecturing a room.
 

@@ -87,11 +87,19 @@ bar.
    same as the card.
 3. **Headline**, once, large serif, accent number. The first impression; it owns
    the top of the page.
-4. **Meta row**: round avatar + creator name, then reading time, then difficulty.
+4. **Dek** (optional), the one-line italic gloss from the feed card, directly
+   under the headline in the same treatment. Present for the short-title formats
+   whose card carries a dek, so the plain-language gloss persists onto the detail
+   page. Concepts repeats the card dek here (its body opens on a scene, not a
+   definition, so the definition would otherwise not persist). The other
+   short-title formats decide repeat-or-rely-on-opening in their own pass (see
+   `ROADMAP.md`). Absent when the headline is a full statement (facts) or a
+   narrative opening (stories).
+5. **Meta row**: round avatar + creator name, then reading time, then difficulty.
    The creator here and on the card come from one source and always match.
-5. **Quiz badge**.
-6. **Sections**, in their defined order.
-7. **Tags**, at the end, as small chips near the sources. Not in the header: the
+6. **Quiz badge**.
+7. **Sections**, in their defined order.
+8. **Tags**, at the end, as small chips near the sources. Not in the header: the
    field label already orients the reader, and tags are the network and filter
    system, which belongs at the foot of the post.
 
@@ -171,4 +179,5 @@ the page above a plain wall.
   payoff. It is the one deliberate exception to the otherwise unmarked rhythm, so it
   must stay rare: one section, one format. Every other section carries no border.
   Which section is the key section is fixed per format (see `ROADMAP.md`); for facts
-  it is the surprises section (the reframe).
+  it is the surprises section (the reframe), and for concepts it is the
+  `how_to_apply` section.
