@@ -82,6 +82,9 @@ interface Props {
   sections: Section[]
   isUserContent: boolean
   postId: number
+  // Post format, used for the few shared sections whose caps header is
+  // per-format (e.g. voices: "In Their Own Words" for people).
+  format: string
 }
 
 // Sections that are visible metadata or navigation rather than prose;
@@ -93,7 +96,7 @@ const NO_READ_SECTIONS = new Set([
   "sources",
 ])
 
-export default function SectionRenderer({ sections, isUserContent, postId }: Props) {
+export default function SectionRenderer({ sections, isUserContent, postId, format }: Props) {
   const sorted = [...sections].sort((a, b) => a.order - b.order)
 
   return (
@@ -109,7 +112,7 @@ export default function SectionRenderer({ sections, isUserContent, postId }: Pro
           case "essence":
             return <EssenceSection key={i} content={c as string} />
           case "voices":
-            return <VoicesSection key={i} content={c as any} />
+            return <VoicesSection key={i} content={c as any} label={format === "people" ? "In Their Own Words" : undefined} />
           case "at_a_glance":
             return <AtAGlanceSection key={i} content={c as any} />
           case "why_endures":

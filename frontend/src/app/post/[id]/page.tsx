@@ -510,6 +510,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   }
                   isUserContent={post.is_user_content}
                   postId={post.id}
+                  format={post.format}
                 />
                 </div>
 
