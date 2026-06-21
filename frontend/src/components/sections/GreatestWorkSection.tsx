@@ -38,6 +38,9 @@ export default function GreatestWorkSection({ content, isUserContent }: Props) {
           {content.image_caption && (
             <p className="text-xs text-ink-muted mt-2">{content.image_caption}</p>
           )}
+          {content.image_attribution && (
+            <p className="text-xs text-ink-faint mt-0.5">{content.image_attribution}</p>
+          )}
         </div>
       )}
     </div>

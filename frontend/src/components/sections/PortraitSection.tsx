@@ -18,9 +18,13 @@ export default function PortraitSection({ content }: Props) {
         className="w-full object-cover max-h-[420px]"
         onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
       />
-      {content.image_caption && (
+      {/* Caption is optional; the credit line is required with every image and
+          renders independently of it (IMAGE_STANDARD s3-s4). */}
+      {(content.image_caption || content.image_attribution) && (
         <div className="px-5 pt-3 pb-2">
-          <p className="text-sm text-ink-dim leading-snug">{content.image_caption}</p>
+          {content.image_caption && (
+            <p className="text-sm text-ink-dim leading-snug">{content.image_caption}</p>
+          )}
           {content.image_attribution && (
             <p className="text-xs text-ink-faint mt-1">{content.image_attribution}</p>
           )}
