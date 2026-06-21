@@ -31,18 +31,18 @@
   ],
   "feed_card": {
     "portrait": {
-      "image_url": "/seed-images/Lise_Meitner12.jpg",
-      "image_attribution": "Public domain via Wikimedia Commons"
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lise_Meitner_(1878-1968),_lecturing_at_Catholic_University,_Washington,_D.C.,_1946.jpg",
+      "image_attribution": "C. A. Briggs, \"Lise Meitner (1878-1968), lecturing at Catholic University, Washington, D.C., 1946\", Public domain (Smithsonian Institution Archives via Wikimedia Commons)"
     },
     "name": "Lise Meitner",
     "role": "Physicist",
-    "lifespan": "1878–1968",
+    "lifespan": "1878-1968",
     "birth_year": 1878,
-    "essence": "Austrian-Swedish physicist who interpreted the experiment that proved uranium nuclei could split, then refused to help build the bomb her theory made possible.",
+    "one_line": "Austrian physicist who interpreted the experiment that proved uranium nuclei could split, then refused to work on the bomb her theory made possible.",
     "teasers": [
-      "Smuggled out of Berlin with ten marks",
-      "Did the math in the snow",
-      "Refused the Manhattan Project"
+      "Fled Nazi Berlin in 1938",
+      "The physics behind a chemist's Nobel",
+      "Said no to the bomb"
     ],
     "post_reading_time_min": 13,
     "post_difficulty": 2
@@ -51,15 +51,15 @@
     {
       "type": "identity",
       "order": 1,
-      "content": "Lise Meitner was an Austrian-born physicist who spent thirty years building nuclear physics in Berlin, fled Nazi Germany at age fifty-nine with two suitcases and a borrowed diamond ring, and five months later worked out the calculation showing that a uranium atom can be split in two. The 1944 Nobel Prize for that discovery went to her chemist collaborator alone."
+      "content": "Lise Meitner was an Austrian-born physicist who spent thirty years building nuclear physics in Berlin, fled Nazi Germany in 1938 at age fifty-nine, and months later worked out the calculation showing that a uranium nucleus can split in two. The Nobel Prize for that discovery went to her chemist collaborator, and not to her."
     },
     {
       "type": "portrait",
       "order": 3,
       "content": {
-        "image_url": "/seed-images/HD.3A.004__2810555706814_29.jpg",
-        "image_caption": "Lise Meitner with Otto Hahn at the Kaiser Wilhelm Institute for Chemistry in Berlin-Dahlem, 1913. They worked together for thirty years.",
-        "image_attribution": "Public domain via Wikimedia Commons"
+        "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/(Pioneering_atomic_physicist_Ernest_Rutherford_in_his_laboratory.)_-_NARA_-_558596_-_Lise_Meitner_-_Otto_Hahn.tiff?width=1024",
+        "image_caption": "Lise Meitner and Otto Hahn in their laboratory at the Kaiser Wilhelm Institute for Chemistry in Berlin, about 1913. Their partnership lasted three decades.",
+        "image_attribution": "Science Service, \"Lise Meitner and Otto Hahn in their laboratory, Kaiser-Wilhelm Institut fur Chemie, Berlin\", Public domain (U.S. National Archives via Wikimedia Commons)"
       }
     },
     {
@@ -68,19 +68,15 @@
       "content": [
         {
           "quote": "I will have nothing to do with a bomb.",
-          "attribution": "1943, refusing the Manhattan Project"
-        },
-        {
-          "quote": "Life need not be easy, provided only that it is not empty.",
-          "attribution": "letter, recalled by Otto Frisch"
-        },
-        {
-          "quote": "I love physics with all my heart. It is a kind of personal love, as one has for a person to whom one is grateful for many things.",
-          "attribution": "late in life"
+          "attribution": "refusing weapons work"
         },
         {
           "quote": "You must not blame us scientists for the use which war technicians have put our discoveries.",
           "attribution": "interview, 1945"
+        },
+        {
+          "quote": "I love physics with all my heart. It is a kind of personal love, as one has for a person to whom one is grateful for many things.",
+          "attribution": "late in life"
         }
       ]
     },
@@ -100,13 +96,13 @@
     {
       "type": "why_they_matter",
       "order": 6,
-      "content": "The atomic age opened with a calculation done on the back of an envelope during a walk in the snow. Lise Meitner was the physicist who did it. In December 1938 her old Berlin partner Otto Hahn sent her a letter from Germany describing a chemical result he could not explain: when uranium was bombarded with neutrons, the residue contained barium, an element about half the weight of uranium. Meitner, six months into exile in Sweden, walked into the woods with her nephew Otto Frisch and worked out what had happened. The uranium nucleus had broken in two. The lost mass had become energy, in the amount Einstein's equation predicted, about 200 million electron-volts per atom. The chemistry was Hahn's. The interpretation was hers. The 1944 Nobel Prize in Chemistry went to Hahn alone, with no mention of her. Meitner is also the scientist who, when later asked to come to Los Alamos and help build the weapon her theory made possible, said no. Her thirty-year partnership with Hahn, her escape from Berlin in 1938, and her refusal to enter weapons work make her one of the rare twentieth-century physicists whose career can be read both as a triumph of theory and as a study of what scientific credit gets withheld and from whom."
+      "content": "A chemist in Berlin had a result he could not explain, and he wrote to the one physicist he trusted to make sense of it. In December 1938 Otto Hahn, Meitner's partner of thirty years, reported that bombarding uranium with neutrons left behind barium, an element about half the weight of uranium. That was supposed to be impossible. Meitner, by then in exile in Sweden, worked it out with her nephew Otto Frisch: the uranium nucleus had broken in two, and the lost mass had turned into energy in the amount Einstein's equation predicted, about 200 million electron-volts per atom. Hahn had done the chemistry. The physics was hers. When the 1944 Nobel Prize in Chemistry was awarded for the discovery, it went to Hahn alone. Her life is worth reading both as a piece of theoretical physics that opened the atomic age and as a record of how credit gets assigned, and to whom."
     },
     {
       "type": "life_arc",
       "order": 7,
       "content": {
-        "visual_svg": "<svg viewBox='0 0 400 300' xmlns='http://www.w3.org/2000/svg' fill='none'><text x='200' y='40' fill='currentColor' font-family='system-ui, sans-serif' font-size='12' font-weight='700' text-anchor='middle' opacity='0.85'>Lise Meitner, 1878–1968</text><line x1='40' y1='150' x2='360' y2='150' stroke='currentColor' stroke-width='1.5' opacity='0.45'/><g fill='#fb7185'><circle cx='40' cy='150' r='5'/><circle cx='93' cy='150' r='5'/><circle cx='147' cy='150' r='5'/><circle cx='200' cy='150' r='5'/><circle cx='253' cy='150' r='5'/><circle cx='307' cy='150' r='5'/><circle cx='360' cy='150' r='5'/></g><g fill='currentColor' font-family='system-ui, sans-serif' font-size='11' font-weight='700' text-anchor='middle'><text x='40' y='130'>1878</text><text x='93' y='130'>1906</text><text x='147' y='130'>1913</text><text x='200' y='130'>1917</text><text x='253' y='130'>1938</text><text x='307' y='130'>1939</text><text x='360' y='130'>1968</text></g><g fill='currentColor' font-family='system-ui, sans-serif' font-size='9' text-anchor='middle' opacity='0.75'><text x='40' y='175'>Vienna</text><text x='93' y='175'>PhD</text><text x='147' y='175'>Berlin post</text><text x='200' y='175'>Protactinium</text><text x='253' y='175'>Escape</text><text x='307' y='175'>Fission</text><text x='360' y='175'>Cambridge</text></g><text x='200' y='230' fill='currentColor' font-family='system-ui, sans-serif' font-size='10' text-anchor='middle' opacity='0.65'>From the Vienna salon to the woods outside Gothenburg</text></svg>",
+        "visual_svg": "<svg viewBox='0 0 400 232' xmlns='http://www.w3.org/2000/svg' fill='none'><polyline points='32,150 96,118 160,96 224,80 256,150 320,158 368,176' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.6'/><g stroke='currentColor' stroke-width='2' fill='none' opacity='0.7'><circle cx='32' cy='150' r='4.5'/><circle cx='96' cy='118' r='4.5'/><circle cx='160' cy='96' r='4.5'/><circle cx='224' cy='80' r='4.5'/><circle cx='320' cy='158' r='4.5'/><circle cx='368' cy='176' r='4.5'/></g><circle cx='256' cy='150' r='7' fill='var(--accent)'/><g fill='currentColor' font-family='var(--font-mono), ui-monospace, monospace' font-size='13' font-weight='700' text-anchor='middle'><text x='32' y='184'>1878</text><text x='96' y='106'>1906</text><text x='160' y='84'>1913</text><text x='224' y='68'>1917</text><text x='320' y='184'>1939</text><text x='368' y='200'>1968</text></g><text x='256' y='138' fill='var(--accent)' font-family='var(--font-mono), ui-monospace, monospace' font-size='14' font-weight='700' text-anchor='middle'>1938</text><g fill='currentColor' font-family='var(--font-sans), system-ui, sans-serif' font-size='13' font-weight='600' text-anchor='middle' opacity='0.8'><text x='150' y='52'>Berlin years</text><text x='300' y='214'>Exile</text></g></svg>",
         "milestones": [
           {
             "year": "1878",
@@ -126,7 +122,7 @@
           },
           {
             "year": "1938",
-            "label": "Flees Berlin in July"
+            "label": "Flees Berlin"
           },
           {
             "year": "1939",
@@ -144,52 +140,45 @@
       "order": 8,
       "content": [
         {
-          "title": "Tutored at Home While Vienna Barred Women From School",
-          "year_or_period": "1892–1901",
-          "body": "Vienna did not allow women into the Gymnasium until 1897. Meitner finished her primary schooling at fourteen, then spent eight years studying with a private tutor at her father's expense. When the university opened to women, she sat the Matura with a year of work compressed into the gap and entered the University of Vienna at twenty-three. She finished her physics doctorate in 1906, the second woman in the university's history to do so. By the time her career began, most of her male contemporaries had been working in laboratories for a decade.",
+          "title": "Vienna Locks Her Out, So She Studies at Home",
+          "year_or_period": "1892-1901",
+          "body": "For most of Meitner's youth, Vienna did not admit women to the Gymnasium at all. She finished her primary schooling at fourteen and then, in effect, waited, studying privately at her father's expense until the university doors opened. When they did, she sat the Matura, entered the University of Vienna to read physics, and in 1906 became the second woman in the university's history to earn a physics doctorate. Her male contemporaries had a decade of laboratory work behind them by the time she could legally begin.",
           "location": "Vienna"
         },
         {
-          "title": "Crosses to Berlin and Meets Hahn",
+          "title": "She Talks Her Way Into Planck's Berlin",
           "year_or_period": "1907",
-          "body": "Meitner moved to Berlin in 1907 to attend Max Planck's lectures. Planck had never accepted a woman into his lecture course; he made an exception. Within a year she was his assistant. She met the young chemist Otto Hahn at the Chemical Institute and began a working partnership that would last until 1938. For her first years there she was not allowed into the main laboratory because women were banned from the building. She worked from a converted carpenter's workshop with a separate entrance, and was forbidden to use the toilet, which was reserved for men.",
-          "image_url": "/seed-images/Lise_Meitner12crop.jpg",
-          "image_caption": "Meitner as a doctoral candidate in Vienna, 1906. She would leave for Berlin the following year.",
-          "image_attribution": "Courtesy Churchill Archives Centre, Cambridge; Wikimedia Commons",
+          "body": "Max Planck did not, as a rule, admit women to his lectures. He made an exception for Meitner, who arrived in Berlin in 1907 and was his assistant within a year. At the Chemical Institute she met a young chemist named Otto Hahn, and the two began a partnership that would run until 1938. The terms were not equal. She was kept out of the main laboratory, granted limited access to its spaces, and worked at the edges of an institution that had not decided what to do with a woman doing physics.",
           "location": "Berlin"
         },
         {
-          "title": "Nurses X-Ray Patients on the Russian Front",
-          "year_or_period": "1915–1916",
-          "body": "When the First World War broke out, Meitner volunteered as an X-ray technician for the Austrian army and was posted to military hospitals near the Russian front. She had no medical training; she taught herself the equipment. She saw a year of shrapnel wounds, gas burns, and amputations before returning to Berlin in late 1916. Her later refusal to work on weapons traced back, in her own letters, to what she had seen of war up close.",
-          "location": "Galicia, Russian front"
+          "title": "The War Teaches Her What Weapons Do",
+          "year_or_period": "1915-1916",
+          "body": "When the First World War broke out, Meitner volunteered as an X-ray nurse for the Austrian army and was sent to military hospitals near the front. No one had trained her on the equipment, so she trained herself. For a stretch of months she handled shrapnel wounds and amputations, then returned to Berlin in late 1916. She traced her later refusal to work on weapons, in her own account, back to this: she had seen, up close, what they did to people.",
+          "location": "Eastern front"
         },
         {
-          "title": "Becomes Germany's First Woman Professor of Physics",
+          "title": "Berlin Makes Her a Professor, Then a Target",
           "year_or_period": "1926",
-          "body": "In 1922 the University of Berlin accepted her Habilitation thesis; in 1926 she was appointed Extraordinary Professor of Physics. She was the first woman in Germany to hold a physics chair. The Berlin newspapers reported it as a story about the female sex. Meitner read the coverage and kept working. By the early 1930s she headed the physics section of the Kaiser Wilhelm Institute for Chemistry and was running her own group on radioactive elements.",
+          "body": "The University of Berlin accepted her Habilitation in 1922, and in 1926 she was appointed Extraordinary Professor of Physics, an early instance of a woman holding a physics professorship in Germany. By the early 1930s she headed the physics section of the Kaiser Wilhelm Institute for Chemistry and ran her own group on radioactive elements. The standing she had spent two decades earning would count for nothing once the racial laws arrived.",
           "location": "Berlin"
         },
         {
-          "title": "Leaves Berlin by Train With Ten Marks",
+          "title": "She Leaves Germany With Almost Nothing",
           "year_or_period": "July 1938",
-          "body": "After the Anschluss in March 1938, Austrian Jews became German citizens overnight and lost their protection from the racial laws. Meitner stayed in Berlin too long; her colleagues begged her to leave; she kept hoping a position abroad would come together. On 13 July she boarded an evening train to the Dutch border with the chemist Dirk Coster, who had crossed into Germany to escort her. She carried two small suitcases of summer clothing and ten marks. Hahn pressed his mother's diamond ring into her hand in case she needed to bribe a border guard. She crossed without being stopped. She would not see Germany again for ten years.",
-          "image_url": "/seed-images/Hahn_and_Meitner_in_1912__28cropped_29.jpg",
-          "image_caption": "Meitner and Hahn at the Kaiser Wilhelm Institute around 1928, a decade before the separation.",
-          "image_attribution": "Public domain via Wikimedia Commons",
-          "location": "Berlin to Groningen"
+          "body": "The Anschluss in March 1938 turned Austrian Jews into German citizens overnight and stripped away the protection her Austrian passport had given her. Friends had urged her to go; she stayed, hoping a post abroad would come through, until staying became dangerous. In July she crossed into the Netherlands with the help of colleagues, carrying little more than what she could pack. She would not set foot in Germany again for ten years.",
+          "location": "Berlin to the Netherlands"
         },
         {
-          "title": "Christmas Walk in Kungälv",
+          "title": "A Letter From Hahn, a Walk in the Snow",
           "year_or_period": "December 1938",
-          "body": "Meitner spent that first Christmas of exile at a small hotel north of Gothenburg, where her nephew Otto Frisch came to join her. She had a letter from Hahn in her pocket. He and Strassmann had bombarded uranium with neutrons and found barium in the residue, and could not explain it. Hahn asked her what physics had to say. On Christmas Eve she and Frisch walked into the snowy woods (Frisch on skis, Meitner on foot) and sat down on a fallen tree trunk. She sketched a uranium nucleus as a wobbling droplet. Frisch took the figures. By the time they walked back, they had calculated that the droplet could split into two, that the lost mass corresponded to about 200 million electron-volts per atom by Einstein's equation, and that this was what Hahn had seen.",
-          "visual_svg": "",
-          "location": "Kungälv, Sweden"
+          "body": "Meitner spent her first Christmas of exile in Sweden, where Otto Frisch came to join her. In her pocket was a letter from Hahn: he and Strassmann had found barium where barium should not be, and he wanted to know what the physics had to say. She and Frisch worked it through together. The nucleus, they reasoned, could stretch and split into two, and the mass that went missing in the split should reappear as about 200 million electron-volts of energy per atom, exactly the figure Einstein's equation gave. That was what Hahn had seen, without knowing it.",
+          "location": "Kungalv, Sweden"
         },
         {
-          "title": "Refuses the Manhattan Project",
+          "title": "She Says No to the Bomb",
           "year_or_period": "1943",
-          "body": "Frisch coined the word \"fission\" in their February 1939 paper in Nature. Within months, Leo Szilard had read it and started writing the letter that, with Einstein's signature, would push Roosevelt toward the Manhattan Project. In 1943 the British asked Meitner to come to Los Alamos. Her answer was four words: \"I will have nothing to do with a bomb.\" She spent the war in Stockholm, working in a laboratory where Manne Siegbahn gave her almost no support and her name was rarely spoken. When she heard the news from Hiroshima on 6 August 1945, she went for a walk of five hours and refused to comment to the press.",
+          "body": "Frisch named the process \"fission\" in the paper the two of them published in Nature in February 1939, and the result fed straight into the wartime drive to build a weapon. When the invitation came for Meitner to join that work, her answer was four words: \"I will have nothing to do with a bomb.\" She passed the war in Stockholm with little support and less recognition. The news of Hiroshima reached her in August 1945, and she said nothing to the press.",
           "location": "Stockholm"
         }
       ]
@@ -199,21 +188,21 @@
       "order": 9,
       "content": {
         "title": "The Liquid-Drop Interpretation of Nuclear Fission",
-        "body": "Before Meitner and Frisch's paper, the nucleus was thought of as a brittle, granular thing. A neutron could chip off a proton or kick out an alpha particle, but the idea that a heavy nucleus could split into two pieces of roughly equal size was considered physically absurd. Hahn himself wrote to Meitner that the barium result \"contradicts all previous experience of nuclear physics.\" Meitner's answer drew on a model first proposed by George Gamow and Niels Bohr: treat the nucleus as a charged liquid drop, with surface tension holding it together and electrostatic repulsion pushing it apart. In a uranium nucleus those two forces nearly cancel. A small disturbance is enough to let the drop elongate, pinch in the middle, and break into two smaller drops. Meitner then ran the energy ledger. The two daughter nuclei together weigh about a fifth of a proton mass less than the uranium nucleus and the neutron that struck it. By E=mc², that missing mass should appear as about 200 million electron-volts of kinetic energy carried away by the fragments. Frisch confirmed the prediction experimentally within weeks: an ionisation chamber in Copenhagen registered exactly the giant pulses the calculation predicted. The paper in Nature, dated 11 February 1939, took up two pages. It changed nuclear physics overnight.",
-        "visual_svg": "<svg viewBox='0 0 400 300' xmlns='http://www.w3.org/2000/svg' fill='none'><text x='200' y='32' fill='currentColor' font-family='system-ui, sans-serif' font-size='12' font-weight='700' text-anchor='middle' opacity='0.85'>The liquid-drop model of fission</text><g stroke='#fb7185' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='70' cy='150' r='32'/><ellipse cx='200' cy='150' rx='42' ry='22'/><circle cx='305' cy='128' r='20'/><circle cx='345' cy='172' r='22'/></g><g stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.55'><path d='M112 150 h28'/><path d='M140 150 l-10 -5 m10 5 l-10 5'/><path d='M250 150 h20'/><path d='M270 150 l-10 -5 m10 5 l-10 5'/></g><g stroke='currentColor' stroke-width='1.5' stroke-linecap='round' opacity='0.45'><path d='M335 110 l12 -10'/><path d='M335 110 l-2 -8 m2 8 l8 -3'/><path d='M373 195 l12 8'/><path d='M373 195 l1 -8 m-1 8 l8 1'/></g><g fill='currentColor' font-family='system-ui, sans-serif' font-size='12' font-weight='700' text-anchor='middle'><text x='70' y='154'>U</text><text x='305' y='132'>Ba</text><text x='345' y='176'>Kr</text></g><g fill='currentColor' font-family='system-ui, sans-serif' font-size='9' text-anchor='middle' opacity='0.7'><text x='70' y='205'>uranium</text><text x='200' y='205'>elongation</text><text x='200' y='218'>(unstable drop)</text><text x='325' y='225'>fragments + neutrons</text></g><text x='200' y='265' fill='#fb7185' font-family='system-ui, sans-serif' font-size='11' font-weight='700' text-anchor='middle'>Δm × c² ≈ 200 MeV</text></svg>"
+        "body": "Before Meitner and Frisch, splitting a heavy nucleus into two pieces of nearly equal size was thought to be impossible. The picture she reached for was a drop of liquid: surface tension pulling the nucleus together, electrostatic repulsion pushing it apart. In uranium those two forces very nearly cancel. That near-balance is the whole point. With the forces so finely matched, a single neutron is enough to set the drop wobbling, stretching, pinching at the middle, until it breaks into two smaller drops. Then she counted the cost in mass. The two fragments together weigh measurably less than the uranium nucleus and the neutron that struck it, and by E equals m c squared that missing mass has to come out as energy, roughly 200 million electron-volts of it, flung outward as the pieces fly apart. Frisch confirmed the prediction in the laboratory within weeks. The paper that explained it, dated 11 February 1939, was two pages long.",
+        "visual_svg": "<svg viewBox='0 0 400 248' xmlns='http://www.w3.org/2000/svg' fill='none'><g stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' opacity='0.75'><circle cx='66' cy='96' r='34'/><circle cx='300' cy='74' r='22'/><circle cx='342' cy='118' r='24'/></g><ellipse cx='188' cy='96' rx='46' ry='24' stroke='var(--accent)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/><g stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.55'><path d='M108 96 h24'/><path d='M132 96 l-9 -5 m9 5 l-9 5'/><path d='M242 96 h22'/><path d='M264 96 l-9 -5 m9 5 l-9 5'/></g><g fill='currentColor' font-family='var(--font-sans), system-ui, sans-serif' font-size='14' font-weight='700' text-anchor='middle'><text x='66' y='101'>U</text><text x='300' y='79'>Ba</text><text x='342' y='123'>Kr</text></g><g fill='currentColor' font-family='var(--font-sans), system-ui, sans-serif' font-size='13' font-weight='600' text-anchor='middle' opacity='0.8'><text x='66' y='154'>uranium</text><text x='188' y='154' fill='var(--accent)'>splits</text><text x='321' y='168'>fragments</text></g><text x='200' y='216' fill='var(--accent)' font-family='var(--font-mono), ui-monospace, monospace' font-size='15' font-weight='700' text-anchor='middle'>about 200 MeV</text></svg>"
       }
     },
     {
       "type": "what_drove_them",
       "order": 10,
-      "content": "Meitner was shy in the way that very precise people often are. She practised the piano daily, wrote long letters to friends in German even after forty years in Sweden, and called Hahn \"my dear Hähnchen\" until he abandoned her in 1938 and for some years afterward. Einstein called her \"our Madame Curie\"; she found the comparison embarrassing. She refused honorary doctorates that she felt she had not earned. After 1938 she became colder in correspondence with Hahn, partly because he kept publishing the fission work without crediting her, and partly because he wrote to her after the war that ordinary Germans had suffered as much as the Jews. She wrote back: \"You all worked for Nazi Germany, and never even tried passive resistance. Of course, to ease your conscience you helped here and there a persecuted person; but millions of innocent people were murdered, and no one protested.\" The letter went unsent for years; she found it among her papers after his death. Late in life she said she had loved physics the way one loves a person."
+      "content": "She was reserved, exact, and slow to claim anything for herself. The exactness shows up in the smallest things: a turned-down honorary degree she felt she had not earned, a daily hour at the piano, decades of letters written in German long after Sweden had become home. With Hahn the warmth held for thirty years and then broke. It broke partly because he kept publishing the fission work without her name on it, and partly because of what he wrote to her after the war, that ordinary Germans had suffered as much as the people the regime murdered. She answered him in a letter that she is reported never to have sent: he and his colleagues had worked for Nazi Germany and put up no resistance, while millions were killed and no one protested. The anger and the loyalty sat in her at the same time, and she never fully resolved them."
     },
     {
       "type": "legacy",
       "order": 11,
       "content": {
-        "body": "Meitner's name was almost forgotten in the decades after the war. Hahn collected the Nobel medal in 1946 and did not share it. Histories of fission written in the 1950s described Meitner as Hahn's assistant. The shift began with Ruth Lewin Sime's 1996 biography Lise Meitner: A Life in Physics, which drew on the unpublished Hahn-Meitner correspondence at the Churchill Archives Centre in Cambridge and showed in letter after letter that the physical interpretation of fission had been hers. By the 2000s the consensus had moved; today most physics textbooks credit Hahn and Strassmann with the chemistry and Meitner and Frisch with the physics. The Nobel committee has never formally addressed the omission. Her epitaph, written by her nephew Frisch, reads: \"Lise Meitner: a physicist who never lost her humanity.\"",
-        "present_day_impact": "Element 109 was named meitnerium in 1997, twenty-nine years after her death. It is one of only two elements named after a non-mythological woman, the other being curium. The Hahn-Meitner Institute in Berlin, originally named for Hahn alone, was renamed in 1959 to include her."
+        "body": "For years after the war her part was simply left out. Hahn took the 1944 Nobel Prize in Chemistry for the discovery of fission and collected the medal in person in 1946, and the histories written in the 1950s reduced Meitner to his assistant. What turned it around was a book: Ruth Lewin Sime's 1996 biography Lise Meitner: A Life in Physics, built on the Hahn-Meitner letters held at the Churchill Archives Centre in Cambridge. Letter by letter, Sime showed that the physical interpretation of fission had come from Meitner. The account most physicists give today splits the credit the way the work actually divided, Hahn and Strassmann on the chemistry, Meitner and Frisch on the physics. The Nobel committee has never reopened the question.",
+        "present_day_impact": "Element 109 was named meitnerium in 1997, twenty-nine years after her death. The Hahn-Meitner Institute in Berlin, founded in 1959, carried both their names from the start, and both of them came to its dedication."
       }
     },
     {
@@ -229,18 +218,18 @@
             "She first proposed that uranium could be split, before any data existed"
           ],
           "answer_index": 1,
-          "explanation": "Hahn and Strassmann did the chemistry in Berlin and detected the barium. Meitner, in exile in Sweden, used the liquid-drop model and Einstein's equation to explain why barium appeared and to predict the energy released. The chemistry alone could not say what had physically happened to the nucleus."
+          "explanation": "Hahn and Strassmann did the chemistry in Berlin and detected the barium. Meitner, in exile, used the liquid-drop model and Einstein's equation to explain why barium appeared and to estimate the energy released. The chemistry alone could not say what had physically happened to the nucleus."
         },
         {
-          "question": "Why did Meitner have to leave Germany in 1938 even though she had converted to Lutheranism in 1908?",
+          "question": "Why did Meitner lose her protection from the Nazi racial laws in 1938?",
           "options": [
-            "The Nazi racial laws classified her as Jewish by ancestry regardless of religion",
-            "Her Lutheran conversion was not legally recognised in Germany",
-            "She had given up German citizenship years earlier",
-            "Her Austrian passport was revoked after the Anschluss"
+            "The racial laws classified Jewishness by ancestry, and the Anschluss removed the shield of her Austrian citizenship",
+            "Her academic title was formally revoked that year",
+            "She had given up her citizenship years earlier",
+            "She was expelled from the Kaiser Wilhelm Institute by a court order"
           ],
           "answer_index": 0,
-          "explanation": "The Nuremberg Laws defined Jewishness by descent, not faith. Meitner's Austrian citizenship had partly shielded her until March 1938, when Germany annexed Austria and she became subject to those laws. The conversion she had made thirty years earlier was irrelevant."
+          "explanation": "The Nazi racial laws defined Jewishness by descent, not religion. Meitner's Austrian citizenship had partly shielded her until March 1938, when Germany annexed Austria and she became subject to those laws."
         },
         {
           "question": "What model of the atomic nucleus did Meitner use to explain fission?",
@@ -251,18 +240,18 @@
             "A quark-based model derived from the Standard Model"
           ],
           "answer_index": 2,
-          "explanation": "The liquid-drop model, developed by Gamow and Bohr, treats the nucleus as a drop held together by surface tension and pushed apart by electrostatic repulsion. For uranium those forces nearly balance, so a small disturbance can elongate the drop and split it in two. The Standard Model and quarks were not formulated until decades later."
+          "explanation": "The liquid-drop model treats the nucleus as a drop held together by surface tension and pushed apart by electrostatic repulsion. For uranium those forces nearly balance, so a small disturbance can elongate the drop and split it in two. The Standard Model and quarks were formulated decades later."
         },
         {
           "question": "Why did the 1944 Nobel Prize in Chemistry go to Otto Hahn alone, with no share for Meitner?",
           "options": [
             "She had not contributed to the original Berlin experiments",
             "The Nobel committee judged that exiled scientists could not be considered",
-            "A combination of disciplinary boundaries, wartime isolation, and the political situation of an exiled physicist",
+            "A combination of disciplinary boundaries, wartime isolation, and her position as an exiled physicist",
             "She declined the prize in writing"
           ],
           "answer_index": 2,
-          "explanation": "Historians of science point to several factors. The Chemistry committee defined the discovery as chemistry, not physics. Meitner was in exile and effectively invisible to the Stockholm committee. Hahn omitted her from the original paper. The omission has been studied as one of the clearest cases of Nobel misattribution in the twentieth century."
+          "explanation": "Historians of science point to several factors. The Chemistry committee defined the discovery as chemistry, Meitner was in exile and largely invisible to the Stockholm committee, and the work was published separately. The omission has been studied as a clear case of Nobel misattribution."
         },
         {
           "question": "Roughly how much energy did Meitner calculate would be released per uranium atom split?",
@@ -273,52 +262,41 @@
             "About 200 billion electron-volts"
           ],
           "answer_index": 2,
-          "explanation": "The mass difference between the uranium nucleus and the two fragments works out to about 0.2 atomic mass units. Multiplied by c² via Einstein's equation, that gives roughly 200 million electron-volts (200 MeV) per fission, an order of magnitude more than chemical reactions release per atom. This is what Frisch confirmed experimentally weeks later."
+          "explanation": "The mass difference between the uranium nucleus and the two fragments, multiplied by c squared via Einstein's equation, gives roughly 200 million electron-volts per fission, far more than chemical reactions release per atom. Frisch confirmed this experimentally weeks later."
         },
         {
-          "question": "What did Meitner answer when invited to join the Manhattan Project at Los Alamos in 1943?",
+          "question": "How did Meitner respond when invited to join the work to build an atomic bomb?",
           "options": [
             "She accepted but withdrew when she saw the lab conditions",
             "She agreed only to advisory work, not weapons design",
-            "\"I will have nothing to do with a bomb.\"",
+            "She refused, saying she would have nothing to do with a bomb",
             "She demanded that Hahn join her as a condition"
           ],
           "answer_index": 2,
-          "explanation": "Her refusal is quoted in Sime's biography (page 305). Meitner had seen the wounds of the First World War as a front-line X-ray nurse, and her opposition to weapons work was settled long before. After Hiroshima, she went for a long walk and declined to speak to reporters."
+          "explanation": "Meitner had seen the wounds of the First World War as a front-line X-ray nurse, and her opposition to weapons work was settled long before. Her refusal is recorded in Sime's biography."
         },
         {
-          "question": "What is the present-day form of recognition that Meitner did not live to see?",
+          "question": "What present-day form of recognition did Meitner not live to see?",
           "options": [
             "A posthumous Nobel Prize awarded in 1971",
             "Element 109 was named meitnerium in 1997",
-            "The Hahn-Meitner Institute was founded under that name in 1990",
-            "A Royal Society medal was given in her name in 1980"
+            "The Hahn-Meitner Institute was first founded under that name in 1990",
+            "A Royal Society medal given in her name in 1980"
           ],
           "answer_index": 1,
-          "explanation": "Meitnerium, atomic number 109, was synthesised at GSI Darmstadt in 1982 and officially named for Meitner in 1997, twenty-nine years after her death. The Hahn-Meitner Institute was named for both as early as 1959, while she was still alive. There is no posthumous Nobel."
-        },
-        {
-          "question": "Which of the following best captures the historical lesson of Meitner's omission from the 1944 Nobel?",
-          "options": [
-            "Nobel committees are blind to personal politics",
-            "Disciplinary boundaries and the position of an exiled woman scientist together produced the omission",
-            "Hahn deliberately fabricated his role in the discovery",
-            "The committee corrected the error within the decade"
-          ],
-          "answer_index": 1,
-          "explanation": "Hahn did real chemistry; he was not a fraud. The omission emerged from a combination of forces: the prize was categorised as chemistry, Meitner was an exile cut off from the Stockholm community, and her work was published separately because joint publication with Berlin was impossible. The committee has never reversed the decision."
+          "explanation": "Meitnerium, atomic number 109, was officially named for Meitner in 1997, twenty-nine years after her death. The Hahn-Meitner Institute had already been named for both Meitner and Hahn in 1959, while she was alive. There is no posthumous Nobel."
         }
       ]
     },
     {
       "type": "their_world",
       "order": 14,
-      "content": "The Vienna of Meitner's youth was a city that produced Freud, Wittgenstein, Schoenberg, Klimt, and Boltzmann, and that barred women from secondary school until 1897 and from medical study until 1900. The Berlin she moved to in 1907 was the world capital of physics, with Planck, Einstein, Nernst, and von Laue within walking distance of each other, but the Chemical Institute where she worked kept its toilet closed to women. After 1933 the Kaiser Wilhelm Institute lost about a third of its staff to dismissals and emigration in the first wave of Nazi racial laws. Meitner kept her position because she was Austrian. After the Anschluss in March 1938 that protection vanished, and the situation for a Jewish scientist in Berlin moved within weeks from precarious to lethal. The Sweden she fled to was officially neutral but politically uncomfortable for refugee scientists; Manne Siegbahn, who ran the Nobel Institute in Stockholm, kept her on a small stipend and gave her little equipment, partly out of personal dislike and partly because Swedish defense work was classified. Meitner did her best work of the postwar period in a borrowed corner of someone else's laboratory."
+      "content": "Meitner spent her childhood on the wrong side of a closed door. Austria kept women out of the Gymnasium and the universities through most of the 1890s, opening them only around the turn of the century, which is why her formal physics training started years late. Berlin, where she went in 1907, held the densest concentration of physics talent in the world, with Planck, Einstein, and von Laue all within reach, and it still would not let a woman work freely inside its institutes. Then the ground shifted under everyone. After 1933 the Kaiser Wilhelm Institute lost staff to the dismissals and emigrations the racial laws set off, and Meitner held on only because her Austrian citizenship put her briefly out of reach. The Anschluss closed that gap in March 1938. The Sweden she escaped to was safe and neutral, but it gave her a corner of someone else's laboratory and little equipment, and that is where she did the work of her exile."
     },
     {
       "type": "critique",
       "order": 15,
-      "content": "Meitner is not a saint and she did not present herself as one. The sharpest charge against her is that she stayed in Berlin too long. Friends had urged her to leave from 1933 onward; she kept hoping for a position abroad and underestimated, until the Anschluss, how fast the situation would deteriorate. Some of her former students made it out years earlier; some did not get out at all. She continued working at the Kaiser Wilhelm Institute through 1938 while Jewish colleagues were being dismissed, and she did not publicly protest those dismissals. After the war she said, in private letters, that her own silence in those years was the thing she could not forgive herself for. There is also the matter of Hahn. Meitner kept the working relationship going by letter even after he had failed to credit her in the December 1938 paper, and some historians read this as professional pragmatism shading into self-effacement. The 1945 letter that finally said what she thought (\"you all worked for Nazi Germany\") she never sent. Her humanity is in the record, and so is the record of her hesitations."
+      "content": "Meitner did not pretend to be a saint, and the record holds her hesitations next to her work. The hardest of them is that she stayed in Berlin too long. Friends pressed her to leave from 1933 on, and she kept waiting for a position abroad, underestimating how fast the danger was closing in until the Anschluss made the choice for her. In those years she went on working at the Kaiser Wilhelm Institute while Jewish colleagues were pushed out, and she did not protest the dismissals in public. She was unsparing about this later, writing in private that her own silence was the thing she could not forgive in herself. There is the question of Hahn as well: she kept the working relationship alive by letter even after he left her name off the discovery, which some historians read as principle and others as a habit of effacing herself."
     },
     {
       "type": "sources",
@@ -330,12 +308,12 @@
           "type": "book"
         },
         {
-          "label": "Meitner L, Frisch OR. Disintegration of Uranium by Neutrons: A New Type of Nuclear Reaction. Nature 1939;143:239–240.",
+          "label": "Meitner L, Frisch OR. Disintegration of Uranium by Neutrons: A New Type of Nuclear Reaction. Nature 1939;143:239-240.",
           "url": "https://www.nature.com/articles/143239a0",
           "type": "paper"
         },
         {
-          "label": "Hahn O, Strassmann F. Über den Nachweis und das Verhalten der bei der Bestrahlung des Urans mittels Neutronen entstehenden Erdalkalimetalle. Naturwissenschaften 1939;27:11–15.",
+          "label": "Hahn O, Strassmann F. Uber den Nachweis und das Verhalten der bei der Bestrahlung des Urans mittels Neutronen entstehenden Erdalkalimetalle. Naturwissenschaften 1939;27:11-15.",
           "url": "https://link.springer.com/article/10.1007/BF01488241",
           "type": "paper"
         },
@@ -345,7 +323,7 @@
           "type": "database"
         },
         {
-          "label": "Frisch OR. Lise Meitner, 1878–1968. Biographical Memoirs of Fellows of the Royal Society 1970;16:405–420.",
+          "label": "Frisch OR. Lise Meitner, 1878-1968. Biographical Memoirs of Fellows of the Royal Society 1970;16:405-420.",
           "url": "https://royalsocietypublishing.org/doi/10.1098/rsbm.1970.0016",
           "type": "paper"
         },
