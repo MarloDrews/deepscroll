@@ -1,10 +1,16 @@
+import SectionLabel from "../SectionLabel"
 interface Props {
   content: string
 }
 
 export default function HeartSection({ content }: Props) {
   return (
-    <div className="px-6 py-8">
+    // The Books key section (LAYOUT_STANDARD s7): the one section carrying the
+    // accent left-border plus a faint wash, marking the post's payoff. Mirrors the
+    // people key section (WhyTheyMatterSection), facts (SurprisesSection), and
+    // concepts (HowToApplySection). Exactly one section per format is marked.
+    <div className="px-6 py-8 border-l-2 border-(--accent) bg-(--accent)/[0.06]">
+      <SectionLabel className="mb-3">The Heart of It</SectionLabel>
       <p className="prose-post">{content}</p>
     </div>
   )
