@@ -142,6 +142,7 @@ frontend/
     SectionRenderer.tsx         maps section.type → component; handles all sections for books/facts/people/concepts/questions/stories formats; threads isUserContent into SVG-bearing sections (incl. concepts how_it_works + real_world_examples); no line dividers (LAYOUT_STANDARD s7: whitespace is the single divider, sections separated by uniform px-6 py-8 rhythm); NO_READ_SECTIONS (at_a_glance/quiz/paper_card/sources) wrapped in data-no-read so read-aloud speaks only prose sections (related_posts case removed — hard cut; a stray one falls to the default warn+skip)
     sections/
       (books/facts/people/concepts sections — existing)
+      WhyTheyMatterSection.tsx  people KEY section: significance up front, marked with the accent left-border + faint wash (LAYOUT_STANDARD s7, mirrors facts SurprisesSection / concepts HowToApplySection)
       OneLinerSection.tsx       concepts: prominent one-sentence summary
       IntuitionSection.tsx      concepts: plain-language intuition paragraph
       VisualExplanationSection.tsx concepts: SVG + caption

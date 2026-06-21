@@ -5,7 +5,10 @@ interface Props {
 
 export default function WhyTheyMatterSection({ content }: Props) {
   return (
-    <div className="px-6 py-8">
+    // The People key section (LAYOUT_STANDARD s7): the one section carrying the
+    // accent left-border plus a faint wash, marking the post's payoff. Mirrors the
+    // facts key section (SurprisesSection) and the concepts one (HowToApplySection).
+    <div className="px-6 py-8 border-l-2 border-(--accent) bg-(--accent)/[0.06]">
       <SectionLabel className="mb-3">Why They Matter</SectionLabel>
       <p className="prose-post">{content}</p>
     </div>
