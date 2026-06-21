@@ -6,6 +6,7 @@ import { useAuth } from "@/app/lib/auth"
 import { apiFetch } from "@/app/lib/api"
 import { FORMAT_STYLES, type FormatId } from "@/lib/formats"
 import BottomNav from "@/app/components/BottomNav"
+import BookCover from "@/components/BookCover"
 import { relativeTime } from "@/app/lib/relativeTime"
 import { fcStr, type Post } from "@/types/post"
 
@@ -85,21 +86,19 @@ export default function MyPostsPage() {
                     onClick={() => router.push(`/post/${post.id}`)}
                     className="w-full text-left card px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-white/[0.07] transition-colors duration-150"
                   >
-                    {/* Cover thumbnail */}
-                    <div className="shrink-0 w-10 h-14 rounded-lg overflow-hidden bg-white/[0.06]">
-                      {fcStr(post.feed_card, "cover_url") ? (
-                        <img
-                          src={fcStr(post.feed_card, "cover_url")}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          className="w-full h-full object-cover"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
-                        />
-                      ) : (
+                    {/* Cover thumbnail. Books use the two-tier cover (real or
+                        generated), resolved the same way as the feed and detail;
+                        other formats keep the format-color fill. */}
+                    {post.format === "books" ? (
+                      <BookCover
+                        feedCard={post.feed_card}
+                        className="shrink-0 w-10 h-14 rounded-lg overflow-hidden bg-white/[0.06]"
+                      />
+                    ) : (
+                      <div className="shrink-0 w-10 h-14 rounded-lg overflow-hidden bg-white/[0.06]">
                         <span className={`w-full h-full flex items-center justify-center text-lg ${style?.dot ?? "bg-fmt-neutral"}`} />
-                      )}
-                    </div>
+                      </div>
+                    )}
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">

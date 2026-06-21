@@ -13,6 +13,7 @@ import { updatePostInFeedCaches } from "@/app/lib/swr"
 import { fcNum, fcStr, type CardVisual, type Post } from "@/types/post"
 import { formatStyle } from "@/lib/formats"
 import Avatar from "@/components/Avatar"
+import BookCover from "@/components/BookCover"
 import DotScale from "@/components/DotScale"
 import SvgBlock from "@/components/SvgBlock"
 import VerifiedBadge from "@/components/VerifiedBadge"
@@ -375,17 +376,12 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                   </h2>
                   <p className="text-ink-dim text-sm font-medium mt-1">{fc.author as string}</p>
                 </div>
-                {fcStr(fc, "cover_url") && (
-                  <div className="shrink-0 rounded-xl overflow-hidden w-16 h-24 bg-white/[0.06]">
-                    <img
-                      src={fcStr(fc, "cover_url")}
-                      alt=""
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
-                    />
-                  </div>
-                )}
+                {/* Two-tier cover (real or generated), resolved the same way as
+                    the detail header. Thumbnail size, so no credit line here. */}
+                <BookCover
+                  feedCard={fc}
+                  className="shrink-0 rounded-xl overflow-hidden w-16 h-24 bg-white/[0.06]"
+                />
               </div>
 
               {/* Essence */}

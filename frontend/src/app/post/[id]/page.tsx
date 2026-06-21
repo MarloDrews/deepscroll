@@ -12,6 +12,7 @@ import RelatedPostsSection from "@/components/sections/RelatedPostsSection"
 import CommentsSection, { type Comment } from "@/app/components/CommentsSection"
 import { SlabAccent, SlabGlow } from "@/app/components/PostCard"
 import Avatar from "@/components/Avatar"
+import BookCover from "@/components/BookCover"
 import DotScale from "@/components/DotScale"
 import SvgBlock from "@/components/SvgBlock"
 import VerifiedBadge from "@/components/VerifiedBadge"
@@ -480,17 +481,16 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                         </span>
                       </div>
 
-                      {/* Books cover */}
-                      {post.format === "books" && fcStr(post.feed_card, "cover_url") && (
+                      {/* Books cover — two-tier (real or generated), resolved the
+                          same way as the feed card. At this readable size a real
+                          cover shows its credit beneath (IMAGE_STANDARD.md s3). */}
+                      {post.format === "books" && (
                         <div className="flex justify-center mb-5">
-                          <div className="rounded-xl overflow-hidden w-32 h-48 bg-white/[0.06]">
-                            <img
-                              src={fcStr(post.feed_card, "cover_url")}
-                              alt=""
-                              className="w-full h-full object-cover"
-                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
-                            />
-                          </div>
+                          <BookCover
+                            feedCard={post.feed_card}
+                            className="rounded-xl overflow-hidden w-32 h-48 bg-white/[0.06]"
+                            showCredit
+                          />
                         </div>
                       )}
 
