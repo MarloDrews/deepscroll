@@ -95,10 +95,12 @@ bar.
    under the headline in the same treatment. Present for the short-title formats
    whose card carries a dek, so the plain-language gloss persists onto the detail
    page. Concepts repeats the card dek here (its body opens on a scene, not a
-   definition, so the definition would otherwise not persist). The other
-   short-title formats decide repeat-or-rely-on-opening in their own pass (see
-   `ROADMAP.md`). Absent when the headline is a full statement (facts) or a
-   narrative opening (stories).
+   definition, so the definition would otherwise not persist); books likewise
+   repeats its `one_line` dek, because its body opens on the case for reading
+   (`why_read_it`), not a one-line identification of what the book is, so the plain
+   gloss would otherwise not persist. The other short-title formats decide
+   repeat-or-rely-on-opening in their own pass (see `ROADMAP.md`). Absent when the
+   headline is a full statement (facts) or a narrative opening (stories).
 5. **Meta row**: round avatar + creator name, then reading time, then difficulty.
    The creator here and on the card come from one source and always match.
 6. **Quiz badge**.
@@ -110,8 +112,18 @@ bar.
 Cover formats (books, people) place their cover or portrait into this same flat
 header. The header still opens flat for them: the headline appears exactly once,
 and the whole feed card is never reproduced as a bordered slab at the top of the
-detail page. The exact position of the cover or portrait within the flat header
-is settled when those formats get their own pass.
+detail page. The two cover formats place their image differently on purpose,
+because the artifacts differ: **people** sets the round portrait to the left of
+the name, read as one biography-intro unit; **books** centers the two-tier cover
+above the title and presents it face-on (the book as an object). This is a
+deliberate per-format choice, not an inconsistency to reconcile. For books the
+order is: the centered cover at readable size, then the genre as the accent
+kicker, the title as the single headline, the author as the context line, and the
+`one_line` dek repeated under the title. A real book cover carries the required
+rights-record credit as a small muted line directly beneath the cover (a
+generated cover shows none); people portraits are reliably free and carry no
+prominent header credit. Books has no in-body cover section, so the header is the
+only place a book cover's credit can live.
 
 ---
 
