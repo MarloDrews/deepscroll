@@ -525,10 +525,16 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                      is a narrative opening. */
                   <div className="relative">
                     {fcStr(post.feed_card, "lead_image_url") ? (
+                      /* Slim full-width lead band, matching the card (a touch
+                         taller). block so no inline gap; pointer-events-none +
+                         draggable=false so the bare image never opens the platform
+                         image viewer. object-position keeps the central scene
+                         (faces and table) in frame on the slim crop. */
                       <img
                         src={fcStr(post.feed_card, "lead_image_url")}
                         alt=""
-                        className="w-full h-52 object-cover"
+                        draggable={false}
+                        className="block w-full h-44 object-cover object-[center_38%] pointer-events-none select-none"
                         onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
                       />
                     ) : (

@@ -519,16 +519,23 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
             <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
               <SlabAccent />
               {/* Stories is the third card look (LAYOUT_STANDARD s1): a real lead
-                  image as a full-width top band when one fits, not a side cover,
-                  because story headlines are long. Full-bleed via negative margins
-                  that cancel the slab padding; the slab's rounded overflow-hidden
-                  clips the top corners. A dead URL hides the band. */}
+                  image as a slim full-width top band when one fits, not a side
+                  cover, because story headlines are long. Full-bleed via negative
+                  margins that cancel the slab px-6/py-7 padding (block so no inline
+                  baseline gap); the slab's rounded overflow-hidden clips the top
+                  corners while the bottom runs straight into the content. A dead URL
+                  hides the band. pointer-events-none + draggable=false keep the bare
+                  image from swallowing the tap or opening the platform image viewer,
+                  so a tap anywhere falls through to the card's navigate handler.
+                  object-position keeps the central scene (faces and table) in frame
+                  on a slim crop of a near-square image. */}
               {fcStr(fc, "lead_image_url") && (
                 <img
                   src={fcStr(fc, "lead_image_url")}
                   alt=""
                   loading="lazy"
-                  className="-mx-6 -mt-7 w-[calc(100%+3rem)] h-40 object-cover"
+                  draggable={false}
+                  className="block -mx-6 -mt-7 w-[calc(100%+3rem)] h-32 object-cover object-[center_38%] pointer-events-none select-none"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
                 />
               )}
