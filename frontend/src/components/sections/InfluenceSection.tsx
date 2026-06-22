@@ -9,7 +9,7 @@ interface Props {
 export default function InfluenceSection({ content }: Props) {
   return (
     <div className="px-6 py-8">
-      <SectionLabel className="mb-3">Reception &amp; Influence</SectionLabel>
+      <SectionLabel className="mb-3">Reception and Influence</SectionLabel>
       <p className="prose-post text-ink-dim">{content}</p>
     </div>
   )

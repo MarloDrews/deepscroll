@@ -148,7 +148,7 @@ frontend/
       WhyReadItSection.tsx      books: opening lead (REQUIRED), label-less full-ink case for reading the book
       HeartSection.tsx          books KEY section: central argument, marked with the accent left-border + faint wash + "The Heart of It" label (LAYOUT_STANDARD s7, the one marked section for books)
       CoreIdeasSection.tsx      books: "The Core Ideas" label + ideas in depth, each with optional visual_svg (SvgBlock) or sourced image_url + image_caption (ink-dim) + image_attribution (ink-faint, IMAGE_STANDARD s3-s4) + quote + in_practice
-      InfluenceSection.tsx      books: reception and influence (OPTIONAL), muted Part 6 context prose + "Reception & Influence" label (mirrors WorldContextSection)
+      InfluenceSection.tsx      books: reception and influence (OPTIONAL), muted Part 6 context prose + "Reception and Influence" label (mirrors WorldContextSection)
       WhyTheyMatterSection.tsx  people KEY section: significance up front, marked with the accent left-border + faint wash (LAYOUT_STANDARD s7, mirrors facts SurprisesSection / concepts HowToApplySection)
       OneLinerSection.tsx       concepts: prominent one-sentence summary
       IntuitionSection.tsx      concepts: plain-language intuition paragraph
