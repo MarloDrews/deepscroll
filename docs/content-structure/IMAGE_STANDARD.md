@@ -112,10 +112,20 @@ app. A concrete, person- or place-centered subject earns more images; an
 abstract one earns fewer or none. The counts below are the standing decisions so
 far.
 
-- Typographic formats (facts, concepts, questions, academy): one or two sourced
+- Typographic formats (facts, concepts, academy): one or two sourced
   images in a rich post, used as a rest, not a gallery, and often zero, since
   the subject is abstract and the drawn visuals carry the post. Portraits of key
   figures count toward that.
+- Questions (looser than the other typographic formats by design): there is no
+  cap and no "often zero" default. Use a sourced image wherever one genuinely fits
+  and shows something the text cannot (a place, an object, an archival scene, a
+  thinker's portrait), and never skip a fitting image to stay under a count. The
+  limit is the two guards in the Questions skeleton's VISUAL PLAN, not a number:
+  every image must say something (no filler, the A2 rule), and images must stay
+  balanced across the positions, so no single perspective carries a portrait the
+  others lack. Drawn diagrams are governed by that VISUAL PLAN and are not counted
+  here. Licensing in section 2 still binds, and a missing image is fine when none
+  fits; only filler and asymmetry are wrong.
 - People (a deliberate exception to the "one or two" above): besides the cover
   portrait, aim for two to three verified, freely licensed sourced body images,
   where the portrait-section image counts as one of them. Three is a ceiling for
