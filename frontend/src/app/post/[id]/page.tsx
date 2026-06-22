@@ -261,8 +261,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
   const style = post ? formatStyle(post.format) : null
   // Typographic formats (LAYOUT_STANDARD s1) use the banner header: field line +
-  // glyph + serif headline + dek, no slab. Facts and concepts share it.
-  const typographic = !!post && (post.format === "facts" || post.format === "concepts")
+  // glyph + serif headline + dek, no slab. Facts, concepts and questions share it
+  // (questions repeats its one_line dek like concepts, since its body opens on
+  // setup rather than restating the question's plain meaning).
+  const typographic =
+    !!post &&
+    (post.format === "facts" || post.format === "concepts" || post.format === "questions")
   // Cover formats use the flat (no-slab) header: people opens straight into the
   // page like facts/concepts, with a portrait + context fields instead of a glyph
   // field line (LAYOUT_STANDARD s1/s3). People places the portrait to the left of
@@ -565,11 +569,14 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
                 {/* Sections — for typographic formats the headline now lives in
                     the header above, so drop any headline section to avoid doubling
-                    it (concepts has none, so this is a no-op there). */}
+                    it (concepts has none, so this is a no-op there). Questions'
+                    the_question is likewise the header headline, so drop it too. */}
                 <SectionRenderer
                   sections={
                     flatHeader
-                      ? post.sections.filter((s) => s.type !== "headline")
+                      ? post.sections.filter(
+                          (s) => s.type !== "headline" && s.type !== "the_question"
+                        )
                       : post.sections
                   }
                   isUserContent={post.is_user_content}
