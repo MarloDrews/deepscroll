@@ -15,8 +15,10 @@ export default function WhatScienceSaysSection({ content, isUserContent }: Props
       {content.key_findings && content.key_findings.length > 0 && (
         <ul className="flex flex-col gap-2">
           {content.key_findings.map((finding, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="text-(--accent) text-sm mt-0.5 shrink-0">→</span>
+            <li key={i} className="flex items-start gap-2.5">
+              {/* Accent-dot list, the shared kit affordance for simple lists
+                  (LAYOUT_STANDARD s7). */}
+              <span className="w-1.5 h-1.5 rounded-full bg-(--accent) mt-2 shrink-0" />
               <span className="text-sm text-ink-dim leading-snug">{finding}</span>
             </li>
           ))}
