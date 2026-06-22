@@ -518,14 +518,37 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
           ) : post.format === "stories" && fc ? (
             <div className="card relative overflow-hidden px-6 py-7 flex flex-col gap-4">
               <SlabAccent />
-              <div className="flex items-center gap-2 flex-wrap">
-                {fcStr(fc, "era_label") && (
-                  <span className="label-caps text-(--accent)">
-                    {fcStr(fc, "era_label")}
-                  </span>
-                )}
-                {fcStr(fc, "category") && (
-                  <span className="label-caps text-ink-faint">{fcStr(fc, "category")}</span>
+              {/* Stories is the third card look (LAYOUT_STANDARD s1): a real lead
+                  image as a full-width top band when one fits, not a side cover,
+                  because story headlines are long. Full-bleed via negative margins
+                  that cancel the slab padding; the slab's rounded overflow-hidden
+                  clips the top corners. A dead URL hides the band. */}
+              {fcStr(fc, "lead_image_url") && (
+                <img
+                  src={fcStr(fc, "lead_image_url")}
+                  alt=""
+                  loading="lazy"
+                  className="-mx-6 -mt-7 w-[calc(100%+3rem)] h-40 object-cover"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
+                />
+              )}
+              {/* Context line: the era (accent) with the reader-facing story
+                  category beside it. There is no dek on a stories card; the
+                  headline carries the narrative opening alone. The field glyph
+                  (keyed on the field, tags[0]) sits at the right end ONLY when
+                  there is no lead band, the same field-line shape as the
+                  typographic cards (LAYOUT_STANDARD s1/s2). */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  {fcStr(fc, "era_label") && (
+                    <span className="label-caps text-(--accent)">{fcStr(fc, "era_label")}</span>
+                  )}
+                  {fcStr(fc, "category") && (
+                    <span className="label-caps text-ink-faint">{fcStr(fc, "category")}</span>
+                  )}
+                </div>
+                {!fcStr(fc, "lead_image_url") && (
+                  <FieldGlyph cv={fc.card_visual as CardVisual | undefined} isUserContent={post.is_user_content} />
                 )}
               </div>
               <h2 className="font-serif text-2xl font-medium tracking-tight text-ink leading-snug">
