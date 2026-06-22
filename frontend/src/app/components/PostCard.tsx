@@ -522,9 +522,12 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                   image as a slim full-width top band when one fits, not a side
                   cover, because story headlines are long. Full-bleed via negative
                   margins that cancel the slab px-6/py-7 padding (block so no inline
-                  baseline gap); the slab's rounded overflow-hidden clips the top
-                  corners while the bottom runs straight into the content. A dead URL
-                  hides the band. pointer-events-none + draggable=false keep the bare
+                  baseline gap); max-w-none is required because Tailwind Preflight
+                  sets img { max-width: 100% }, which otherwise clamps the
+                  calc(100%+3rem) width back to the content box and re-insets the
+                  right edge by 3rem. The slab's rounded overflow-hidden clips the
+                  top corners while the bottom runs straight into the content. A dead
+                  URL hides the band. pointer-events-none + draggable=false keep the bare
                   image from swallowing the tap or opening the platform image viewer,
                   so a tap anywhere falls through to the card's navigate handler.
                   object-position keeps the central scene (faces and table) in frame
@@ -535,7 +538,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                   alt=""
                   loading="lazy"
                   draggable={false}
-                  className="block -mx-6 -mt-7 w-[calc(100%+3rem)] h-32 object-cover object-[center_38%] pointer-events-none select-none"
+                  className="block -mx-6 -mt-7 w-[calc(100%+3rem)] max-w-none h-32 object-cover object-[center_38%] pointer-events-none select-none"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
                 />
               )}
