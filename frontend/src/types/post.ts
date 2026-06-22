@@ -212,6 +212,9 @@ export interface StoryChapter {
 
 export interface SettingContent {
   body: string
+  // The one rare drawn slot in Stories: a map where place genuinely needs
+  // showing (stories_skeleton VISUAL PLAN). The format is image-led, not drawn.
+  visual_svg?: string
   image_url?: string
   image_caption?: string
   image_attribution?: string
@@ -226,15 +229,22 @@ export interface TheTurnContent {
 
 export interface TheAftermathContent {
   body: string
-  visual_svg?: string
+  image_url?: string
   image_caption?: string
+  image_attribution?: string
 }
 
 export interface CastMember {
   name: string
   role: string
-  one_line: string
-  lifespan: string
+  one_line?: string
+  lifespan?: string
+  // Graph fields (birth_year/featured) are not displayed; image fields render
+  // an optional portrait + its required credit (IMAGE_STANDARD s3).
+  birth_year?: number
+  featured?: boolean
+  image_url?: string
+  image_attribution?: string
 }
 
 // Academy section types

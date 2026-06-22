@@ -204,13 +204,13 @@ export default function SectionRenderer({ sections, isUserContent, postId, forma
           case "cold_open":
             return <ColdOpenSection key={i} content={c as string} />
           case "setting":
-            return <SettingSection key={i} content={c as any} />
+            return <SettingSection key={i} content={c as any} isUserContent={isUserContent} />
           case "chapters":
             return <ChaptersSection key={i} content={c as any} />
           case "the_turn":
             return <TheTurnSection key={i} content={c as any} />
           case "the_aftermath":
-            return <TheAftermathSection key={i} content={c as any} isUserContent={isUserContent} />
+            return <TheAftermathSection key={i} content={c as any} />
           case "what_it_means":
             return <WhatItMeansSection key={i} content={c as string} />
           case "what_we_learn":
