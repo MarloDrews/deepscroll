@@ -7,19 +7,23 @@ interface Props {
 
 export default function YourTurnSection({ content }: Props) {
   return (
-    <div className="px-6 py-8 flex flex-col gap-4">
+    // The questions key section (LAYOUT_STANDARD s7): the one section carrying the
+    // accent left-border plus a faint wash, marking the post's payoff where the
+    // reader is handed the decision. Mirrors the concepts key section
+    // (HowToApplySection) and the facts one (SurprisesSection).
+    <div className="px-6 py-8 flex flex-col gap-4 border-l-2 border-(--accent) bg-(--accent)/[0.06]">
       <SectionLabel>Your Turn</SectionLabel>
       <p className="prose-post text-ink-dim">{content.intro}</p>
-      <ol className="flex flex-col gap-3">
+      {/* Prompts use the shared open-question affordance (the accent "?" marker),
+          since each prompt is a real question handed back to the reader. */}
+      <ul className="flex flex-col gap-3">
         {content.prompts.map((prompt, i) => (
           <li key={i} className="flex items-start gap-3">
-            <span className="shrink-0 w-5 h-5 rounded-full bg-(--accent)/15 border border-(--accent)/40 text-(--accent) text-xs flex items-center justify-center font-semibold mt-0.5">
-              {i + 1}
-            </span>
+            <span className="text-(--accent) font-semibold text-sm mt-0.5 shrink-0">?</span>
             <p className="prose-post">{prompt}</p>
           </li>
         ))}
-      </ol>
+      </ul>
       {content.closing_thought && (
         <p className="text-xs text-ink-muted leading-relaxed italic border-t border-edge pt-3">
           {content.closing_thought}
