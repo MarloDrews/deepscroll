@@ -51,7 +51,6 @@ class AtAGlanceBooks(BaseModel):
     country: str
     pages: int
     reading_ease: int
-    post_reading_time_min: int
     post_difficulty: int
     best_for: str
 
@@ -60,13 +59,6 @@ class AtAGlanceBooks(BaseModel):
     def validate_scale(cls, v: int) -> int:
         if v not in (1, 2, 3):
             raise ValueError("must be 1, 2, or 3")
-        return v
-
-    @field_validator("post_reading_time_min")
-    @classmethod
-    def validate_reading_time(cls, v: int) -> int:
-        if v <= 0:
-            raise ValueError("must be greater than 0")
         return v
 
 
@@ -268,7 +260,6 @@ class BooksFeedCard(BaseModel):
     author: str
     essence: str
     teasers: list[str]
-    post_reading_time_min: int
     post_difficulty: int
     year: int
     genre: str
@@ -285,13 +276,6 @@ class BooksFeedCard(BaseModel):
     def validate_difficulty(cls, v: int) -> int:
         if v not in (1, 2, 3):
             raise ValueError("post_difficulty must be 1, 2, or 3")
-        return v
-
-    @field_validator("post_reading_time_min")
-    @classmethod
-    def validate_reading_time(cls, v: int) -> int:
-        if v <= 0:
-            raise ValueError("post_reading_time_min must be greater than 0")
         return v
 
 

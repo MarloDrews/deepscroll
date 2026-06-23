@@ -161,7 +161,6 @@
                                 // "personal saga", "political turning point", or
                                 // another honest type. This is not tags[0] and not a
                                 // taxonomy slug.
-    "post_reading_time_min": 0, // integer. Guideline: honest estimate, 5 to 15 min
                                 // typical for Stories. Do not undersell to lure.
     "post_difficulty": 1        // HARD: 1, 2, or 3 (1=accessible, 2=moderate,
                                 // 3=demanding). A single-thread personal saga lands
@@ -213,7 +212,6 @@
                                     // reporting), 2 = solid secondary accounts, 1 =
                                     // mostly oral or legendary. Honest about how well
                                     // documented the story is.
-        "post_reading_time_min": 0, // integer. REQUIRED. Mirrors the feed card.
         "post_difficulty": 1        // HARD: 1, 2, or 3. Mirrors the feed card.
         // No plot_summary, no outcome, no "what happened" field. This omission is
         // deliberate spoiler discipline. Do not add one.

@@ -162,7 +162,6 @@
                                 // Claims, questions, or striking specifics from the
                                 // book, not category labels. Vary structure across
                                 // the three.
-    "post_reading_time_min": 0, // integer. Guideline: honest estimate of reading
                                 // the post, no undersell.
     "post_difficulty": 1,       // HARD: 1, 2, or 3 (1=accessible, 2=moderate,
                                 // 3=demanding).
@@ -241,7 +240,6 @@
                                      // distinct from post_difficulty.
         "best_for": "",              // string | omit. One specific reader profile
                                      // the book rewards. One line, concrete.
-        "post_reading_time_min": 0,  // integer. REQUIRED. Mirrors feed_card value.
         "post_difficulty": 1         // HARD: 1, 2, or 3. Mirrors feed_card value.
       }
     },

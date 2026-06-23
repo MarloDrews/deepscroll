@@ -190,7 +190,6 @@
                                 // neuroscience adds", "Why most people freeze").
                                 // Name the tension, never tip which side wins. Vary
                                 // structure across the three.
-    "post_reading_time_min": 0, // integer. Guideline: honest minutes, 5 to 17 for
                                 // Questions, no undersell.
     "post_difficulty": 1        // HARD: 1, 2, or 3 (1=accessible, 2=moderate,
                                 // 3=demanding). A vivid everyday dilemma lands at 1;
@@ -283,7 +282,6 @@
                                    // academic philosophy or science? Almost always
                                    // true for a question worth a post; set false
                                    // only if genuinely settled.
-        "post_reading_time_min": 0,// integer. Must match the feed card value.
         "post_difficulty": 1       // 1-3. Must match the feed card value.
       }
     },

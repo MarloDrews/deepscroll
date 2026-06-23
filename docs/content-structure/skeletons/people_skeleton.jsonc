@@ -146,7 +146,6 @@
                                 // the three. Example: "Discovered two new
                                 // elements", "Carried radium for decades", "Died
                                 // from her own work".
-    "post_reading_time_min": 0, // integer. Guideline: honest estimate, 7-18 min
                                 // typical for People. Do not undersell.
     "post_difficulty": 1        // HARD: 1, 2, or 3 (1=accessible, 2=moderate,
                                 // 3=demanding). Most biographical posts land at
@@ -248,7 +247,6 @@
                                   // movement when one genuinely applies
                                   // ("Enlightenment", "Harlem Renaissance"). Omit
                                   // rather than invent one to fill the slot.
-        "post_reading_time_min": 0,  // integer. REQUIRED. Mirrors feed_card value.
         "post_difficulty": 1         // HARD: 1, 2, or 3. Mirrors feed_card value.
       }
     },

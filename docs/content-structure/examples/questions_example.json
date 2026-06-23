@@ -40,7 +40,6 @@
       "The argument that duty needs a counterparty",
       "A puzzle about who even exists"
     ],
-    "post_reading_time_min": 13,
     "post_difficulty": 2
   },
   "sections": [
@@ -68,7 +67,6 @@
         "first_posed_by": "No single author. It took form across thinkers, with a precursor in Edmund Burke (1790), the first systematic account in John Rawls (1971), and its rigorous modern form in Derek Parfit (1984)",
         "year": "1971 to 1984 for the modern form, with a precursor in 1790",
         "still_debated": true,
-        "post_reading_time_min": 13,
         "post_difficulty": 2
       }
     },

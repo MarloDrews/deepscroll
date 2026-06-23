@@ -39,7 +39,6 @@
       "A nation hungry for a lost Vermeer"
     ],
     "category": "true crime",
-    "post_reading_time_min": 9,
     "post_difficulty": 2
   },
   "sections": [
@@ -56,7 +55,6 @@
         "location": "Amsterdam and Rotterdam, Netherlands",
         "category": "true crime",
         "sources_reliability": 2,
-        "post_reading_time_min": 9,
         "post_difficulty": 2
       }
     },

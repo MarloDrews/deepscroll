@@ -127,7 +127,6 @@
     "teasers": ["", "", ""],  // HARD: exactly 3. Guideline: 5-10 words each,
                               // vary structure (one evidence, one counter-
                               // intuition, one consequence). Avoid: category labels.
-    "post_reading_time_min": 0, // integer. Guideline: honest minutes, no undersell.
     "post_difficulty": 1        // HARD: 1, 2, or 3 (1=accessible, 2=moderate,
                                 // 3=demanding).
   },

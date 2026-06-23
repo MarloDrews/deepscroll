@@ -150,7 +150,6 @@
                                 // hospitals seem dangerous", "The pattern in WWII
                                 // bombers", "How to spot it daily". Vary structure
                                 // across the three.
-    "post_reading_time_min": 0, // integer. Guideline: honest estimate, match the
                                 // real read length, do not undersell.
     "post_difficulty": 1        // HARD: 1, 2, or 3 (1=accessible, 2=moderate,
                                 // 3=demanding). A purely intuitive bias lands at 1;
