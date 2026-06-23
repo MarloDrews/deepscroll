@@ -447,16 +447,15 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                         isUserContent={post.is_user_content}
                       />
                     </div>
-                    <HeadlineSection content={post.title} />
+                    <HeadlineSection content={post.title} accentNumbers={false} />
+                    {/* Context line: authors_compact already carries the year
+                        (e.g. "Friston, 2010"), so published_year is not printed
+                        here; it stays in the data for sorting only. */}
                     {(fcStr(post.feed_card, "authors_compact") ||
-                      fcNum(post.feed_card, "published_year") > 0 ||
                       fcStr(post.feed_card, "venue")) && (
                       <p className="px-6 -mt-1 text-xs text-ink-muted font-mono">
                         {[
                           fcStr(post.feed_card, "authors_compact"),
-                          fcNum(post.feed_card, "published_year") > 0
-                            ? String(fcNum(post.feed_card, "published_year"))
-                            : "",
                           fcStr(post.feed_card, "venue"),
                         ].filter(Boolean).join(" · ")}
                       </p>

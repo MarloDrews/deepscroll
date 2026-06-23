@@ -588,14 +588,13 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                   {fcStr(fc, "title") || post.title}
                 </h2>
               </div>
-              {/* Context line: short citation, the publication year, and venue. */}
-              {(fcStr(fc, "authors_compact") || fcNum(fc, "published_year") > 0 || fcStr(fc, "venue")) && (
+              {/* Context line: short citation (authors_compact already carries
+                  the year, e.g. "Friston, 2010") and the venue. published_year
+                  stays in the data for sorting but is not printed here, to avoid
+                  showing the year twice. */}
+              {(fcStr(fc, "authors_compact") || fcStr(fc, "venue")) && (
                 <p className="text-xs text-ink-muted font-mono">
-                  {[
-                    fcStr(fc, "authors_compact"),
-                    fcNum(fc, "published_year") > 0 ? String(fcNum(fc, "published_year")) : "",
-                    fcStr(fc, "venue"),
-                  ].filter(Boolean).join(" · ")}
+                  {[fcStr(fc, "authors_compact"), fcStr(fc, "venue")].filter(Boolean).join(" · ")}
                 </p>
               )}
               {/* Dek: the core finding in one technical sentence (key_finding_one_line). */}

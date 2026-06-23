@@ -16,11 +16,21 @@ function WithCyanNumbers({ text }: { text: string }) {
   return <>{parts}</>
 }
 
-export default function HeadlineSection({ content }: { content: string }) {
+// accentNumbers (default true) colors numeric units in the headline (the accent
+// unit, LAYOUT_STANDARD s6) — right for a Facts headline whose claim IS a number.
+// Academy passes false: a number in a paper title (a year, a model size) is
+// incidental, not a designated emphasis, so the title renders with no accent.
+export default function HeadlineSection({
+  content,
+  accentNumbers = true,
+}: {
+  content: string
+  accentNumbers?: boolean
+}) {
   return (
     <div className="px-6 pt-3 pb-5">
       <p className="font-serif text-[2rem] font-medium tracking-tight text-ink leading-snug max-w-[24ch]">
-        <WithCyanNumbers text={content} />
+        {accentNumbers ? <WithCyanNumbers text={content} /> : content}
       </p>
     </div>
   )
