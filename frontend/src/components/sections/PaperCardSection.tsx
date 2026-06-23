@@ -7,8 +7,10 @@ interface Props {
 export default function PaperCardSection({ content }: Props) {
   return (
     <div className="px-6 py-8">
+      {/* The title is the page headline (rendered once in the header,
+          LAYOUT_STANDARD s3), so it is not repeated here; this is the citation
+          record only: authors + affiliations, venue/year, and the locators. */}
       <div className="border border-edge-strong rounded-card px-4 py-4 flex flex-col gap-3">
-        <p className="text-sm font-semibold text-ink leading-snug">{content.title}</p>
         <div className="flex flex-col gap-1">
           {content.authors.map((a, i) => (
             <div key={i}>
