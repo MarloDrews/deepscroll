@@ -24,15 +24,29 @@ export default function PaperCardSection({ content }: Props) {
           <span>{content.year}</span>
           {content.funding_source && <span>{content.funding_source}</span>}
         </div>
-        {content.doi && (
-          <a
-            href={content.doi}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-(--accent) hover:text-(--accent) transition-colors break-all"
-          >
-            {content.doi}
-          </a>
+        {(content.doi || content.arxiv_id) && (
+          <div className="flex flex-col gap-1">
+            {content.doi && (
+              <a
+                href={`https://doi.org/${content.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-(--accent) hover:text-(--accent) transition-colors break-all"
+              >
+                doi:{content.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//, "")}
+              </a>
+            )}
+            {content.arxiv_id && (
+              <a
+                href={`https://arxiv.org/abs/${content.arxiv_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-(--accent) hover:text-(--accent) transition-colors break-all"
+              >
+                arXiv:{content.arxiv_id}
+              </a>
+            )}
+          </div>
         )}
       </div>
     </div>

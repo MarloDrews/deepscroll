@@ -51,17 +51,25 @@ function isStories(c: AnyAtAGlance): c is AtAGlanceStoriesContent {
 
 export default function AtAGlanceSection({ content, readingMinutes }: Props) {
   if (isAcademy(content)) {
+    // Only the keys actually present are shown: an absent optional (sample_size,
+    // pre_registered, open_data, open_code) reads as not-applicable per the
+    // skeleton, so it must not render as a "No". The always-present signals come
+    // first, then any optional ones, then read time + difficulty.
     const rows: { label: string; value: ReactNode }[] = [
       { label: "Study type", value: content.study_type },
       { label: "Peer review", value: content.peer_review_status },
       { label: "Result direction", value: content.result_direction },
       { label: "Replication", value: content.replication_status },
-      { label: "Pre-registered", value: content.pre_registered ? "Yes" : "No" },
-      { label: "Open data", value: content.open_data ? "Yes" : "No" },
-      { label: "Open code", value: content.open_code ? "Yes" : "No" },
-      { label: "Read time", value: `${readingMinutes} min` },
-      { label: "Difficulty", value: <DotScale value={content.post_difficulty} /> },
     ]
+    if (content.sample_size) rows.push({ label: "Sample size", value: content.sample_size })
+    if (content.pre_registered !== undefined)
+      rows.push({ label: "Pre-registered", value: content.pre_registered ? "Yes" : "No" })
+    if (content.open_data !== undefined)
+      rows.push({ label: "Open data", value: content.open_data ? "Yes" : "No" })
+    if (content.open_code !== undefined)
+      rows.push({ label: "Open code", value: content.open_code ? "Yes" : "No" })
+    rows.push({ label: "Read time", value: `${readingMinutes} min` })
+    rows.push({ label: "Difficulty", value: <DotScale value={content.post_difficulty} /> })
     return (
       <div className="px-6 py-8">
         <div className="grid grid-cols-2 gap-x-6 gap-y-3">

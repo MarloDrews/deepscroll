@@ -25,6 +25,13 @@ export default function HeadlineFigureSection({ content, isUserContent }: Props)
           <MathText text={content.image_caption} />
         </p>
       )}
+      {/* Attribution is required for a sourced figure (IMAGE_STANDARD); a
+          self-built SVG carries none. */}
+      {content.image_url && !content.visual_svg && content.image_attribution && (
+        <p className="text-[10px] text-ink-faint text-center leading-snug">
+          {content.image_attribution}
+        </p>
+      )}
     </div>
   )
 }
