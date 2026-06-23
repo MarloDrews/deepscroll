@@ -4,13 +4,17 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from .models import Comment, Event, Post
+from .reading_time import compute_reading_minutes
 
 
 def attach_counts(posts: List[Post], db: Session) -> List[Post]:
-    """Attach like_count and comment_count as plain attributes for PostOut serialization.
+    """Attach like_count, comment_count and reading_minutes as plain attributes
+    for PostOut serialization.
 
     Counts for all posts are fetched in two grouped queries instead of two
-    queries per post.
+    queries per post. reading_minutes is computed from the raw sections here,
+    before the schema strips quiz answers or drops the section bodies, so the
+    feed card and the detail page show the same value.
     """
     if not posts:
         return posts
@@ -30,6 +34,7 @@ def attach_counts(posts: List[Post], db: Session) -> List[Post]:
     for p in posts:
         p.like_count = likes.get(p.id, 0)
         p.comment_count = comments.get(p.id, 0)
+        p.reading_minutes = compute_reading_minutes(p.sections)
     return posts
 
 
