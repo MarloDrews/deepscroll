@@ -255,13 +255,28 @@ export interface PaperCardContent {
   venue: string
   year: number
   doi?: string
+  arxiv_id?: string
+  code_url?: string
+  data_url?: string
   funding_source?: string
+  conflicts_of_interest?: string
 }
 
 export interface HeadlineFigureContent {
   visual_svg?: string
   image_url?: string
+  image_caption?: string
+  image_attribution?: string
+}
+
+// One of the paper's own multi-panel figures (the optional `figures` section).
+// Always a sourced image with attribution (IMAGE_STANDARD s3-s4); rebuilt SVGs
+// live inside the finding they support, not here.
+export interface FigureItem {
+  figure_label: string
+  image_url: string
   image_caption: string
+  image_attribution: string
 }
 
 export interface KeyPriorItem {
@@ -299,15 +314,23 @@ export interface FormalismContent {
 export interface KeyFindingItem {
   title: string
   finding: string
+  effect_size?: string
+  statistical_detail?: string
   source_in_paper?: string
   visual_svg?: string
+  image_url?: string
+  image_caption?: string
+  image_attribution?: string
 }
 
 export interface AtAGlanceAcademyContent {
   study_type: string
-  pre_registered: boolean
-  open_data: boolean
-  open_code: boolean
+  // Optional methodology signals: an absent key reads as not-applicable, so the
+  // renderer only shows the keys that are present (skeleton: omit when N/A).
+  sample_size?: string
+  pre_registered?: boolean
+  open_data?: boolean
+  open_code?: boolean
   replication_status: string
   peer_review_status: string
   result_direction: string
@@ -317,8 +340,14 @@ export interface AtAGlanceAcademyContent {
 export interface AuthorsContextItem {
   name: string
   role: string
-  one_line: string
+  one_line?: string
   affiliation?: string
+  // Graph fields (birth_year/featured) are not displayed; image fields render an
+  // optional portrait + its required credit (IMAGE_STANDARD s3).
+  birth_year?: number
+  featured?: boolean
+  image_url?: string
+  image_attribution?: string
 }
 
 export interface OpenQuestionsContent {
@@ -404,6 +433,9 @@ export type SectionType =
   | "objections"
   | "implications"
   | "connections_to_other_fields"
+  | "cross_field_reach"
+  | "data_or_sample"
+  | "figures"
   | "authors_context"
 
 export interface Section {

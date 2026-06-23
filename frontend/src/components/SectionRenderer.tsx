@@ -78,6 +78,8 @@ import LimitationsSection from "./sections/LimitationsSection"
 import ObjectionsSection from "./sections/ObjectionsSection"
 import ImplicationsSection from "./sections/ImplicationsSection"
 import ConnectionsToOtherFieldsSection from "./sections/ConnectionsToOtherFieldsSection"
+import DataOrSampleSection from "./sections/DataOrSampleSection"
+import FiguresSection from "./sections/FiguresSection"
 import AuthorsContextSection from "./sections/AuthorsContextSection"
 
 interface Props {
@@ -98,6 +100,7 @@ const NO_READ_SECTIONS = new Set([
   "at_a_glance",
   "quiz",
   "paper_card",
+  "figures",
   "sources",
 ])
 
@@ -271,7 +274,12 @@ export default function SectionRenderer({ sections, isUserContent, postId, forma
           case "implications":
             return <ImplicationsSection key={i} content={c as string} />
           case "connections_to_other_fields":
+          case "cross_field_reach":
             return <ConnectionsToOtherFieldsSection key={i} content={c as string} />
+          case "data_or_sample":
+            return <DataOrSampleSection key={i} content={c as string} />
+          case "figures":
+            return <FiguresSection key={i} content={c as any} />
           case "authors_context":
             return <AuthorsContextSection key={i} content={c as any} />
           default:
