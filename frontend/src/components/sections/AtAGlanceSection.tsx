@@ -16,7 +16,7 @@ type AnyAtAGlance =
 
 interface Props {
   content: AnyAtAGlance
-  // Computed from the post's text (lib/readingTime); not stored in content.
+  // Server-computed reading time (post.reading_minutes); not stored in content.
   readingMinutes: number
 }
 

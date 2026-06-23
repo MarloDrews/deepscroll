@@ -430,5 +430,8 @@ export interface Post {
   is_user_content: boolean
   like_count: number
   comment_count: number
+  // Reading time computed on the server from the post's text (see backend
+  // reading_time.py); present on both list and detail responses.
+  reading_minutes: number
   interests: string[]
 }

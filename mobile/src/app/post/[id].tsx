@@ -10,7 +10,6 @@ import { formatStyle } from "../../lib/formats"
 import { AccentProvider } from "../../lib/accent"
 import { usePostActions } from "../../lib/usePostActions"
 import { fcStr, type Post } from "../../types/post"
-import { computeReadingTime } from "../../lib/readingTime"
 import { colors, fills, fonts, radius } from "../../theme/tokens"
 import { Frosted, MessageSlab, PulsingSlab, SlabAccent, SlabGlow, ghostPillStyle } from "../../components/stage"
 import SectionRenderer from "../../components/SectionRenderer"
@@ -231,7 +230,7 @@ export default function PostDetailScreen() {
               sections={post.sections}
               isUserContent={post.is_user_content}
               postId={post.id}
-              readingMinutes={computeReadingTime(post)}
+              readingMinutes={post.reading_minutes}
             />
 
             {/* Read Next — server-resolved featured edges (graph_edges.

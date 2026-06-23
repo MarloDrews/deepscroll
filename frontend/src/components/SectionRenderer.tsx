@@ -87,8 +87,8 @@ interface Props {
   // Post format, used for the few shared sections whose caps header is
   // per-format (e.g. voices: "In Their Own Words" for people).
   format: string
-  // Reading time computed from the post's text (see lib/readingTime), passed
-  // down so the at_a_glance row shows the same value as the card footer.
+  // Server-computed reading time (post.reading_minutes), passed down so the
+  // at_a_glance row shows the same value as the card footer and detail header.
   readingMinutes: number
 }
 

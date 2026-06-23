@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { formatStyle } from "@/lib/formats"
 import { fcNum, fcStr, type CardVisual, type Post } from "@/types/post"
-import { computeReadingTime } from "@/lib/readingTime"
 import SectionRenderer from "@/components/SectionRenderer"
 import SectionLabel from "@/components/SectionLabel"
 import HeadlineSection from "@/components/sections/HeadlineSection"
@@ -77,9 +76,9 @@ function HeaderMeta({ post }: { post: Post }) {
         {fcNum(post.feed_card, "post_difficulty") > 0 && (
           <DotScale value={fcNum(post.feed_card, "post_difficulty") as 1 | 2 | 3} />
         )}
-        {/* Reading time is computed from the post's text, not a stored field. */}
+        {/* Reading time computed on the server from the post's text. */}
         <span className="text-[11px] font-mono text-ink-muted leading-none">
-          {computeReadingTime(post)} min
+          {post.reading_minutes} min
         </span>
       </span>
     </div>
@@ -626,7 +625,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   isUserContent={post.is_user_content}
                   postId={post.id}
                   format={post.format}
-                  readingMinutes={computeReadingTime(post)}
+                  readingMinutes={post.reading_minutes}
                 />
                 </div>
 

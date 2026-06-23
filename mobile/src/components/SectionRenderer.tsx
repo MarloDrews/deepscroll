@@ -89,8 +89,8 @@ interface Props {
   sections: Section[]
   isUserContent: boolean
   postId: number
-  // Reading time computed from the post's text (see lib/readingTime), passed
-  // down so the at_a_glance row shows the same value as the card footer.
+  // Server-computed reading time (post.reading_minutes), passed down so the
+  // at_a_glance row shows the same value as the card footer and detail header.
   readingMinutes: number
 }
 

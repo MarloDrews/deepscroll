@@ -11,7 +11,6 @@ import { requestAutoRead } from "@/lib/readAloud/autostart"
 import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCount, isLikeSent, markLikeSent, unmarkLikeSent } from "@/app/lib/likedPosts"
 import { updatePostInFeedCaches } from "@/app/lib/swr"
 import { fcNum, fcStr, type CardVisual, type Post } from "@/types/post"
-import { computeReadingTime } from "@/lib/readingTime"
 import { formatStyle } from "@/lib/formats"
 import Avatar from "@/components/Avatar"
 import BookCover from "@/components/BookCover"
@@ -111,8 +110,8 @@ export function SlabAccent() {
 // detail page, never on the card.
 function CardFooter({ post, fc }: { post: Post; fc: Post["feed_card"] }) {
   const difficulty = fcNum(fc, "post_difficulty")
-  // Reading time is computed from the post's text, not read from a stored field.
-  const metaText = `${computeReadingTime(post)} min`
+  // Reading time is computed on the server from the post's text (post.reading_minutes).
+  const metaText = `${post.reading_minutes} min`
   return (
     <div className="flex items-center gap-2 pt-1 min-w-0">
       {post.author_username && (
