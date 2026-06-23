@@ -87,6 +87,9 @@ interface Props {
   // Post format, used for the few shared sections whose caps header is
   // per-format (e.g. voices: "In Their Own Words" for people).
   format: string
+  // Reading time computed from the post's text (see lib/readingTime), passed
+  // down so the at_a_glance row shows the same value as the card footer.
+  readingMinutes: number
 }
 
 // Sections that are visible metadata or navigation rather than prose;
@@ -98,7 +101,7 @@ const NO_READ_SECTIONS = new Set([
   "sources",
 ])
 
-export default function SectionRenderer({ sections, isUserContent, postId, format }: Props) {
+export default function SectionRenderer({ sections, isUserContent, postId, format, readingMinutes }: Props) {
   const sorted = [...sections].sort((a, b) => a.order - b.order)
 
   return (
@@ -120,7 +123,7 @@ export default function SectionRenderer({ sections, isUserContent, postId, forma
           case "voices":
             return <VoicesSection key={i} content={c as any} label={format === "people" ? "In Their Own Words" : format === "books" ? "Voices from the Book" : undefined} />
           case "at_a_glance":
-            return <AtAGlanceSection key={i} content={c as any} />
+            return <AtAGlanceSection key={i} content={c as any} readingMinutes={readingMinutes} />
           case "why_endures":
             return <WhyEnduresSection key={i} content={c as string} />
           case "heart":

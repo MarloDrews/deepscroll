@@ -16,6 +16,8 @@ type AnyAtAGlance =
 
 interface Props {
   content: AnyAtAGlance
+  // Computed from the post's text (lib/readingTime); not stored in content.
+  readingMinutes: number
 }
 
 function DotScale({ value, max = 3 }: { value: number; max?: number }) {
@@ -47,7 +49,7 @@ function isStories(c: AnyAtAGlance): c is AtAGlanceStoriesContent {
   return "sources_reliability" in c
 }
 
-export default function AtAGlanceSection({ content }: Props) {
+export default function AtAGlanceSection({ content, readingMinutes }: Props) {
   if (isAcademy(content)) {
     const rows: { label: string; value: ReactNode }[] = [
       { label: "Study type", value: content.study_type },
@@ -57,7 +59,7 @@ export default function AtAGlanceSection({ content }: Props) {
       { label: "Pre-registered", value: content.pre_registered ? "Yes" : "No" },
       { label: "Open data", value: content.open_data ? "Yes" : "No" },
       { label: "Open code", value: content.open_code ? "Yes" : "No" },
-      { label: "Read time", value: `${content.post_reading_time_min} min` },
+      { label: "Read time", value: `${readingMinutes} min` },
       { label: "Difficulty", value: <DotScale value={content.post_difficulty} /> },
     ]
     return (
@@ -81,7 +83,7 @@ export default function AtAGlanceSection({ content }: Props) {
       { label: "First posed by", value: content.first_posed_by },
       { label: "Key year", value: String(content.year) },
       { label: "Still debated", value: content.still_debated ? "Yes" : "No" },
-      { label: "Read time", value: `${content.post_reading_time_min} min` },
+      { label: "Read time", value: `${readingMinutes} min` },
       { label: "Difficulty", value: <DotScale value={content.post_difficulty} /> },
     ]
 
@@ -105,7 +107,7 @@ export default function AtAGlanceSection({ content }: Props) {
       { label: "Location", value: content.location },
       { label: "Category", value: content.category },
       { label: "Source reliability", value: <DotScale value={content.sources_reliability} /> },
-      { label: "Read time", value: `${content.post_reading_time_min} min` },
+      { label: "Read time", value: `${readingMinutes} min` },
       { label: "Difficulty", value: <DotScale value={content.post_difficulty} /> },
     ]
 
@@ -129,7 +131,7 @@ export default function AtAGlanceSection({ content }: Props) {
       ...(content.died ? [{ label: "Died", value: content.died }] : []),
       { label: "Nationality", value: content.nationality },
       { label: "Field", value: content.field },
-      { label: "Read time", value: `${content.post_reading_time_min} min` },
+      { label: "Read time", value: `${readingMinutes} min` },
       { label: "Difficulty", value: <DotScale value={content.post_difficulty} /> },
     ]
 
@@ -157,7 +159,7 @@ export default function AtAGlanceSection({ content }: Props) {
     { label: "Country", value: content.country },
     { label: "Pages", value: content.pages },
     { label: "Reading ease", value: <DotScale value={content.reading_ease} /> },
-    { label: "Read time", value: `${content.post_reading_time_min} min` },
+    { label: "Read time", value: `${readingMinutes} min` },
     { label: "Difficulty", value: <DotScale value={content.post_difficulty} /> },
   ]
 

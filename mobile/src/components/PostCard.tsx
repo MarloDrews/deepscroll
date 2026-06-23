@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated"
 import { fcNum, fcStr, type Post } from "../types/post"
+import { computeReadingTime } from "../lib/readingTime"
 import { formatStyle } from "../lib/formats"
 import { resolveImageUrl } from "../config"
 import { usePostActions } from "../lib/usePostActions"
@@ -101,7 +102,8 @@ function LabelCaps({ text, color }: { text: string; color: string }) {
 function CardFooter({ post }: { post: Post }) {
   const fc = post.feed_card
   const difficulty = fcNum(fc, "post_difficulty")
-  const minutes = fcNum(fc, "post_reading_time_min")
+  // Reading time is computed from the post's text, not read from a stored field.
+  const minutes = computeReadingTime(post)
   return (
     <View className="flex-row items-center" style={{ gap: 8, paddingTop: 4 }}>
       {post.author_username && (
