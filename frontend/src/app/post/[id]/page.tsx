@@ -4,6 +4,7 @@ import { use, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { formatStyle } from "@/lib/formats"
+import { unescapeDollar } from "@/lib/prose"
 import { fcNum, fcStr, type CardVisual, type Post } from "@/types/post"
 import SectionRenderer from "@/components/SectionRenderer"
 import SectionLabel from "@/components/SectionLabel"
@@ -418,7 +419,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                         carries one_line; facts has none, so this stays facts-free. */}
                     {fcStr(post.feed_card, "one_line") && (
                       <p className="px-6 -mt-2 mb-5 font-serif italic text-base text-ink-body leading-relaxed">
-                        {fcStr(post.feed_card, "one_line")}
+                        {unescapeDollar(fcStr(post.feed_card, "one_line"))}
                       </p>
                     )}
                     {/* Meta row — round avatar + creator, reading time,
@@ -462,7 +463,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     )}
                     {fcStr(post.feed_card, "key_finding_one_line") && (
                       <p className="px-6 mt-3 mb-5 font-serif italic text-base text-ink-body leading-relaxed">
-                        {fcStr(post.feed_card, "key_finding_one_line")}
+                        {unescapeDollar(fcStr(post.feed_card, "key_finding_one_line"))}
                       </p>
                     )}
                     <HeaderMeta post={post} />
@@ -515,7 +516,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     </div>
                     {fcStr(post.feed_card, "one_line") && (
                       <p className="px-6 mb-5 font-serif italic text-base text-ink-body leading-relaxed">
-                        {fcStr(post.feed_card, "one_line")}
+                        {unescapeDollar(fcStr(post.feed_card, "one_line"))}
                       </p>
                     )}
                     <HeaderMeta post={post} />
@@ -554,7 +555,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     )}
                     {fcStr(post.feed_card, "one_line") && (
                       <p className="px-6 mt-3 mb-5 font-serif italic text-base text-ink-body leading-relaxed">
-                        {fcStr(post.feed_card, "one_line")}
+                        {unescapeDollar(fcStr(post.feed_card, "one_line"))}
                       </p>
                     )}
                     <HeaderMeta post={post} />

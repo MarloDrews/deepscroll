@@ -12,6 +12,7 @@ import { likePost, unlikePost, isPostLiked, getCachedLikeCount, setCachedLikeCou
 import { updatePostInFeedCaches } from "@/app/lib/swr"
 import { fcNum, fcStr, type CardVisual, type Post } from "@/types/post"
 import { formatStyle } from "@/lib/formats"
+import { unescapeDollar } from "@/lib/prose"
 import Avatar from "@/components/Avatar"
 import BookCover from "@/components/BookCover"
 import DotScale from "@/components/DotScale"
@@ -35,7 +36,7 @@ function Teasers({ items }: { items: string[] }) {
       {items.map((teaser, i) => (
         <div key={i} className="flex items-start gap-2.5">
           <span className="w-1.5 h-1.5 rounded-full bg-(--accent) mt-2 shrink-0" />
-          <span className="text-[1.0625rem] text-ink leading-snug">{teaser}</span>
+          <span className="text-[1.0625rem] text-ink leading-snug">{unescapeDollar(teaser)}</span>
         </div>
       ))}
     </div>
@@ -390,7 +391,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                   and people use. Books' card dek is one_line (the feed_card has no
                   essence field). */}
               {fcStr(fc, "one_line") && (
-                <p className="font-serif italic text-base text-ink-body leading-relaxed">{fcStr(fc, "one_line")}</p>
+                <p className="font-serif italic text-base text-ink-body leading-relaxed">{unescapeDollar(fcStr(fc, "one_line"))}</p>
               )}
 
               {/* Teasers */}
@@ -433,7 +434,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
               {/* Dek: People's card gloss is one_line (the feed_card has no
                   essence field, unlike Books). LAYOUT_STANDARD s4. */}
               {fcStr(fc, "one_line") && (
-                <p className="font-serif italic text-base text-ink-body leading-relaxed">{fcStr(fc, "one_line")}</p>
+                <p className="font-serif italic text-base text-ink-body leading-relaxed">{unescapeDollar(fcStr(fc, "one_line"))}</p>
               )}
 
               {Array.isArray(fc.teasers) && (fc.teasers as string[]).length > 0 && (
@@ -480,7 +481,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 {fcStr(fc, "concept_name")}
               </h2>
               {fcStr(fc, "one_line") && (
-                <p className="font-serif italic text-base text-ink-body leading-relaxed">{fcStr(fc, "one_line")}</p>
+                <p className="font-serif italic text-base text-ink-body leading-relaxed">{unescapeDollar(fcStr(fc, "one_line"))}</p>
               )}
 
               {Array.isArray(fc.teasers) && (fc.teasers as string[]).length > 0 && (
@@ -506,7 +507,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
               {/* Dek: the one-line italic gloss (LAYOUT_STANDARD s2), the same
                   treatment concepts/people/books use. */}
               {fcStr(fc, "one_line") && (
-                <p className="font-serif italic text-base text-ink-body leading-relaxed">{fcStr(fc, "one_line")}</p>
+                <p className="font-serif italic text-base text-ink-body leading-relaxed">{unescapeDollar(fcStr(fc, "one_line"))}</p>
               )}
 
               {Array.isArray(fc.teasers) && (fc.teasers as string[]).length > 0 && (
@@ -600,7 +601,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
               {/* Dek: the core finding in one technical sentence (key_finding_one_line). */}
               {fcStr(fc, "key_finding_one_line") && (
                 <p className="font-serif italic text-base text-ink-body leading-relaxed">
-                  {fcStr(fc, "key_finding_one_line")}
+                  {unescapeDollar(fcStr(fc, "key_finding_one_line"))}
                 </p>
               )}
               {Array.isArray(fc.teasers) && (fc.teasers as string[]).length > 0 && (
@@ -616,7 +617,7 @@ export default function PostCard({ post, activeTabId }: { post: Post; activeTabI
                 {post.title}
               </h2>
               {fcStr(fc, "essence") && (
-                <p className="font-serif italic text-base text-ink-body leading-relaxed">{fcStr(fc, "essence")}</p>
+                <p className="font-serif italic text-base text-ink-body leading-relaxed">{unescapeDollar(fcStr(fc, "essence"))}</p>
               )}
               <CardFooter post={post} fc={fc} />
             </div>
