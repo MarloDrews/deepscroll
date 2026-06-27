@@ -124,9 +124,13 @@
       "svg": ""               // string. The small field glyph, compact viewBox
                               // (e.g. 0 0 56 32), per SVG_STANDARD.md card rules.
     },
-    "teasers": ["", "", ""],  // HARD: exactly 3. Guideline: 5-10 words each,
-                              // vary structure (one evidence, one counter-
-                              // intuition, one consequence). Avoid: category labels.
+    "teasers": ["", "", ""],  // HARD: exactly 3. Guideline: about 6 to 8 words each
+                              // (never a cap). Each opens a different curiosity loop the
+                              // post closes, in plain words the reader already has, never
+                              // restating the fact or spending the payoff. Vary the angle
+                              // where it fits (evidence, counter-intuition, consequence are
+                              // example angles, not a required one of each). Voice:
+                              // STYLE_GUIDE A11. Avoid: category labels.
     "post_difficulty": 1        // HARD: 1, 2, or 3 (1=accessible, 2=moderate,
                                 // 3=demanding).
   },
@@ -376,7 +380,9 @@
         {
           "myth": "",     // string. The false belief as people actually say it.
                           // Avoid: strawmen nobody holds.
-          "reality": ""   // string. Guideline: one sentence that corrects it.
+          "reality": ""   // string. Guideline: one or two sentences that correct
+                          // it. Vary the shape across the set so the realities do not
+                          // all run the same two-beat (a corrective line plus a clincher).
         }
       ]
     },

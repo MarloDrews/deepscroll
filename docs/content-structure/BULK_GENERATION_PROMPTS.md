@@ -1335,8 +1335,11 @@ the gold standard to match in depth, structure, and voice.
 
 <task>
 Write each topic you selected in step 1 as a complete Books post: one JSON file per post,
-matching the shape of books_example.json exactly (same fields, the same section types and
-their order, the connections and graph fields, tags, quiz, the feed-card cover). Apply
+matching the shape of books_example.json (same fields, the spine section types and
+their order, the connections and graph fields, tags, quiz, the feed-card cover); the
+optional sections vary per book, included only when they pass their Include test in the
+skeleton, so a post may carry different optionals than the example, and the example does
+not show every optional. Apply
 every standard to the whole of every post, not just the openings.
 </task>
 

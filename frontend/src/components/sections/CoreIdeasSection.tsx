@@ -53,7 +53,8 @@ export default function CoreIdeasSection({ content, isUserContent }: Props) {
           )}
 
           {idea.in_practice && (
-            <div className="bg-(--accent)/10 border border-(--accent)/30 rounded-lg px-4 py-3">
+            <div className="bg-(--accent)/10 rounded-lg px-4 py-3">
+              <p data-no-read className="label-caps text-(--accent) mb-1.5">In practice</p>
               <p className="text-sm text-ink leading-relaxed">{idea.in_practice}</p>
             </div>
           )}

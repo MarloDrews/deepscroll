@@ -190,8 +190,10 @@ the page above a plain wall.
   recognizable without being bespoke): simple lists use accent dots; misconceptions
   use the struck-through myth plus an accent check on the reality; key figures use
   person cards; open questions use a "?" marker and are phrased as real questions
-  ending in a question mark. The section type chooses from the kit; sections do not
-  invent their own ornament.
+  ending in a question mark; an in_practice line inside a core idea is set off as a
+  small labeled block, an accent caps label ("In practice") above the sentence with
+  light separation, never the reserved key-section left-border. The section type
+  chooses from the kit; sections do not invent their own ornament.
 - **The key section.** Exactly one section per format is marked with an accent
   left-border (a light emphasis: a `border-l-2` accent rule plus an optional faint
   accent wash, never a full filled block), marking the post's turning point or

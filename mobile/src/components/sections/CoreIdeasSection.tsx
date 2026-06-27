@@ -1,6 +1,6 @@
 import { Text, View } from "react-native"
 import type { CoreIdeaItem } from "../../types/post"
-import { SectionBlock, Prose, SvgFigure, CaptionedImage } from "./primitives"
+import { SectionBlock, Prose, SvgFigure, CaptionedImage, SectionLabel } from "./primitives"
 import { colors, fonts } from "../../theme/tokens"
 import { useAccent } from "../../lib/accent"
 
@@ -51,13 +51,13 @@ export default function CoreIdeasSection({
             <View
               style={{
                 backgroundColor: accent + "1a",
-                borderWidth: 1,
-                borderColor: accent + "4d",
                 borderRadius: 8,
                 paddingHorizontal: 16,
                 paddingVertical: 12,
+                gap: 6,
               }}
             >
+              <SectionLabel color={accent}>In practice</SectionLabel>
               <Text style={{ fontFamily: fonts.sans, fontSize: 14, lineHeight: 22, color: colors.ink }}>
                 {idea.in_practice}
               </Text>

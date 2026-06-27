@@ -38,6 +38,15 @@ and make the moving worthwhile.
 These rules hold for all seven formats. Part B adds the small, named per-format
 deviations.
 
+Scope convention (shared with the texture standard): any unmarked line in Part A
+binds all seven formats. A line that holds for only some is marked inline with a
+fixed, greppable label, "Format-specific (Facts): ..." or "Format-specific
+(Books, Questions): ...", naming which formats it binds. If a rule would be wrong
+for any format it is not written here unmarked: it is either scoped with the
+label or moved to Part B. Measured figures are never baked into a Part A rule;
+the principle stays here and the figure lives per format, delegated by reference
+(for example A11 sets the teaser voice and points to each skeleton for length).
+
 ## A1. Voice and address
 
 Third person, assertive, no first-person "I" and no editorial or authorial
@@ -135,6 +144,18 @@ if a word shows up more in model output than in good human writing, cut it.
   "5 to 10," not "5–10."
 - No colon-reveal "ta-da" rhythm on every other sentence.
 - Bold is rare. If everything is emphasized, nothing is.
+
+**Symbols and quotation marks:**
+- Use the symbol, not the spelled-out word, wherever a symbol exists and renders
+  cleanly: % not “percent”, € not “euro”, $ and £ for currency. A symbol
+  takes a digit, never a spelled number: write 16%, not sixteen percent, and $100,
+  not one hundred dollars. This keeps figures scannable and matches how the reader
+  meets these quantities in the wild.
+- Quotation uses typographic double quotes, the curly pair, for any quoted word or
+  phrase: the patient hears “a 90% survival rate” and relaxes. Curly doubles are
+  cleaner here than straight quotes, which must be escaped inside JSON, and they
+  render as real typography. Use them in place of single quotes for quotation, and
+  keep the ordinary apostrophe for possessives and contractions.
 
 **The positive directive:** write the way a sharp, well-read person writes when
 they care about being understood and have no template in front of them.
@@ -234,6 +255,23 @@ Weak: "You won't believe what scientists found about sleep."
 Strong: "Skip a night and your body starts clearing waste from neurons less
 well within a week."
 
+Teasers come as a set, usually three, so the within-post sameness rule applies
+to them (texture standard 2.6): the three must not read as one template or make
+the same promise three times. Each opens a different loop the post then closes, a
+real curiosity or tension that makes the reader want in, and none restates the
+finding or spends the payoff up front. Let the three share a register so they
+cohere as a set, and reach for variety in form so they do not clone one shape,
+but let that serve the content. A question, a direct address, a flat claim are
+ways to vary when they fit, never a quota to fill: three teasers that each suit
+their loop beat a forced variety that suits none, so if a shape does not fit a
+post, do not force it. Speak in terms the reader already has: a teaser meets them before the
+post, so it never leans on a name or concept the post itself will only teach.
+What counts as already-had shifts by format, but teasing with the very thing you
+are about to explain is the error everywhere. The no-overpromise rule above is the leash: a loop the body never closes
+is the clickbait this forbids. No category labels, and nothing in the "you won't
+believe" register. How many teasers, their length, and any format-specific axis
+for varying them are set in each skeleton; the voice is set here.
+
 ## A12. Quotes have to earn their place
 
 A quote is included only when the exact words carry something a paraphrase
@@ -271,6 +309,16 @@ Write for a global English readership. Avoid region-locked idioms and cultural
 references only one country would catch, or explain them in passing when they
 are essential. Keep notation consistent across posts: one style for numbers,
 units, and dates, so a feed of many posts reads as a single publication.
+
+Reach for the plain word when it carries the same meaning as a rarer or more
+ornamental one. Many readers are fluent but not native, and a needless hard word
+or a clause they must read twice costs them the flow this guide exists to protect.
+Keep the syntax navigable: one main idea to a sentence, modifiers next to what
+they modify, no clause buried inside another. This is not the simplification the
+one principle rules out. The substance and the educated-general-adult target both
+stand; the difficulty stays in the idea and leaves the sentence. The exact
+technical word still earns its place when it is the right one (A5): use it and
+light it up in the same breath, never swap in a vaguer word that loses the meaning.
 
 ## A17. Visuals, the language part only
 
@@ -350,6 +398,8 @@ Run this check on every generated post. Any hit is a rewrite, not a maybe.
       real and verifiable; nothing invented, estimated, or embellished.
 - [ ] Zero em-dashes anywhere in user-facing text.
 - [ ] Semicolons sparse, none standing in for an em-dash.
+- [ ] Symbols for percent and currency, written with digits (16%, $100), not
+      spelled out; quotation in curly double quotes, not single or straight quotes.
 - [ ] No banned vocabulary; no contrast frames ("not X, it's Y"); no sweeping
       openers; no summarizing sign-off.
 - [ ] Sentence length varies; no flat run of same-length sentences.
