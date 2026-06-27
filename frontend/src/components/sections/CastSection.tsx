@@ -1,5 +1,6 @@
 import SectionLabel from "../SectionLabel"
 import type { CastMember } from "../../types/post"
+import { unescapeDollar } from "@/lib/prose"
 
 interface Props {
   content: CastMember[]
@@ -28,19 +29,19 @@ export default function CastSection({ content }: Props) {
               )}
               <div className="flex flex-col gap-0.5 min-w-0">
                 <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="text-sm font-semibold text-ink">{member.name}</span>
+                  <span className="text-sm font-semibold text-ink">{unescapeDollar(member.name)}</span>
                   {member.lifespan && (
-                    <span className="text-xs text-ink-muted">{member.lifespan}</span>
+                    <span className="text-xs text-ink-muted">{unescapeDollar(member.lifespan)}</span>
                   )}
                 </div>
-                <p className="text-xs font-semibold tracking-widest uppercase text-(--accent)/80">{member.role}</p>
+                <p className="text-xs font-semibold tracking-widest uppercase text-(--accent)/80">{unescapeDollar(member.role)}</p>
                 {member.one_line && (
-                  <p className="text-sm text-ink-dim leading-snug mt-1">{member.one_line}</p>
+                  <p className="text-sm text-ink-dim leading-snug mt-1">{unescapeDollar(member.one_line)}</p>
                 )}
               </div>
             </div>
             {member.image_url && member.image_attribution && (
-              <p className="text-[10px] text-ink-faint leading-snug">{member.image_attribution}</p>
+              <p className="text-[10px] text-ink-faint leading-snug">{unescapeDollar(member.image_attribution)}</p>
             )}
           </div>
         ))}

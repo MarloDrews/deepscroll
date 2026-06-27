@@ -1,6 +1,7 @@
 import SectionLabel from "../SectionLabel"
 import SvgBlock from "../SvgBlock"
 import ContentImage from "./ContentImage"
+import Prose from "../Prose"
 import type { SettingContent } from "../../types/post"
 
 interface Props {
@@ -12,7 +13,7 @@ export default function SettingSection({ content, isUserContent }: Props) {
   return (
     <div className="px-6 py-8 flex flex-col gap-4">
       <SectionLabel>Setting the Scene</SectionLabel>
-      <p className="prose-post">{content.body}</p>
+      <Prose>{content.body}</Prose>
       {/* The one rare drawn slot in Stories: a map where place needs showing
           (stories_skeleton VISUAL PLAN). Sits tight to its text, SVG security
           split handled by SvgBlock. */}

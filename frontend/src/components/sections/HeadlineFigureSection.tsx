@@ -1,6 +1,7 @@
 import type { HeadlineFigureContent } from "../../types/post"
 import SvgBlock from "../SvgBlock"
 import MathText from "../MathText"
+import { unescapeDollar } from "@/lib/prose"
 
 interface Props {
   content: HeadlineFigureContent
@@ -29,7 +30,7 @@ export default function HeadlineFigureSection({ content, isUserContent }: Props)
           self-built SVG carries none. */}
       {content.image_url && !content.visual_svg && content.image_attribution && (
         <p className="text-[10px] text-ink-faint text-center leading-snug">
-          {content.image_attribution}
+          {unescapeDollar(content.image_attribution)}
         </p>
       )}
     </div>

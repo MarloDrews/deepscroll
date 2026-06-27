@@ -1,5 +1,6 @@
 import SectionLabel from "../SectionLabel"
 import MathText from "../MathText"
+import Prose from "../Prose"
 
 interface Props {
   content: string
@@ -13,9 +14,9 @@ export default function TheQuestionSection({ content }: Props) {
   return (
     <div className="px-6 py-8">
       <SectionLabel className="mb-3">The Question</SectionLabel>
-      <p className="prose-post text-ink-dim">
+      <Prose className="text-ink-dim">
         <MathText text={content} />
-      </p>
+      </Prose>
     </div>
   )
 }

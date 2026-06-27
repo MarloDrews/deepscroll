@@ -1,5 +1,6 @@
 import SectionLabel from "../SectionLabel"
 import ContentImage from "./ContentImage"
+import Prose from "../Prose"
 import type { TheTurnContent } from "../../types/post"
 
 interface Props {
@@ -14,7 +15,7 @@ export default function TheTurnSection({ content }: Props) {
     // Exactly one section per format is marked.
     <div className="px-6 py-8 border-l-2 border-(--accent) bg-(--accent)/[0.06] flex flex-col gap-4">
       <SectionLabel>The Turn</SectionLabel>
-      <p className="prose-post">{content.body}</p>
+      <Prose>{content.body}</Prose>
       {content.image_url && (
         <ContentImage
           url={content.image_url}

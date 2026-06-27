@@ -1,6 +1,7 @@
 import type { TakeawayContent } from "../../types/post"
 import SvgBlock from "../SvgBlock"
 import SectionLabel from "../SectionLabel"
+import Prose from "../Prose"
 
 interface Props {
   content: TakeawayContent
@@ -15,7 +16,7 @@ export default function TakeawaySection({ content, isUserContent }: Props) {
   return (
     <div className="px-6 py-8">
       <SectionLabel className="mb-3">What Stays With You</SectionLabel>
-      <p className="prose-post">{content.body}</p>
+      <Prose>{content.body}</Prose>
       {content.visual_svg && (
         <SvgBlock svg={content.visual_svg} isUserContent={isUserContent} className="w-full max-w-[360px] mx-auto mt-4" />
       )}

@@ -1,6 +1,8 @@
 import SectionLabel from "../SectionLabel"
 import ContentImage from "./ContentImage"
 import type { StoryChapter } from "../../types/post"
+import Prose from "../Prose"
+import { unescapeDollar } from "@/lib/prose"
 
 interface Props {
   content: StoryChapter[]
@@ -12,8 +14,8 @@ export default function ChaptersSection({ content }: Props) {
       <SectionLabel className="-mb-4">The Story</SectionLabel>
       {content.map((chapter, i) => (
         <div key={i} className="flex flex-col gap-3">
-          <h3 className="text-base font-semibold text-(--accent) leading-snug">{chapter.title}</h3>
-          <p className="prose-post">{chapter.body}</p>
+          <h3 className="text-base font-semibold text-(--accent) leading-snug">{unescapeDollar(chapter.title)}</h3>
+          <Prose>{chapter.body}</Prose>
           {chapter.image_url && (
             <ContentImage
               url={chapter.image_url}

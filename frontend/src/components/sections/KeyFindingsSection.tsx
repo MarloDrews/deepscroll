@@ -3,6 +3,8 @@ import type { KeyFindingItem } from "../../types/post"
 import SvgBlock from "../SvgBlock"
 import ContentImage from "./ContentImage"
 import MathText from "../MathText"
+import Prose from "../Prose"
+import { unescapeDollar } from "@/lib/prose"
 
 interface Props {
   content: KeyFindingItem[]
@@ -18,15 +20,15 @@ export default function KeyFindingsSection({ content, isUserContent }: Props) {
       <SectionLabel>Key Findings</SectionLabel>
       {content.map((item, i) => (
         <div key={i} className="flex flex-col gap-2">
-          <p className="text-sm font-semibold text-ink">{item.title}</p>
-          <p className="prose-post text-ink-dim">
+          <p className="text-sm font-semibold text-ink">{unescapeDollar(item.title)}</p>
+          <Prose className="text-ink-dim">
             <MathText text={item.finding} />
-          </p>
+          </Prose>
           {/* Effect size and significance reported together (methodological
               honesty): magnitude matters as much as the p-value. */}
           {(item.effect_size || item.statistical_detail) && (
             <p className="text-xs font-mono text-ink-muted">
-              {[item.effect_size, item.statistical_detail].filter(Boolean).join("  ·  ")}
+              {unescapeDollar([item.effect_size, item.statistical_detail].filter(Boolean).join("  ·  "))}
             </p>
           )}
           {item.visual_svg && (
@@ -43,7 +45,7 @@ export default function KeyFindingsSection({ content, isUserContent }: Props) {
             />
           )}
           {item.source_in_paper && (
-            <p className="text-xs text-ink-faint">Source: {item.source_in_paper}</p>
+            <p className="text-xs text-ink-faint">Source: {unescapeDollar(item.source_in_paper)}</p>
           )}
         </div>
       ))}

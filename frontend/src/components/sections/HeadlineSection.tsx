@@ -1,4 +1,5 @@
 import React from "react"
+import { unescapeDollar } from "@/lib/prose"
 
 function WithCyanNumbers({ text }: { text: string }) {
   const parts: React.ReactNode[] = []
@@ -30,7 +31,7 @@ export default function HeadlineSection({
   return (
     <div className="px-6 pt-3 pb-5">
       <p className="font-serif text-[2rem] font-medium tracking-tight text-ink leading-snug max-w-[24ch]">
-        {accentNumbers ? <WithCyanNumbers text={content} /> : content}
+        {accentNumbers ? <WithCyanNumbers text={unescapeDollar(content)} /> : unescapeDollar(content)}
       </p>
     </div>
   )

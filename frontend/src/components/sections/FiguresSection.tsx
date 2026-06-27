@@ -1,6 +1,7 @@
 import SectionLabel from "../SectionLabel"
 import ContentImage from "./ContentImage"
 import MathText from "../MathText"
+import { unescapeDollar } from "@/lib/prose"
 import type { FigureItem } from "../../types/post"
 
 interface Props {
@@ -19,7 +20,7 @@ export default function FiguresSection({ content }: Props) {
         <div key={i} className="flex flex-col gap-1.5">
           {fig.figure_label && (
             <p className="text-xs font-semibold text-(--accent) uppercase tracking-wide">
-              {fig.figure_label}
+              {unescapeDollar(fig.figure_label)}
             </p>
           )}
           <ContentImage

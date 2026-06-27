@@ -1,5 +1,6 @@
 import SectionLabel from "../SectionLabel"
 import type { AuthorsContextItem } from "../../types/post"
+import { unescapeDollar } from "@/lib/prose"
 
 interface Props {
   content: AuthorsContextItem[]
@@ -29,18 +30,18 @@ export default function AuthorsContextSection({ content }: Props) {
                 />
               )}
               <div className="flex flex-col gap-0.5 min-w-0">
-                <span className="text-sm font-semibold text-ink">{author.name}</span>
-                <p className="text-xs font-semibold tracking-widest uppercase text-(--accent)/80">{author.role}</p>
+                <span className="text-sm font-semibold text-ink">{unescapeDollar(author.name)}</span>
+                <p className="text-xs font-semibold tracking-widest uppercase text-(--accent)/80">{unescapeDollar(author.role)}</p>
                 {author.one_line && (
-                  <p className="text-sm text-ink-dim leading-snug mt-1">{author.one_line}</p>
+                  <p className="text-sm text-ink-dim leading-snug mt-1">{unescapeDollar(author.one_line)}</p>
                 )}
                 {author.affiliation && (
-                  <p className="text-xs text-ink-faint mt-0.5">{author.affiliation}</p>
+                  <p className="text-xs text-ink-faint mt-0.5">{unescapeDollar(author.affiliation)}</p>
                 )}
               </div>
             </div>
             {author.image_url && author.image_attribution && (
-              <p className="text-[10px] text-ink-faint leading-snug">{author.image_attribution}</p>
+              <p className="text-[10px] text-ink-faint leading-snug">{unescapeDollar(author.image_attribution)}</p>
             )}
           </div>
         ))}

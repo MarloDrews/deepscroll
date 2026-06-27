@@ -1,5 +1,6 @@
 import SectionLabel from "../SectionLabel"
 import SvgBlock from "../SvgBlock"
+import Prose from "../Prose"
 
 interface MentalTakeawayContent {
   body: string
@@ -15,7 +16,7 @@ export default function MentalTakeawaySection({ content, isUserContent }: Props)
   return (
     <div className="px-6 py-8 flex flex-col gap-4">
       <SectionLabel>Mental Takeaway</SectionLabel>
-      <p className="prose-post">{content.body}</p>
+      <Prose>{content.body}</Prose>
       {content.visual_svg && (
         <SvgBlock
           svg={content.visual_svg}

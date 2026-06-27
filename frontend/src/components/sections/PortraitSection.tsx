@@ -1,3 +1,5 @@
+import { unescapeDollar } from "@/lib/prose"
+
 interface PortraitContent {
   image_url: string
   image_caption?: string
@@ -23,10 +25,10 @@ export default function PortraitSection({ content }: Props) {
       {(content.image_caption || content.image_attribution) && (
         <div className="px-5 pt-3 pb-2">
           {content.image_caption && (
-            <p className="text-sm text-ink-dim leading-snug">{content.image_caption}</p>
+            <p className="text-sm text-ink-dim leading-snug">{unescapeDollar(content.image_caption)}</p>
           )}
           {content.image_attribution && (
-            <p className="text-xs text-ink-faint mt-1">{content.image_attribution}</p>
+            <p className="text-xs text-ink-faint mt-1">{unescapeDollar(content.image_attribution)}</p>
           )}
         </div>
       )}
