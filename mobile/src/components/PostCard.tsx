@@ -12,6 +12,7 @@ import Animated, {
 } from "react-native-reanimated"
 import { fcNum, fcStr, type Post } from "../types/post"
 import { formatStyle } from "../lib/formats"
+import { unescapeDollar } from "../lib/prose"
 import { resolveImageUrl } from "../config"
 import { usePostActions } from "../lib/usePostActions"
 import { colors, fills, fonts, radius } from "../theme/tokens"
@@ -70,7 +71,7 @@ function Teasers({ items, accent }: { items: string[]; accent: string }) {
             className="flex-1"
             style={{ fontFamily: fonts.sans, fontSize: 17, lineHeight: 22, color: colors.ink }}
           >
-            {teaser}
+            {unescapeDollar(teaser)}
           </Text>
         </View>
       ))}
@@ -198,7 +199,7 @@ function CardBody({ post }: { post: Post }) {
             />
           )}
         </View>
-        <Text style={essenceStyle}>{fcStr(fc, "essence")}</Text>
+        <Text style={essenceStyle}>{unescapeDollar(fcStr(fc, "essence"))}</Text>
         <Teasers items={teasersOf(fc)} accent={accent} />
         <CardFooter post={post} />
       </>
@@ -228,7 +229,7 @@ function CardBody({ post }: { post: Post }) {
             )}
           </View>
         </View>
-        <Text style={essenceStyle}>{fcStr(fc, "essence")}</Text>
+        <Text style={essenceStyle}>{unescapeDollar(fcStr(fc, "essence"))}</Text>
         <Teasers items={teasersOf(fc)} accent={accent} />
         <CardFooter post={post} />
       </>
@@ -253,7 +254,7 @@ function CardBody({ post }: { post: Post }) {
       <>
         {fcStr(fc, "field") !== "" && <LabelCaps text={fcStr(fc, "field")} color={accent} />}
         <Text style={titleStyle}>{title}</Text>
-        {hook !== "" && <Text style={essenceStyle}>{hook}</Text>}
+        {hook !== "" && <Text style={essenceStyle}>{unescapeDollar(hook)}</Text>}
         <Teasers items={teasersOf(fc)} accent={accent} />
         <CardFooter post={post} />
       </>
@@ -286,7 +287,7 @@ function CardBody({ post }: { post: Post }) {
           <Text style={{ fontFamily: fonts.mono, fontSize: 12, color: colors["ink-muted"] }}>{venueLine}</Text>
         )}
         {fcStr(fc, "key_finding_one_line") !== "" && (
-          <Text style={essenceStyle}>{fcStr(fc, "key_finding_one_line")}</Text>
+          <Text style={essenceStyle}>{unescapeDollar(fcStr(fc, "key_finding_one_line"))}</Text>
         )}
         <Teasers items={teasersOf(fc)} accent={accent} />
         <CardFooter post={post} />
@@ -298,7 +299,7 @@ function CardBody({ post }: { post: Post }) {
   return (
     <>
       <Text style={titleStyle}>{post.title}</Text>
-      {fcStr(fc, "essence") !== "" && <Text style={essenceStyle}>{fcStr(fc, "essence")}</Text>}
+      {fcStr(fc, "essence") !== "" && <Text style={essenceStyle}>{unescapeDollar(fcStr(fc, "essence"))}</Text>}
       <CardFooter post={post} />
     </>
   )
