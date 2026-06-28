@@ -61,15 +61,16 @@
 // Exceed or undershoot them when the life demands it. A pivotal life may need 12
 // defining moments; a quiet contribution may need 4. Prefer accuracy and depth
 // over hitting a number. The only HARD constraints are structural, fixed by the
-// UI and scoring: quiz length 5 to 10, exactly 4 options per question, exactly 3
-// teasers, life_arc milestones 5 to 8 for timeline readability.
+// UI and scoring: quiz length 5 to 10, exactly 4 options per question, and exactly
+// 3 teasers. life_arc milestones are NOT HARD: a guideline near 5 to 8 (see that
+// section), with a vertical SVG required past about 9 for label readability.
 //
 // ─── PROSE ───────────────────────────────────────────────────────────
 // Zero em-dashes in user-facing text. People tells a life with slight narrative
 // warmth; the tone yields to the subject (A14), drop the punch on death,
-// suffering, or atrocity. Banned: "renowned", "brilliant", "pioneering"; name the
-// specific thing that earns the word instead. Full prose rules:
-// STYLE_GUIDE_LONGFORM.md. Schema and rationale: DEEPSCROLL_CONTENT_STRUCTURE.md.
+// suffering, or atrocity. Evaluative-label bans and every other prose rule live
+// in STYLE_GUIDE_LONGFORM.md (Part B People, A1, A3); reference them, never
+// restate them here. Schema and rationale: DEEPSCROLL_CONTENT_STRUCTURE.md.
 // Diagrams: SVG_STANDARD.md. Sourced images (portraits, archival photos):
 // IMAGE_STANDARD.md.
 
@@ -140,13 +141,14 @@
                                 // "Polish-French physicist who won Nobel Prizes in
                                 // two separate sciences, the first person to do
                                 // so."
-    "teasers": ["", "", ""],    // HARD: exactly 3. Guideline: about 6 words each.
-                                // Concrete achievements, turning points, or stakes,
-                                // not personality adjectives. Vary structure across
-                                // the three. Example: "Discovered two new
-                                // elements", "Carried radium for decades", "Died
-                                // from her own work".
-                                // typical for People. Do not undersell.
+    "teasers": ["", "", ""],    // HARD: exactly 3. Guideline: about 7 to 12 words
+                                // each, shorter is fine (never a cap). Each opens a loop
+                                // the post closes and withholds its payoff, in plain
+                                // words, never a resume bullet or category label, and
+                                // never restating the subtitle. Loops People tends to
+                                // open: an injustice, a turning point, a human tension
+                                // (examples, not a required one of each). Voice:
+                                // STYLE_GUIDE A11.
     "post_difficulty": 1        // HARD: 1, 2, or 3 (1=accessible, 2=moderate,
                                 // 3=demanding). Most biographical posts land at
                                 // 1-2.
@@ -288,9 +290,13 @@
                                // currentColor for structural lines, var(--accent)
                                // for the one key node. Milestones must match the
                                // array below.
-        "milestones": [        // HARD: 5-8 entries, chronological, for timeline
-                               // readability. A life with 9 genuinely distinct
-                               // turning points may use 9.
+        "milestones": [        // Guideline: 5 to 8 entries, chronological; an
+                               // unusually rich life may run to about 9. For more
+                               // (10 to 12) the SVG must be vertical, because the
+                               // horizontal 400-wide viewBox overlaps the year
+                               // labels past about 9 nodes. The limit is SVG
+                               // readability, not the renderer, which leaves the
+                               // list unbounded and needs no change.
           {
             "year": "",        // string. "1867" or "1891-1895" for spans. Plain
                                // hyphen.
@@ -332,8 +338,11 @@
                                  // anchoring, not displayed as the title.
           "body": "",            // string. Guideline: 3-6 sentences, about 60-120
                                  // words. Open on a concrete scene or action, close
-                                 // on consequence. Avoid: opening with context-
-                                 // setting before the scene.
+                                 // on consequence, but vary how the episodes open
+                                 // and close across the set; do not stamp one
+                                 // scene-then-consequence template on every beat.
+                                 // Avoid: opening with context-setting before the
+                                 // scene.
           "image_url": "",       // string | omit. Wikimedia image for THIS episode
                                  // specifically, per IMAGE_STANDARD.md. Omit if
                                  // none fits; do not reuse the portrait here.
@@ -424,9 +433,9 @@
         "body": "",                // string. REQUIRED within this section.
                                    // Guideline: about 80-160 words. What changed
                                    // because of this person and what continues.
-                                   // Avoid: closing on "continues to inspire
-                                   // millions"; do not flatten a contested legacy
-                                   // into a triumphant summary.
+                                   // Avoid: flattening a contested legacy into a
+                                   // triumphant summary or a "continues to inspire
+                                   // millions" close.
         "present_day_impact": "",  // string | omit. One or two sentences on
                                    // something that exists TODAY because of this
                                    // person: an institution, a law, a field, a

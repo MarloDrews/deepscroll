@@ -150,11 +150,15 @@
                                 // this text. Avoid: revealing the turn or the
                                 // outcome. There is no dek on a stories card by
                                 // design; the headline carries the opening alone.
-    "teasers": ["", "", ""],    // HARD: exactly 3. Guideline: about 6 words each,
-                                // atmosphere and stakes, never events. "A century of
-                                // silence", "What three witnesses saw", "The letter
-                                // that survived". Vary structure across the three.
-                                // Avoid: a teaser that names what happens.
+    "teasers": ["", "", ""],    // HARD: exactly 3. Guideline: about 8 to 13 words
+                                // each, shorter is fine (never a cap). The three open
+                                // DISTINCT loops, not the same predicament thrice, each
+                                // with real suspense, in plain words, none restating the
+                                // headline. SPOILER DISCIPLINE: a teaser may pull toward
+                                // the turn but never reveals or hints it (the turn lives
+                                // only in the_turn). Loops Stories tends to open: a
+                                // mystery, a reversal, a predicament (examples, not a
+                                // required one of each). Voice: STYLE_GUIDE A11.
     "category": "",             // string. The reader-facing story type, which sets
                                 // the kind-of-story expectation: "true crime",
                                 // "historical mystery", "scientific discovery",

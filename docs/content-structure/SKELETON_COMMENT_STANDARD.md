@@ -28,6 +28,8 @@ Three documents, three jobs. A comment must stay in its lane.
 
 When a section has a prose requirement that is **specific to it** and not in the style guide (for example "open on a concrete scene, not a date"), that belongs in the comment. General prose quality does not.
 
+A format-specific axis refines the style-guide voice; it never overrides or contradicts it. A teaser axis may say which loops a format tends to open (an injustice, a turning point, a surprising number), but it stays inside A11: it never steers toward category labels, resume bullets, or restating the finding, and its EXAMPLES must exemplify the rule, not undercut it. The People teaser axis once read "lead with concrete achievements" with examples like "Discovered two new elements", which contradicts A11 and produced flat label teasers; the Books axis ("each opens a different loop the post then closes") is the model. When a comment's own example would fail the rule the comment points to, the example is the bug.
+
 ---
 
 ## 3. Controlled vocabulary

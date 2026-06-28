@@ -198,15 +198,15 @@
           "explanation": "Anchoring is when an initial number sets a reference that drags later judgments toward it, so the inflated sticker price quietly shapes what counts as a good price."
         },
         {
-          "question": "A flight instructor concluded that praise hurt his cadets and criticism helped. What did he miss?",
+          "question": "Most people judge that Linda is more likely to be a feminist bank teller than to be a bank teller. Why is that the wrong call?",
           "options": [
-            "Extreme performances tend to be followed by more average ones whatever the feedback",
-            "Cadets resent praise and respond better to fear",
-            "Praise makes people overconfident and careless",
-            "Criticism carries more useful detail than praise"
+            "Her philosophy background makes a finance job unlikely either way",
+            "Adding the feminist detail makes her a subset of bank tellers, so it can only lower the probability",
+            "The feminist detail is irrelevant, so the two descriptions are equally probable",
+            "Outspoken activists are statistically rare among bank tellers"
           ],
-          "answer_index": 0,
-          "explanation": "An unusually good or bad performance is usually followed by a more typical one on its own, so the instructor credited his feedback for what was regression to the mean."
+          "answer_index": 1,
+          "explanation": "Every feminist bank teller is also a bank teller, so the narrower description is a subset of the broader one and cannot be more probable; the fitting detail only makes the story feel more convincing. Kahneman calls this the conjunction fallacy."
         },
         {
           "question": "Across experiments, how much heavier does a loss feel than an equivalent gain?",

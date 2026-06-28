@@ -1,4 +1,4 @@
-# Human texture standard (v1.3, Books and Facts calibrated)
+# Human texture standard (v1.7, Books, Facts, People, Concepts and Stories calibrated)
 
 Companion to `STYLE_GUIDE_LONGFORM.md`. The style guide is the generation
 contract: it tells the writer how the language should read. This document is the
@@ -9,11 +9,11 @@ end of the pipeline, the other for the back end.
 
 The app is dark only and all content is English, the same as its siblings.
 
-This is v1.3 (see the changelog at the end). The numeric thresholds below were
+This is v1.7 (see the changelog at the end). The numeric thresholds below were
 measured from the finished Books
 gold example (`books_example.json`), not guessed, in line with the plan that the
-example finalizes this layer. The Books and Facts rows of the band table in section 3
-are calibrated; the other five formats stay `TBD` until each one's example is
+example finalizes this layer. The Books, Facts, People and Concepts rows of the band table in section 3
+are calibrated; the other three formats stay `TBD` until each one's example is
 brought to gold in turn.
 
 ---
@@ -71,7 +71,12 @@ judgment.
 2. **The model audit (the pipeline's independent review).** The semantic tells a
    script cannot see: whether a closure was needed, whether a triplet was earned,
    whether the variance is real or applied, whether the register slid into
-   symbolism. It confirms or clears the script's candidates and adds its own.
+   symbolism. It also reads as a reader, not only a texture-checker: whether the
+   teasers open real loops and earn the tap, whether each list and detail coheres
+   under the claim it serves, whether a title pays off the scene it promises,
+   whether a clichi or assembled phrase slipped through, whether the thread leaves a
+   gap the reader trips on, and whether each section earns the read. It confirms or
+   clears the script's candidates and adds its own.
 3. **The human spot-check (a sample).** The final call on whether the post reads
    like a person wrote it. This judgment is not delegated to a model.
 
@@ -189,8 +194,17 @@ reads as a reflex even when each list alone is fine and the post-wide count is i
 budget. Keep one home for a given enumeration. The checker cannot see this, since
 it counts each list locally; the audit catches the reuse.
 
+Beyond rhythm, a list must cohere. When a list is offered as evidence for a claim,
+every item has to support it: a trio under a head word must be three real instances
+of that word. The fault is the assembled triplet whose members point different ways,
+as in "her exactness showed in small things: a declined honorary degree, a daily hour
+at the piano, decades of letters in German." Only the first is exactness; the piano is
+routine, the letters are attachment to home. The head word is glued on, not earned. A
+naming-list like this passes every rhythm check and still reads assembled, so the fault
+is coherence, not cadence.
+
 Checker: detects inline 3+ lists and adjacent ones, counts per post. Audit: each
-list earned or reflexive.
+list earned or reflexive, and every item genuinely coheres under its claim.
 
 ### 2.4 Over-closure and the appended reason
 
@@ -339,15 +353,16 @@ apply to Academy exactly as hard as to Facts. What is allowed to be harder is th
 idea the reader must hold, not the prose that delivers it. The reader brings more;
 the writer never works against them.
 
-The band table. The Books and Facts rows are measured from their gold examples;
-the rest are filled when each format's example reaches gold.
+The band table. The Books, Facts, People and Concepts rows are measured from their gold
+examples; the rest are filled when each format's example reaches gold.
 
 | Format    | Length center        | Ceiling                      | Subordination tolerance                    | Burstiness ratio   |
 |-----------|----------------------|------------------------------|--------------------------------------------|--------------------|
 | Books     | 16 to 20 words, with short punches of 4 to 9 | about 37, most sentences under 30 | moderate: one appositive per sentence, never stacked | floor 2, typical 3 to 8 |
 | Facts     | 12 to 16 words, with short punches of 4 to 9 | about 31, most sentences under 22 | tight: one appositive per sentence, never stacked | floor 2, typically 2.5 to 6, very high variance |
-| People    | TBD                  | TBD                          | TBD                                        | TBD                |
-| Concepts  | TBD                  | TBD                          | TBD                                        | TBD                |
+| People    | 16 to 20 words, with short punches of 4 to 9 | about 40 (a technical outlier to 44 in greatest_work), most sentences under 28 | moderate: one appositive per sentence, genuine lists allowed, never stacked | floor 2, typically 2.5 to 8, very high variance |
+| Concepts  | 15 to 18 words, with short punches of 4 to 10 | about 28, with a single 63-word outlier in origin, most sentences under 24 | moderate: one appositive per sentence, genuine lists allowed, never stacked | floor 2, typically 2 to 8, very high variance |
+| Stories   | 13 to 19 words (median 16), with short punches of 4 to 10 | about 33, most sentences under 28 | moderate: one appositive per sentence, genuine lists allowed, never stacked | floor 2, typically 2 to 8, very high variance |
 | Questions | TBD                  | TBD                          | TBD                                        | TBD                |
 | Stories   | TBD                  | TBD                          | TBD                                        | TBD                |
 | Academy   | TBD                  | TBD                          | TBD                                        | TBD                |
@@ -392,6 +407,50 @@ judgment looks; they do not replace it.
 
 ## Changelog
 
+- v1.7: Stories calibrated (locked gold, the van Meegeren forgery). Added the Stories section-3 band
+  row (center 13 to 19 words, median 16, short punches of 4 to 10, ceiling about 33, very high
+  burstiness). No rule change; the checker thresholds remain the universal section-2 floors, and a
+  calibrated BANDS["stories"] entry was added so the format reports as calibrated. The Stories cycle
+  also landed two carried-over shared-layer items: the word-as-mention quotation clause in the style
+  guide (work titles plain, curly doubles for quotation and term-mentions) and a straight-quote
+  candidate in the checker, both verified against all golds with zero regression.
+
+- v1.6: two additions from a reader pass on the People gold, neither changing an
+  existing numeric rule. Extended 2.3 from list rhythm to list COHERENCE: a list
+  offered as evidence must have every item support its head word or claim (the
+  "exactness" triplet whose members pointed three ways was the case). Extended the
+  section 1 audit-layer description so the audit also reads as a reader, not only a
+  texture-checker (teaser pull, list and detail coherence, title payoff, clichis,
+  content gaps, per-section momentum); this captures the lens that a rhythm-only audit
+  was missing. Regression: Books, Facts and Concepts golds were re-scanned against the
+  2.3 coherence extension and the title-payoff rule and pass both (no incoherent list,
+  no unrendered title), so their locks stand at their versions; People is separately
+  re-opened for revision and HAS re-locked against v1.6 (Lise Meitner). The revision (flat teasers rebuilt into open loops, the incoherent "exactness" list rebound, the promised "walk in the snow" scene rendered, the bomb-to-Hiroshima bridge added, one passive activated, E = mc²) changed reader-quality but barely moved the band; only the greatest_work outlier shifted 46 to 44 (the mc² edit shortened that sentence). People row updated accordingly; the rest of the row stands.
+
+- v1.5: filled the Concepts row of the section 3 band table, measured from the locked
+  Concepts gold (`concepts_example.json`, Regression to the Mean): a tighter, punchier
+  center than the narrative formats (about 15 to 18 words, many short beats of 4 to 10),
+  a typical ceiling near 28 with one 63-word outlier in the origin section that a cold
+  read cleared as a structured parallel sentence, and very high burstiness. No universal
+  rule changed: the Concepts cycle surfaced only applications of existing rules (the
+  per-unit interpretive bow as the dominant pattern, examples announcing rather than
+  letting the reader notice, reflex antithesis, a repeated motif across sections, a quiz
+  spread too narrow). Two items were deferred to a later pass and are NOT yet done: a
+  possible style-guide clause on word-as-mention quotation (Concepts follows the curly-
+  double convention for now), and a checker gap where texture_check.py scans only straight
+  double quotes and missed straight single quotes used as quotation. Books, Facts and
+  People locks stand at their versions; only the per-format length numbers are new.
+
+- v1.4: filled the People row of the section 3 band table, measured from the locked
+  People gold (`people_example.json`, Lise Meitner): length center about 16 to 20
+  words with short punches of 4 to 9, narrative ceiling near 40 with a single
+  technical outlier to 46 in greatest_work, most sentences under 28, very high
+  burstiness. No universal rule (section 2 or Part A) changed: the People cycle
+  surfaced only applications of existing rules (the per-unit mic-drop, ascend-to-
+  longest, reflex antithesis, parallel-field sameness, over-closure), so the Books
+  and Facts locks stand at their versions and only the per-format length numbers are
+  new. This confirms the split discipline a second time: a contrasting narrative
+  format added a band row, not a core rule.
 - v1.3: filled the Facts row of the section 3 band table, measured from the locked
   Facts gold (length center about 12 to 16 words with 4 to 9 short punches, ceiling
   about 31 with most sentences under 22, very high variance, tight subordination).

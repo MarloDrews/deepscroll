@@ -161,6 +161,13 @@ if a word shows up more in model output than in good human writing, cut it.
   cleaner here than straight quotes, which must be escaped inside JSON, and they
   render as real typography. Use them in place of single quotes for quotation, and
   keep the ordinary apostrophe for possessives and contractions.
+- A word or short term named as a mention, not quoted from a speaker, takes the same curly doubles:
+  the word "fission", the term "regression". This is the use-mention distinction, naming a term as a
+  term, not attribution; reserve it for a term being introduced or pointed at, not for ordinary words.
+- Titles of works (books, paintings, papers, films) run plain in prose, carried by a cue rather than
+  by marks: the painting The Supper at Emmaus, the book Thinking, Fast and Slow, a paper on heredity.
+  The one exception is a long, sentence-like title that would blur into the prose around it, which may
+  take curly doubles to mark where it starts and ends (as the Galton paper title does in Concepts).
   This covers a represented question or thought in direct form, such as the
   substituted question “do I like Ford cars?”, but not indirect speech, such as
   asks whether to buy Ford stock.
@@ -297,6 +304,25 @@ is the clickbait this forbids. No category labels, and nothing in the "you won't
 believe" register. How many teasers, their length, and any format-specific axis
 for varying them are set in each skeleton; the voice is set here.
 
+The same promise rule reaches past the card. An internal section title or unit
+heading is a promise too: it commits the body to deliver what it names. A defining
+moment titled for a scene has to show that scene; an example titled for a case has
+to render it. A heading that names a walk in the snow when the body has no walk and
+no snow is the in-post form of overpromise, and it costs the most when the scene was
+the best thing the section had. Render what the title names, or rename the title to
+what the body delivers.
+
+A teaser is one line. Picture a good thumbnail: short, and it earns the tap by opening a real
+curiosity loop the post then closes, in plain words the reader already has. The pull comes from the
+hook, not from the length. Two failure modes are equal and opposite: clickbait that oversells what is
+not there, and a flat category label that undersells what is (a tag like "the flaw in before-and-after
+results" is accurate but gives the reader nothing to wonder about). Each format fixes its own short
+length band in its skeleton, Facts the tightest and Books a little longer, and names a few example
+angles the hook can take. Those angles are examples, not a quota: vary the form across the three where
+it fits, but if a question or a second-person line does not suit one of them, use whatever angle does,
+even if that repeats a form. Never restate the finding or spend the payoff, and never lean on a term
+the post will only teach.
+
 ## A12. Quotes have to earn their place
 
 A quote is included only when the exact words carry something a paraphrase
@@ -311,6 +337,12 @@ Ask why something is true or what it implies, not for a date, a name, or a place
 The wrong options are plausible to someone who half-understood, never throwaway
 filler. The explanation teaches the logic of the right answer in a sentence or
 two; it does not open with "The correct answer is."
+
+Every question has to be answerable from the post itself. A question that tests a fact or idea the
+body never explains is a defect, however on-topic it sounds: the reader has no way to reason it out,
+and the quiz stops measuring understanding of this post. A question may pose a fresh scenario to test
+transfer, but the principle it turns on must be one the post actually taught. Before finalizing a quiz,
+check each question against the body and replace any whose answer the post does not teach.
 
 ## A14. Gravity: the tone yields to the subject
 

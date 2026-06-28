@@ -143,14 +143,15 @@
       "svg": ""                 // string. The small field glyph, compact viewBox
                                 // (e.g. 0 0 56 32), per SVG_STANDARD.md card rules.
     },
-    "teasers": ["", "", ""],    // HARD: exactly 3. Guideline: about 6 words each.
-                                // What the reader will UNDERSTAND after reading, not
-                                // the concept name reworded. Sub-insights, not
-                                // synonyms. Example for Survivorship Bias: "Why
-                                // hospitals seem dangerous", "The pattern in WWII
-                                // bombers", "How to spot it daily". Vary structure
-                                // across the three.
-                                // real read length, do not undersell.
+    "teasers": ["", "", ""],    // HARD: exactly 3. Guideline: about 8 to 12 words
+                                // each, shorter is fine (never a cap). Each opens a
+                                // curiosity loop the post closes, in plain words, never
+                                // a flat label or the concept name reworded, and never
+                                // restating the subtitle. Forms Concepts tends to take:
+                                // a counter-intuitive claim, a second-person line naming
+                                // the cause wrongly credited, a question about an
+                                // everyday puzzle (examples, not a required one of
+                                // each). Voice: STYLE_GUIDE A11.
     "post_difficulty": 1        // HARD: 1, 2, or 3 (1=accessible, 2=moderate,
                                 // 3=demanding). A purely intuitive bias lands at 1;
                                 // a formal game-theoretic equilibrium at 3.

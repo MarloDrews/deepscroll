@@ -10,9 +10,12 @@ Usage:
     python3 texture_check.py path/to/post.json --format books
     python3 texture_check.py path/to/post.json --json
 
-Scope note: Books and Facts are calibrated (HUMAN_TEXTURE_STANDARD v1.3). For an
-uncalibrated format the script runs the universal checks with the Books band as a
-placeholder and says so.
+Scope note: Books, Facts, People, Concepts and Stories are calibrated (HUMAN_TEXTURE_STANDARD v1.7;
+v1.6 added a list-coherence rule and a reader-level audit lens, neither checker-enforced).
+Each has a real, dedicated extractor and a section-3 band. Any other format uses the
+generic walk with the Books band as a placeholder and says so; for an uncalibrated
+format the structural checks are still real and only the length numbers are
+indicative until that format's gold sets them.
 
 The numbers below come straight from the standard:
   - comma ceiling 3 per sentence, 4 only inside a genuine flat list, 5 is a rewrite
@@ -58,6 +61,57 @@ BANDS = {
         comma_candidate=4,
         comma_rewrite=5,
         list_post_soft=5,
+        parallel_monotone=0.75,
+        drift_up_frac=0.75,
+    ),
+    # People is calibrated (locked gold, Lise Meitner). The checker thresholds are the
+    # universal section-2 floors, identical across formats, so this mirrors Books and
+    # Facts by design. The genuinely People-specific calibration is descriptive and
+    # lives in the standard's section-3 band row: a longer narrative center (about 16
+    # to 20 words, like Books, well above Facts), a narrative ceiling near 40 with a
+    # single technical outlier to 46 in greatest_work, and very high burstiness.
+    "people": dict(
+        burst_floor=2.0,
+        short_word_max=10,
+        short_word_tight=15,
+        drone_shortest=25,
+        comma_candidate=4,
+        comma_rewrite=5,
+        list_post_soft=5,
+        parallel_monotone=0.75,
+        drift_up_frac=0.75,
+    ),
+    # Concepts is calibrated (locked gold, Regression to the Mean). Thresholds are the
+    # universal section-2 floors, like the other formats. The Concepts-specific
+    # calibration is descriptive and lives in the standard's section-3 band row: a
+    # tighter, punchier center than People (about 15 to 18 words, many short beats),
+    # a typical ceiling near 28 with a single 63-word outlier in the origin section,
+    # and very high burstiness. It fits an instructional concept format.
+    "concepts": dict(
+        burst_floor=2.0,
+        short_word_max=10,
+        short_word_tight=15,
+        drone_shortest=25,
+        comma_candidate=4,
+        comma_rewrite=5,
+        list_post_soft=5,
+        parallel_monotone=0.75,
+        drift_up_frac=0.75,
+    ),
+    # Stories is calibrated (locked gold, the van Meegeren forgery). Thresholds are the
+    # universal section-2 floors, like the other formats. The Stories-specific calibration
+    # is descriptive and lives in the standard's section-3 band row: a narrative center
+    # near People and Books (about 13 to 19 words, median 16) with many short punches, a
+    # ceiling about 33, most sentences under 28, and very high burstiness (section ratios
+    # 2 to 8). A longer multi-section narrative, so a slightly higher inline-list budget.
+    "stories": dict(
+        burst_floor=2.0,
+        short_word_max=10,
+        short_word_tight=15,
+        drone_shortest=25,
+        comma_candidate=4,
+        comma_rewrite=5,
+        list_post_soft=6,
         parallel_monotone=0.75,
         drift_up_frac=0.75,
     ),
@@ -290,6 +344,291 @@ def extract_facts(data):
 
     return prose, parallel, light, exempt
 
+def extract_people(data):
+    """People extractor: pull the exact reader-facing fields for the People schema.
+    People is a biographical narrative format and is NOT yet calibrated, so the band
+    stays the Books placeholder until the locked People gold sets the section-3 band
+    (length numbers are then indicative, the structural checks are real). The
+    extractor itself is real. It pulls the People prose sections (why_they_matter,
+    each defining_moments body, the optional greatest_work.body, what_drove_them and
+    their_world, legacy.body, the optional critique) plus the one-sentence identity
+    placement, and the parallel sets (defining_moments titles, life_arc milestone
+    labels). voices quotes are exempt; at_a_glance, quiz, captions, the dek, and the
+    teasers are light (blacklist and symbolism only).
+
+    Why identity is pulled as prose, not light: it is one dense 30-60 word sentence
+    by contract, exactly the place a life cram-stacks appositives into a resume line,
+    which the skeleton's thesis forbids. As prose it gets the comma-density and
+    over-closure checks; the burstiness checks are no-ops on a single sentence, so
+    this only adds coverage, never a false flat-drone flag."""
+    by = {s["type"]: s for s in data.get("sections", [])}
+    prose, parallel, light, exempt = [], {}, [], []
+
+    def add_prose(label, sec, key="content"):
+        if sec and isinstance(sec.get(key), str) and sec[key].strip():
+            prose.append((label, sec[key]))
+
+    # the one-sentence placement (see docstring) and the multi-sentence sections
+    add_prose("identity", by.get("identity"))
+    add_prose("why_they_matter", by.get("why_they_matter"))  # candidate key section
+    add_prose("what_drove_them", by.get("what_drove_them"))  # OPTIONAL
+    add_prose("their_world", by.get("their_world"))          # OPTIONAL
+
+    # dict-bodied prose sections
+    if "greatest_work" in by:                                # OPTIONAL
+        b = by["greatest_work"].get("content", {}).get("body", "")
+        if isinstance(b, str) and b.strip():
+            prose.append(("greatest_work.body", b))
+    if "legacy" in by:
+        b = by["legacy"].get("content", {}).get("body", "")
+        if isinstance(b, str) and b.strip():
+            prose.append(("legacy.body", b))
+
+    # defining_moments: each episode body is prose; the titles are a parallel set
+    if "defining_moments" in by and isinstance(by["defining_moments"].get("content"), list):
+        titles = []
+        for i, m in enumerate(by["defining_moments"]["content"]):
+            if isinstance(m, dict):
+                if isinstance(m.get("body"), str) and m["body"].strip():
+                    prose.append((f"defining_moments[{i}].body", m["body"]))
+                if isinstance(m.get("title"), str) and m["title"].strip():
+                    titles.append(m["title"])
+                cap = m.get("image_caption", "")
+                if isinstance(cap, str) and cap.strip():
+                    light.append((f"defining_moments[{i}].image_caption", cap))
+        if titles:
+            parallel["defining_moments titles"] = titles
+
+    # life_arc: the milestone labels are a short parallel set (3-6 word fragments);
+    # the SVG itself is out of scope for the prose checker
+    if "life_arc" in by and isinstance(by["life_arc"].get("content"), dict):
+        labels = [m.get("label", "")
+                  for m in by["life_arc"]["content"].get("milestones", [])
+                  if isinstance(m, dict) and isinstance(m.get("label"), str)
+                  and m["label"].strip()]
+        if labels:
+            parallel["life_arc milestones"] = labels
+
+    # voices quotes are exempt, never checked
+    if "voices" in by:
+        for q in by["voices"].get("content", []):
+            if isinstance(q, dict) and isinstance(q.get("quote"), str) and q["quote"].strip():
+                exempt.append(q["quote"])
+
+    # at_a_glance: short factual metadata, blacklist and symbolism only
+    if "at_a_glance" in by and isinstance(by["at_a_glance"].get("content"), dict):
+        aag = by["at_a_glance"]["content"]
+        for k in ("known_for", "field", "nationality", "movement_or_era"):
+            v = aag.get(k, "")
+            if isinstance(v, str) and v.strip():
+                light.append((f"at_a_glance.{k}", v))
+
+    # quiz: question and explanation are light
+    if "quiz" in by:
+        for q in by["quiz"].get("content", []):
+            if isinstance(q, dict):
+                if isinstance(q.get("explanation"), str) and q["explanation"].strip():
+                    light.append(("quiz.explanation", q["explanation"]))
+                if isinstance(q.get("question"), str) and q["question"].strip():
+                    light.append(("quiz.question", q["question"]))
+
+    # single-sentence image captions on dict-bodied sections (reader-facing prose,
+    # short, so light keeps blacklist and symbolism on them)
+    for sec_type in ("portrait", "greatest_work", "legacy"):
+        if sec_type in by and isinstance(by[sec_type].get("content"), dict):
+            cap = by[sec_type]["content"].get("image_caption", "")
+            if isinstance(cap, str) and cap.strip():
+                light.append((f"{sec_type}.image_caption", cap))
+
+    # feed card dek and teasers
+    fc = data.get("feed_card", {})
+    if isinstance(fc.get("one_line"), str) and fc["one_line"].strip():
+        light.append(("feed_card.one_line", fc["one_line"]))
+    for t in fc.get("teasers", []):
+        if isinstance(t, str) and t.strip():
+            light.append(("feed_card.teaser", t))
+
+    return prose, parallel, light, exempt
+
+def extract_concepts(data):
+    """Concepts extractor: pull the exact reader-facing fields for the Concepts
+    schema. Concepts teaches a mental model for use; its prose sections are intuition,
+    the optional formal_definition body, each how_it_works step body, each
+    real_world_examples body, the how_to_apply body (the key section, second-person
+    "you" voice), where_it_breaks, mental_takeaway body, and the optional origin body.
+    Parallel sets: how_it_works step titles, real_world_examples titles and domains,
+    the how_to_apply checklist, nearby_concepts names. No quote fields exist, so
+    exempt stays empty; the formal_definition formula is KaTeX math, not prose, and is
+    left out of the checks entirely. Light (blacklist and symbolism only): captions,
+    the notation legend meanings, quiz question and explanation, origin key_thinkers
+    roles, the nearby_concepts distinctions, the dek, and the teasers."""
+    by = {s["type"]: s for s in data.get("sections", [])}
+    prose, parallel, light, exempt = [], {}, [], []
+
+    def add_prose(label, sec, key="content"):
+        if sec and isinstance(sec.get(key), str) and sec[key].strip():
+            prose.append((label, sec[key]))
+
+    add_prose("intuition", by.get("intuition"))
+    add_prose("where_it_breaks", by.get("where_it_breaks"))  # key-section neighbour, prose string
+
+    # dict-bodied prose sections
+    for t in ("formal_definition", "how_to_apply", "mental_takeaway", "origin"):
+        if t in by and isinstance(by[t].get("content"), dict):
+            b = by[t]["content"].get("body", "")
+            if isinstance(b, str) and b.strip():
+                prose.append((f"{t}.body", b))
+
+    # how_it_works: each step body is prose; the step titles are a parallel set
+    if "how_it_works" in by and isinstance(by["how_it_works"].get("content"), list):
+        titles = []
+        for i, st in enumerate(by["how_it_works"]["content"]):
+            if isinstance(st, dict):
+                if isinstance(st.get("body"), str) and st["body"].strip():
+                    prose.append((f"how_it_works[{i}].body", st["body"]))
+                if isinstance(st.get("title"), str) and st["title"].strip():
+                    titles.append(st["title"])
+        if titles:
+            parallel["how_it_works titles"] = titles
+
+    # real_world_examples: each body is prose; titles and domains are parallel sets
+    if "real_world_examples" in by and isinstance(by["real_world_examples"].get("content"), list):
+        titles, domains = [], []
+        for i, ex in enumerate(by["real_world_examples"]["content"]):
+            if isinstance(ex, dict):
+                if isinstance(ex.get("body"), str) and ex["body"].strip():
+                    prose.append((f"real_world_examples[{i}].body", ex["body"]))
+                if isinstance(ex.get("title"), str) and ex["title"].strip():
+                    titles.append(ex["title"])
+                if isinstance(ex.get("domain"), str) and ex["domain"].strip():
+                    domains.append(ex["domain"])
+                cap = ex.get("image_caption", "")
+                if isinstance(cap, str) and cap.strip():
+                    light.append((f"real_world_examples[{i}].image_caption", cap))
+        if titles:
+            parallel["real_world_examples titles"] = titles
+        if domains:
+            parallel["real_world_examples domains"] = domains
+
+    # how_to_apply checklist: a short parallel set of trigger prompts
+    if "how_to_apply" in by and isinstance(by["how_to_apply"].get("content"), dict):
+        cl = [x for x in by["how_to_apply"]["content"].get("checklist", [])
+              if isinstance(x, str) and x.strip()]
+        if cl:
+            parallel["how_to_apply checklist"] = cl
+            light.extend(("how_to_apply.checklist", x) for x in cl)
+
+    # nearby_concepts: names are a parallel set; the distinctions are short prose (light)
+    if "nearby_concepts" in by and isinstance(by["nearby_concepts"].get("content"), list):
+        names = []
+        for n in by["nearby_concepts"]["content"]:
+            if isinstance(n, dict):
+                if isinstance(n.get("concept"), str) and n["concept"].strip():
+                    names.append(n["concept"])
+                if isinstance(n.get("distinction"), str) and n["distinction"].strip():
+                    light.append(("nearby_concepts.distinction", n["distinction"]))
+        if names:
+            parallel["nearby_concepts names"] = names
+
+    # visual_explanation caption (light)
+    if "visual_explanation" in by and isinstance(by["visual_explanation"].get("content"), dict):
+        cap = by["visual_explanation"]["content"].get("image_caption", "")
+        if isinstance(cap, str) and cap.strip():
+            light.append(("visual_explanation.image_caption", cap))
+
+    # formal_definition notation legend meanings (light); formula is math, skipped
+    if "formal_definition" in by and isinstance(by["formal_definition"].get("content"), dict):
+        for leg in by["formal_definition"]["content"].get("notation_legend", []):
+            if isinstance(leg, dict) and isinstance(leg.get("meaning"), str) and leg["meaning"].strip():
+                light.append(("formal_definition.notation_legend", leg["meaning"]))
+
+    # origin key_thinkers (roles, one_lines) and origin image caption (light)
+    if "origin" in by and isinstance(by["origin"].get("content"), dict):
+        for kt in by["origin"]["content"].get("key_thinkers", []):
+            if isinstance(kt, dict):
+                for k in ("role", "one_line"):
+                    v = kt.get(k, "")
+                    if isinstance(v, str) and v.strip():
+                        light.append((f"origin.key_thinkers.{k}", v))
+        cap = by["origin"]["content"].get("image_caption", "")
+        if isinstance(cap, str) and cap.strip():
+            light.append(("origin.image_caption", cap))
+
+    # quiz question and explanation (light)
+    if "quiz" in by:
+        for q in by["quiz"].get("content", []):
+            if isinstance(q, dict):
+                if isinstance(q.get("explanation"), str) and q["explanation"].strip():
+                    light.append(("quiz.explanation", q["explanation"]))
+                if isinstance(q.get("question"), str) and q["question"].strip():
+                    light.append(("quiz.question", q["question"]))
+
+    # feed card dek and teasers
+    fc = data.get("feed_card", {})
+    if isinstance(fc.get("one_line"), str) and fc["one_line"].strip():
+        light.append(("feed_card.one_line", fc["one_line"]))
+    for t in fc.get("teasers", []):
+        if isinstance(t, str) and t.strip():
+            light.append(("feed_card.teaser", t))
+
+    return prose, parallel, light, exempt
+
+def extract_stories(data):
+    """Stories extractor: pull the reader-facing narrative prose for the Stories
+    schema. Prose (band): cold_open, setting body, each chapter body, the_turn body
+    (the narrative pivot), the_aftermath body, what_it_means (the key section, the
+    meaning the story delivers), unanswered, historical_context. Parallel: chapter
+    titles. Light: headline, teasers, image captions, cast one_line blurbs, quiz
+    question and explanation. Exempt: sources, at_a_glance metadata, image urls and
+    attributions, names, dates."""
+    by = {s["type"]: s for s in data.get("sections", [])}
+    prose, parallel, light, exempt = [], {}, [], []
+
+    def add_prose(label, txt):
+        if isinstance(txt, str) and txt.strip():
+            prose.append((label, txt))
+
+    for t in ("cold_open", "what_it_means", "unanswered", "historical_context"):
+        if t in by and isinstance(by[t].get("content"), str):
+            add_prose(t, by[t]["content"])
+    for t in ("setting", "the_turn", "the_aftermath"):
+        c = by.get(t, {}).get("content")
+        if isinstance(c, dict):
+            add_prose(t, c.get("body", ""))
+            cap = c.get("image_caption")
+            if isinstance(cap, str) and cap.strip():
+                light.append((t + ".image_caption", cap))
+    if isinstance(by.get("chapters", {}).get("content"), list):
+        titles = []
+        for i, ch in enumerate(by["chapters"]["content"]):
+            if isinstance(ch, dict):
+                add_prose("chapters[%d]" % i, ch.get("body", ""))
+                if ch.get("title"):
+                    titles.append(ch["title"])
+                cap = ch.get("image_caption")
+                if isinstance(cap, str) and cap.strip():
+                    light.append(("chapters[%d].image_caption" % i, cap))
+        if titles:
+            parallel["chapters titles"] = titles
+    fc = data.get("feed_card", {})
+    if isinstance(fc.get("headline"), str) and fc["headline"].strip():
+        light.append(("feed_card.headline", fc["headline"]))
+    for t in fc.get("teasers", []):
+        if isinstance(t, str) and t.strip():
+            light.append(("feed_card.teaser", t))
+    if isinstance(by.get("cast", {}).get("content"), list):
+        for i, c in enumerate(by["cast"]["content"]):
+            if isinstance(c, dict) and isinstance(c.get("one_line"), str) and c["one_line"].strip():
+                light.append(("cast[%d].one_line" % i, c["one_line"]))
+    if isinstance(by.get("quiz", {}).get("content"), list):
+        for q in by["quiz"]["content"]:
+            if isinstance(q, dict):
+                if isinstance(q.get("question"), str):
+                    light.append(("quiz.question", q["question"]))
+                if isinstance(q.get("explanation"), str):
+                    light.append(("quiz.explanation", q["explanation"]))
+    return prose, parallel, light, exempt
+
 def extract_generic(data):
     """Fallback for uncalibrated formats: walk for body/content strings, exempt
     quotes. Coarser than the Books extractor."""
@@ -472,6 +811,94 @@ def check_repeated_openings(prose_sentences, cand):
 # --------------------------------------------------------------------------
 # driver
 # --------------------------------------------------------------------------
+
+QUIZ_STOP = set("the a an and or but of to in on for with that this which what when who whom whose how why does did is are was were has have had will would can could should about after before during over under between within without into than then there their they them then this that these those been being more most less least only just very also which while where whose whom each any all some many much few".split())
+
+def check_quiz_groundedness(data, cand):
+    """Universal: flag quiz questions whose distinctive terms are largely absent
+    from the post body, i.e. likely testing content the post never teaches. A
+    candidate for the audit, never a verdict; verbatim wording still gets a human read."""
+    by = {s["type"]: s for s in data.get("sections", [])}
+    if "quiz" not in by:
+        return
+    parts = []
+    def collect(node):
+        if isinstance(node, str):
+            parts.append(node)
+        elif isinstance(node, dict):
+            for v in node.values():
+                collect(v)
+        elif isinstance(node, list):
+            for v in node:
+                collect(v)
+    for sec in data.get("sections", []):
+        if sec.get("type") != "quiz":
+            collect(sec.get("content"))
+    fc = data.get("feed_card", {})
+    for k in ("headline", "one_line"):
+        if isinstance(fc.get(k), str):
+            parts.append(fc[k])
+    for t in fc.get("teasers", []):
+        if isinstance(t, str):
+            parts.append(t)
+    body = " ".join(parts).lower()
+    for i, q in enumerate(by["quiz"].get("content", [])):
+        stem = q.get("question", "")
+        opts = q.get("options", [])
+        ai = q.get("answer_index", 0)
+        correct = opts[ai] if isinstance(opts, list) and 0 <= ai < len(opts) else ""
+        terms = set(re.findall(r"[a-z]{5,}", (stem + " " + correct).lower())) - QUIZ_STOP
+        if not terms:
+            continue
+        missing = sorted(t for t in terms if t[:5] not in body)
+        if len(missing) / len(terms) >= 0.7:  # coarse: application questions may use outside words, so only a heavy absence flags
+            cand.append(("quiz groundedness", f"quiz[{i}]",
+                         f"{len(missing)}/{len(terms)} key terms not in the body: {', '.join(missing[:6])}"))
+
+_SQ_SKIP_KEYS = {"image_url", "image_attribution", "lead_image_url", "url", "symbol",
+                 "formula", "birth_year", "lifespan", "answer_index", "order",
+                 "category", "era", "era_label", "location", "sources_reliability",
+                 "post_difficulty", "visual_svg"}
+
+def check_straight_quotes(data, cand):
+    """Flag straight quotation marks in reader-facing text. Convention: curly double
+    quotes for all quotation. A straight double quote should never appear; a straight
+    single used to OPEN a span (preceded by a non-letter, followed by a letter) is a
+    quotation mark, not a possessive apostrophe. Coarse candidate, not a verdict."""
+    strings = []
+    def walk(node, owner):
+        if isinstance(node, str):
+            strings.append((owner, node))
+        elif isinstance(node, dict):
+            for k, v in node.items():
+                if k in _SQ_SKIP_KEYS:
+                    continue
+                walk(v, owner)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v, owner)
+    for sec in data.get("sections", []):
+        if sec.get("type") == "sources":
+            continue
+        walk(sec.get("content"), sec.get("type", "?"))
+    fc = data.get("feed_card", {})
+    if isinstance(fc.get("headline"), str):
+        strings.append(("feed_card.headline", fc["headline"]))
+    for t in fc.get("teasers", []):
+        if isinstance(t, str):
+            strings.append(("feed_card.teaser", t))
+    seen_d, seen_s = set(), set()
+    open_single = re.compile(r"(?:^|[^0-9A-Za-z\u00c0-\u024f])'[A-Za-z]")
+    for owner, txt in strings:
+        if '"' in txt and owner not in seen_d:
+            cand.append(("straight quote", owner,
+                         "a straight double quote appears; quotation uses curly doubles"))
+            seen_d.add(owner)
+        if open_single.search(txt) and owner not in seen_s:
+            cand.append(("straight quote", owner,
+                         "a straight single quote opens a span; use curly quotation (or confirm it is a possessive)"))
+            seen_s.add(owner)
+
 def run(path, fmt=None):
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
@@ -485,6 +912,12 @@ def run(path, fmt=None):
         prose, parallel, light, exempt = extract_books(data)
     elif fmt == "facts":
         prose, parallel, light, exempt = extract_facts(data)
+    elif fmt == "people":
+        prose, parallel, light, exempt = extract_people(data)
+    elif fmt == "concepts":
+        prose, parallel, light, exempt = extract_concepts(data)
+    elif fmt == "stories":
+        prose, parallel, light, exempt = extract_stories(data)
     else:
         prose, parallel, light, exempt = extract_generic(data)
 
@@ -507,6 +940,8 @@ def run(path, fmt=None):
             if w in low:
                 cand.append(("symbolism register", label, f'"{w}"'))
 
+    check_quiz_groundedness(data, cand)
+    check_straight_quotes(data, cand)
     return dict(format=fmt, calibrated=calibrated, band=band, recs=recs,
                 parallel=par, inline_lists=list_total, blacklist=bl_total,
                 exempt_quotes=len(exempt), candidates=cand)
